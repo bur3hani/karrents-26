@@ -1,0 +1,6 @@
+{
+  "name": "Karrents",
+  "description": "Practical cybersecurity workbench containing threat intelligence, configuration checkers, and security utilities for defenders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
