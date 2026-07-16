@@ -1,6 +1,6 @@
 {
-  "name": "Karrents",
-  "description": "Practical cybersecurity workbench containing threat intelligence, configuration checkers, and security utilities for defenders.",
+  "name": "Karrents Security Intelligence",
+  "description": "Karrents Security Intelligence is a modern cybersecurity intelligence platform built for defenders, aggregating, enriching, and explaining security information into actionable intelligence.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

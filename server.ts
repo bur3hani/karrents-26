@@ -779,7 +779,7 @@ app.post('/api/ai-search', async (req, res) => {
     if (ai) {
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
-        contents: `You are the core advisor engine of Karrents Cybersecurity Workbench. A cybersecurity professional is searching for: "${query}".
+        contents: `You are the core advisor engine of Karrents Security Intelligence. A cybersecurity professional is searching for: "${query}".
         Find relevant CVEs, security tools, MITRE techniques, or mitigation procedures.
         Provide a concise, practical, technical answer, linking specific remediation strategies.
         You MUST output a JSON response conforming to:

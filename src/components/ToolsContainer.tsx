@@ -109,6 +109,94 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
     downloadAnchor.remove();
   };
 
+  const saveToWorkbench = (title: string, target: string, toolType: string, severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW', score: number, data: any) => {
+    try {
+      const stored = localStorage.getItem('karrents_saved_reports');
+      let reports = [];
+      if (stored) {
+        reports = JSON.parse(stored);
+      }
+      
+      let executiveSummary = `Automated vulnerability scan for ${target}.`;
+      let technicalSummary = `Technical deep-dive details mapped.`;
+      let businessImpact = `Moderate corporate operational risks identified.`;
+      let technicalImpact = `Asset vulnerabilities checked and evaluated.`;
+      let recommendations: string[] = ['Establish standard perimeter controls', 'Update unpatched assets'];
+      let references = [{ title: 'OWASP Security standards', url: 'https://owasp.org' }];
+
+      if (toolType === 'CVE Explorer') {
+        executiveSummary = data.description || executiveSummary;
+        technicalSummary = `CVSS Vector context: ${data.cvssVector || 'N/A'}`;
+        businessImpact = data.businessImpact || businessImpact;
+        technicalImpact = data.technicalImpact || technicalImpact;
+        recommendations = [data.remediation?.mitigation, data.remediation?.patchInfo].filter(Boolean);
+        if (data.references && data.references.length > 0) {
+          references = data.references.slice(0, 3).map((ref: any) => ({ title: ref.title || 'Reference link', url: ref.url || '#' }));
+        }
+      } else if (toolType === 'IOC Lookup') {
+        executiveSummary = data.detailedAnalysis || executiveSummary;
+        technicalSummary = `Malicious score weight is ${data.maliciousScore || 0}/100. Confidence index: ${data.confidenceScore || 0}%`;
+        businessImpact = `Compromised indicators of compromise callout active networks.`;
+        technicalImpact = `Endpoint presence facilitates lateral movement, exfiltrations, or secondary command-and-control triggers.`;
+        recommendations = [data.remediation || 'Block inbound IP at firewall level'];
+        if (data.intelReferences && data.intelReferences.length > 0) {
+          references = data.intelReferences.slice(0, 3).map((ref: any) => ({ title: ref.title || 'Intel Reference', url: ref.url || '#' }));
+        }
+      } else if (toolType === 'Security Headers') {
+        executiveSummary = data.aiReport?.executiveSummary || executiveSummary;
+        technicalSummary = `Score: ${data.score}/100 with grade: ${data.grade}. Missing headers: ${data.missingHeaders?.join(', ') || 'None'}`;
+        businessImpact = `Absence of strict protection headers leaves target vulnerable to clickjacking and XSS framing.`;
+        technicalImpact = data.aiReport?.riskAnalysis || technicalImpact;
+        recommendations = [
+          data.aiReport?.remediationConfigs?.nginx ? `Review Nginx configuration guidelines: ${data.aiReport.remediationConfigs.nginx.slice(0, 80)}...` : 'Configure Content-Security-Policy rules'
+        ];
+      } else if (toolType === 'TLS/SSL Checker') {
+        executiveSummary = data.aiEvaluation || executiveSummary;
+        technicalSummary = `Valid from ${data.cert?.validFrom || 'N/A'} to ${data.cert?.validTo || 'N/A'}. Remaining days: ${data.cert?.daysRemaining || 0}. protocol: ${data.cert?.protocol || 'N/A'}`;
+        businessImpact = `Insecure ciphers or short lifespan certificates expose transit traffic to spoofing attacks.`;
+        technicalImpact = `Subject details resolved: ${data.cert?.subject || 'N/A'}. Issuer structure: ${data.cert?.issuer || 'N/A'}`;
+        recommendations = ['Upgrade ciphers to TLS 1.3 protocol', 'Establish automated certificate rotation policies'];
+      } else if (toolType === 'Email Security') {
+        executiveSummary = `Audit resolved overall spoofing risk level as ${data.overallRisk || 'N/A'}.`;
+        technicalSummary = `SPF Status: ${data.spf?.status || 'N/A'}. DMARC Status: ${data.dmarc?.status || 'N/A'}`;
+        businessImpact = data.businessImpact || businessImpact;
+        technicalImpact = `Absence of alignment protocol enables unauthorized outbound spoofing phishing campaigns.`;
+        recommendations = data.remediationSteps || ['Verify DMARC p=reject rules'];
+      } else if (toolType === 'DNS Lookup') {
+        executiveSummary = data.analysis || executiveSummary;
+        technicalSummary = `Records resolved of class ${data.recordType || 'N/A'}. Total count: ${data.records?.length || 0}`;
+        businessImpact = `Misconfigured active DNS parameters allow attackers to execute zone transfers or redirect active client traffic channels.`;
+        technicalImpact = `Audit resolved records list: ${JSON.stringify(data.records || {})}`;
+        recommendations = ['Verify DNS records with hosting providers', 'Implement DNSSEC keys'];
+      }
+
+      const newReport = {
+        id: `REP-2026-${String(reports.length + 1).padStart(3, '0')}`,
+        title: `${toolType} Analysis: ${target}`,
+        target,
+        toolType,
+        severity,
+        score,
+        timestamp: new Date().toISOString(),
+        toolVersion: 'Karrents Analyzer v1.3.1',
+        executiveSummary,
+        technicalSummary,
+        businessImpact,
+        technicalImpact,
+        evidence: JSON.stringify(data, null, 2),
+        recommendations,
+        references
+      };
+
+      reports.unshift(newReport);
+      localStorage.setItem('karrents_saved_reports', JSON.stringify(reports));
+      alert(`Success: Report ${newReport.id} successfully saved to Workbench Archive!`);
+    } catch (e) {
+      console.error("Failed to save report to workbench", e);
+      alert("Failed to save report. Please try again.");
+    }
+  };
+
   const severityBadgeColors = (sev: string) => {
     switch (sev?.toUpperCase()) {
       case 'CRITICAL': return 'bg-red-500/10 border-red-500/30 text-red-400';
@@ -265,14 +353,24 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       </div>
                       <h3 className="font-semibold text-zinc-100 text-sm leading-snug">{cveResult.title}</h3>
                     </div>
-                    <button
-                      id="export-cve-report"
-                      onClick={() => exportReport(cveResult.id, cveResult)}
-                      className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-750 text-xs flex items-center gap-1.5 transition-colors self-start"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Export Intel</span>
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        id="save-cve-report"
+                        onClick={() => saveToWorkbench(cveResult.title, cveResult.id, 'CVE Explorer', cveResult.severity as any, Math.round(cveResult.cvssScore * 10), cveResult)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors self-start font-semibold"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Save Report</span>
+                      </button>
+                      <button
+                        id="export-cve-report"
+                        onClick={() => exportReport(cveResult.id, cveResult)}
+                        className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-750 text-xs flex items-center gap-1.5 transition-colors self-start"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Export Intel</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-xs">
@@ -458,14 +556,24 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       </div>
                       <div className="text-xs text-zinc-400">Threat intelligence validation assessment.</div>
                     </div>
-                    <button
-                      id="export-ioc-report"
-                      onClick={() => exportReport(iocResult.indicator, iocResult)}
-                      className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-750 text-xs flex items-center gap-1.5 transition-colors self-start"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Export Report</span>
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        id="save-ioc-report"
+                        onClick={() => saveToWorkbench(`Threat Intel Audit: ${iocResult.indicator}`, iocResult.indicator, 'IOC Lookup', iocResult.verdict === 'MALICIOUS' ? 'CRITICAL' : iocResult.verdict === 'SUSPICIOUS' ? 'HIGH' : 'LOW', iocResult.maliciousScore, iocResult)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors self-start font-semibold"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Save Report</span>
+                      </button>
+                      <button
+                        id="export-ioc-report"
+                        onClick={() => exportReport(iocResult.indicator, iocResult)}
+                        className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-750 text-xs flex items-center gap-1.5 transition-colors self-start"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Export Report</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-1 text-xs">
@@ -598,10 +706,30 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
               <div className="space-y-6 animate-fade-in">
                 {/* Headers Analysis Dashboard */}
                 <div className="bg-zinc-900/60 border border-zinc-800/50 p-6 rounded-xl space-y-5">
-                  <div className="flex items-center justify-between pb-4 border-b border-zinc-800/40">
-                    <div className="space-y-0.5">
-                      <div className="font-mono text-sm font-semibold text-zinc-200">{headersResult.url}</div>
-                      <div className="text-[11px] text-zinc-400">Response Header Policy Assessment</div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/40">
+                    <div className="space-y-1.5">
+                      <div>
+                        <div className="font-mono text-sm font-semibold text-zinc-200 break-all">{headersResult.url}</div>
+                        <div className="text-[11px] text-zinc-400">Response Header Policy Assessment</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          id="save-headers-report"
+                          onClick={() => saveToWorkbench(`Security Headers: ${headersResult.url}`, headersResult.url, 'Security Headers', headersResult.score >= 80 ? 'LOW' : headersResult.score >= 50 ? 'MEDIUM' : 'HIGH', headersResult.score, headersResult)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-[11px] flex items-center gap-1 transition-colors font-semibold shadow-sm shadow-blue-500/10"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>Save Report</span>
+                        </button>
+                        <button
+                          id="export-headers-report"
+                          onClick={() => exportReport(headersResult.url.replace(/https?:\/\//, ''), headersResult)}
+                          className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1 rounded-lg border border-zinc-800 hover:border-zinc-750 text-[11px] flex items-center gap-1 transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Export Intel</span>
+                        </button>
+                      </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
@@ -746,6 +874,24 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       </div>
                       <div className="text-xs text-zinc-400">Cryptographic TLS chain validation report.</div>
                     </div>
+                    <div className="flex gap-2">
+                      <button
+                        id="save-ssl-report"
+                        onClick={() => saveToWorkbench(`TLS/SSL Security: ${sslResult.domain}`, sslResult.domain, 'TLS/SSL Checker', sslResult.cert.isValid ? 'LOW' : 'CRITICAL', sslResult.cert.daysRemaining < 30 ? 40 : 95, sslResult)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-blue-500/10"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Save Report</span>
+                      </button>
+                      <button
+                        id="export-ssl-report"
+                        onClick={() => exportReport(sslResult.domain, sslResult)}
+                        className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-750 text-xs flex items-center gap-1.5 transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Export Intel</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -851,6 +997,24 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                         </span>
                       </div>
                       <div className="text-xs text-zinc-400">DNS email security control validation.</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        id="save-email-report"
+                        onClick={() => saveToWorkbench(`Email Security Audit: ${emailResult.domain}`, emailResult.domain, 'Email Security', emailResult.overallRisk === 'LOW' ? 'LOW' : emailResult.overallRisk === 'MEDIUM' ? 'MEDIUM' : 'HIGH', emailResult.overallRisk === 'LOW' ? 95 : emailResult.overallRisk === 'MEDIUM' ? 70 : 35, emailResult)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-blue-500/10"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Save Report</span>
+                      </button>
+                      <button
+                        id="export-email-report"
+                        onClick={() => exportReport(emailResult.domain, emailResult)}
+                        className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-750 text-xs flex items-center gap-1.5 transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Export Intel</span>
+                      </button>
                     </div>
                   </div>
 
@@ -1027,14 +1191,34 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             {dnsResult && !loading && (
               <div className="space-y-6 animate-fade-in">
                 <div className="bg-zinc-900/60 border border-zinc-800/50 p-6 rounded-xl space-y-5">
-                  <div className="pb-4 border-b border-zinc-800/40">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-base font-bold text-white">{dnsResult.domain}</span>
-                      <span className="text-[10px] font-mono bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">
-                        {dnsResult.recordType} Lookup
-                      </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-800/40">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-base font-bold text-white">{dnsResult.domain}</span>
+                        <span className="text-[10px] font-mono bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">
+                          {dnsResult.recordType} Lookup
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-400">Active zone record resolution results.</div>
                     </div>
-                    <div className="text-xs text-zinc-400 mt-1">Active zone record resolution results.</div>
+                    <div className="flex gap-2">
+                      <button
+                        id="save-dns-report"
+                        onClick={() => saveToWorkbench(`DNS Lookup: ${dnsResult.domain}`, dnsResult.domain, 'DNS Lookup', 'LOW', 90, dnsResult)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-blue-500/10"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Save Report</span>
+                      </button>
+                      <button
+                        id="export-dns-report"
+                        onClick={() => exportReport(dnsResult.domain, dnsResult)}
+                        className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-750 text-xs flex items-center gap-1.5 transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Export Intel</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-2">

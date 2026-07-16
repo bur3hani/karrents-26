@@ -28,16 +28,28 @@ import {
   BookOpen,
   Plus,
   HelpCircle,
-  Play
+  Play,
+  Bell,
+  CreditCard
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import ToolsContainer from './components/ToolsContainer';
 import MitreExplorer from './components/MitreExplorer';
 import AisearchBar from './components/AisearchBar';
+import SavedReports from './components/SavedReports';
+import KnowledgeBase from './components/KnowledgeBase';
+import Documentation from './components/Documentation';
+import ApiDoc from './components/ApiDoc';
+import Pricing from './components/Pricing';
+import Profile from './components/Profile';
+import Notifications from './components/Notifications';
+import Auth from './components/Auth';
+import KarrentsLogo from './components/KarrentsLogo';
 
 export default function App() {
-  const [viewMode, setViewMode] = useState<'landing' | 'app'>('landing');
-  const [appSection, setAppSection] = useState<'dashboard' | 'tools' | 'mitre' | 'settings'>('dashboard');
+  const [viewMode, setViewMode] = useState<'landing' | 'app' | 'auth'>('landing');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [appSection, setAppSection] = useState<'dashboard' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports'>('dashboard');
   const [selectedTool, setSelectedTool] = useState<string>('cve');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({
@@ -53,7 +65,7 @@ export default function App() {
   const handleLaunchTool = (toolName: string) => {
     setSelectedTool(toolName);
     setAppSection('tools');
-    setViewMode('app');
+    setViewMode(isAuthenticated ? 'app' : 'auth');
   };
 
   // Profile Email extracted from metadata
@@ -68,20 +80,22 @@ export default function App() {
         <header className="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setViewMode('landing')}>
-              <div className="bg-blue-600 p-1.5 rounded-lg border border-blue-500 shadow-lg">
-                <Shield className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setViewMode('landing')}>
+              <div className="bg-blue-600 p-1.5 rounded-lg border border-blue-500 shadow-lg shadow-blue-500/10">
+                <KarrentsLogo className="w-5 h-5 text-white" />
               </div>
-              <span className="font-extrabold tracking-tight text-white text-lg">Karrents</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">Beta</span>
+              <div className="flex flex-col">
+                <span className="font-extrabold tracking-tight text-white text-sm leading-none">Karrents</span>
+                <span className="text-[9px] font-bold text-zinc-500 tracking-wider uppercase mt-0.5">Security Intelligence</span>
+              </div>
             </div>
 
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-zinc-400">
               <button onClick={() => handleLaunchTool('cve')} className="hover:text-white transition-colors">Tools</button>
-              <button onClick={() => { setAppSection('mitre'); setViewMode('app'); }} className="hover:text-white transition-colors">Threat Intelligence</button>
+              <button onClick={() => { setAppSection('mitre'); setViewMode(isAuthenticated ? 'app' : 'auth'); }} className="hover:text-white transition-colors">Threat Intelligence</button>
               <a href="#trusted-features" className="hover:text-white transition-colors">Why Karrents</a>
-              <a href="#platform-statistics" className="hover:text-white transition-colors">About</a>
+              <a href="#platform-statistics" className="hover:text-white transition-colors">Metrics</a>
               <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
             </nav>
 
@@ -89,14 +103,15 @@ export default function App() {
             <div className="hidden md:flex items-center gap-3">
               <button
                 id="btn-nav-sign-in"
-                onClick={() => setViewMode('app')}
-                className="text-xs font-semibold text-zinc-400 hover:text-white px-3.5 py-2 transition-colors"
+                onClick={() => setViewMode(isAuthenticated ? 'app' : 'auth')}
+                className="text-xs font-semibold text-zinc-400 hover:text-white px-3.5 py-2 transition-colors flex items-center gap-1.5"
               >
-                Sign In
+                <Lock className="w-3.5 h-3.5 text-zinc-500" />
+                <span>{isAuthenticated ? 'Enter Workbench' : 'Sign In'}</span>
               </button>
               <button
                 id="btn-nav-launch-workbench"
-                onClick={() => { setAppSection('dashboard'); setViewMode('app'); }}
+                onClick={() => { setAppSection('dashboard'); setViewMode(isAuthenticated ? 'app' : 'auth'); }}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition-all shadow-md hover:shadow-blue-500/10 flex items-center gap-1"
               >
                 <span>Launch Workbench</span>
@@ -118,9 +133,9 @@ export default function App() {
           {mobileMenuOpen && (
             <div className="md:hidden border-b border-zinc-800/50 bg-zinc-950 p-4 space-y-4 text-xs font-semibold text-zinc-400">
               <button onClick={() => { handleLaunchTool('cve'); setMobileMenuOpen(false); }} className="block w-full text-left py-1 hover:text-white">CVE Explorer</button>
-              <button onClick={() => { setAppSection('mitre'); setViewMode('app'); setMobileMenuOpen(false); }} className="block w-full text-left py-1 hover:text-white">MITRE Matrix</button>
+              <button onClick={() => { setAppSection('mitre'); setViewMode(isAuthenticated ? 'app' : 'auth'); setMobileMenuOpen(false); }} className="block w-full text-left py-1 hover:text-white">MITRE Matrix</button>
               <button onClick={() => { handleLaunchTool('headers'); setMobileMenuOpen(false); }} className="block w-full text-left py-1 hover:text-white">Security Headers</button>
-              <button onClick={() => { setAppSection('dashboard'); setViewMode('app'); setMobileMenuOpen(false); }} className="block w-full text-left py-2 text-white bg-blue-600 text-center rounded-lg">Launch Workbench</button>
+              <button onClick={() => { setAppSection('dashboard'); setViewMode(isAuthenticated ? 'app' : 'auth'); setMobileMenuOpen(false); }} className="block w-full text-left py-2 text-white bg-blue-600 text-center rounded-lg font-bold">Launch Workbench</button>
             </div>
           )}
         </header>
@@ -150,7 +165,7 @@ export default function App() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
                 <button
                   id="hero-cta-start"
-                  onClick={() => { setAppSection('dashboard'); setViewMode('app'); }}
+                  onClick={() => { setAppSection('dashboard'); setViewMode(isAuthenticated ? 'app' : 'auth'); }}
                   className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-6 py-3 rounded-lg transition-all shadow-lg hover:shadow-blue-500/15 flex items-center justify-center gap-1.5"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
@@ -158,7 +173,7 @@ export default function App() {
                 </button>
                 <button
                   id="hero-cta-intel"
-                  onClick={() => { setAppSection('mitre'); setViewMode('app'); }}
+                  onClick={() => { setAppSection('mitre'); setViewMode(isAuthenticated ? 'app' : 'auth'); }}
                   className="w-full sm:w-auto bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-xs px-6 py-3 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Layers className="w-3.5 h-3.5" />
@@ -459,12 +474,15 @@ export default function App() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="bg-blue-600 p-1.5 rounded-lg border border-blue-500">
-                  <Shield className="w-4 h-4 text-white" />
+                  <KarrentsLogo className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-extrabold tracking-tight text-white text-base">Karrents</span>
+                <div className="flex flex-col">
+                  <span className="font-extrabold tracking-tight text-white text-sm leading-none">Karrents</span>
+                  <span className="text-[9px] font-bold text-zinc-500 tracking-wider uppercase mt-0.5">Security Intelligence</span>
+                </div>
               </div>
               <p className="leading-relaxed">Practical security tools, threat intelligence, and server-side auditing utilities designed for defenders.</p>
-              <div className="text-[10px] text-zinc-600">© 2026 Karrents Inc. All rights reserved.</div>
+              <div className="text-[10px] text-zinc-600">© 2026 Karrents Security Intelligence. All rights reserved.</div>
             </div>
 
             <div className="space-y-3">
@@ -478,10 +496,10 @@ export default function App() {
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-bold text-zinc-200 text-xs">Resources</h4>
+              <h4 className="font-bold text-zinc-200 text-xs">Advisory Resources</h4>
               <ul className="space-y-1.5 text-zinc-400">
                 <li><a href="#faq" className="hover:text-white transition-colors">Frequently Answered Queries</a></li>
-                <li><button onClick={() => { setAppSection('mitre'); setViewMode('app'); }} className="hover:text-white transition-colors">MITRE ATT&CK Matrix</button></li>
+                <li><button onClick={() => { setAppSection('mitre'); setViewMode(isAuthenticated ? 'app' : 'auth'); }} className="hover:text-white transition-colors">MITRE ATT&CK Matrix</button></li>
                 <li><a href="#trusted-features" className="hover:text-white transition-colors">Zero Logs Policy Details</a></li>
               </ul>
             </div>
@@ -510,6 +528,19 @@ export default function App() {
       )}
 
       {/* ==========================================
+          SECURE GATEWAY AUTHENTICATION VIEW (AUTH)
+         ========================================== */}
+      {viewMode === 'auth' && (
+        <Auth 
+          onLoginSuccess={(email) => { 
+            setIsAuthenticated(true); 
+            setViewMode('app'); 
+          }} 
+          userEmail={userEmail} 
+        />
+      )}
+
+      {/* ==========================================
           WORKBENCH INTERACTIVE DASHBOARD VIEW (APP)
          ========================================== */}
       {viewMode === 'app' && (
@@ -520,77 +551,183 @@ export default function App() {
               {/* Logo / Brand */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => setViewMode('landing')}>
-                  <div className="bg-blue-600 p-1.5 rounded-lg border border-blue-500">
-                    <Shield className="w-4 h-4 text-white" />
+                  <div className="bg-blue-600 p-1 rounded border border-blue-500 shrink-0">
+                    <KarrentsLogo className="w-3.5 h-3.5 text-white" />
                   </div>
-                  <span className="font-extrabold tracking-tight text-white text-base">Karrents</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-black text-[11px] text-white tracking-tight leading-none">Karrents</span>
+                    <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5">Intelligence</span>
+                  </div>
                 </div>
                 <button
-                  id="btn-return-landing"
-                  onClick={() => setViewMode('landing')}
-                  className="text-[10px] text-zinc-500 hover:text-zinc-300 font-semibold uppercase tracking-wider"
+                  id="btn-secure-logout"
+                  onClick={() => {
+                    setIsAuthenticated(false);
+                    setViewMode('landing');
+                  }}
+                  className="text-[9px] bg-red-950/40 border border-red-900/30 text-red-400 hover:bg-red-900/10 hover:text-red-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider transition-all shrink-0"
                 >
-                  Landing
+                  Logout
                 </button>
               </div>
 
               {/* Sidebar navigations */}
-              <div className="space-y-1">
-                <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider px-2.5 mb-2">Workbench</div>
-                <button
-                  id="aside-nav-dashboard"
-                  onClick={() => setAppSection('dashboard')}
-                  className={`w-full text-left px-3 py-2 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                    appSection === 'dashboard' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                  }`}
-                >
-                  <Activity className="w-4.5 h-4.5 text-blue-400/80" />
-                  <span>Ops Dashboard</span>
-                </button>
+              <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-220px)] pr-1 custom-scrollbar">
+                <div>
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider px-2.5 mb-1.5">Workbench</div>
+                  <div className="space-y-0.5">
+                    <button
+                      id="aside-nav-dashboard"
+                      onClick={() => setAppSection('dashboard')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'dashboard' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Activity className="w-4 h-4 text-blue-400/80" />
+                      <span>Ops Dashboard</span>
+                    </button>
 
-                <button
-                  id="aside-nav-tools"
-                  onClick={() => { setAppSection('tools'); setSelectedTool('cve'); }}
-                  className={`w-full text-left px-3 py-2 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                    appSection === 'tools' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                  }`}
-                >
-                  <Terminal className="w-4.5 h-4.5 text-blue-400/80" />
-                  <span>Security Tools</span>
-                </button>
+                    <button
+                      id="aside-nav-tools"
+                      onClick={() => { setAppSection('tools'); setSelectedTool('cve'); }}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'tools' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Terminal className="w-4 h-4 text-blue-400/80" />
+                      <span>Security Tools</span>
+                    </button>
 
-                <button
-                  id="aside-nav-mitre"
-                  onClick={() => setAppSection('mitre')}
-                  className={`w-full text-left px-3 py-2 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                    appSection === 'mitre' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                  }`}
-                >
-                  <Layers className="w-4.5 h-4.5 text-blue-400/80" />
-                  <span>MITRE ATT&CK Matrix</span>
-                </button>
+                    <button
+                      id="aside-nav-mitre"
+                      onClick={() => setAppSection('mitre')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'mitre' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Layers className="w-4 h-4 text-blue-400/80" />
+                      <span>MITRE ATT&CK Matrix</span>
+                    </button>
+                  </div>
+                </div>
 
-                <button
-                  id="aside-nav-settings"
-                  onClick={() => setAppSection('settings')}
-                  className={`w-full text-left px-3 py-2 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                    appSection === 'settings' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                  }`}
-                >
-                  <Settings className="w-4.5 h-4.5 text-blue-400/80" />
-                  <span>System Settings</span>
-                </button>
+                <div>
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider px-2.5 mb-1.5">Intelligence & Records</div>
+                  <div className="space-y-0.5">
+                    <button
+                      id="aside-nav-kb"
+                      onClick={() => setAppSection('kb')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'kb' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Database className="w-4 h-4 text-blue-400/80" />
+                      <span>Knowledge Base</span>
+                    </button>
+
+                    <button
+                      id="aside-nav-saved-reports"
+                      onClick={() => setAppSection('saved-reports')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'saved-reports' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <FileText className="w-4 h-4 text-blue-400/80" />
+                      <span>Saved Reports</span>
+                    </button>
+
+                    <button
+                      id="aside-nav-notifications"
+                      onClick={() => setAppSection('notifications')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'notifications' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Bell className="w-4 h-4 text-blue-400/80" />
+                      <span>Alert Feed</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider px-2.5 mb-1.5">Platform & API</div>
+                  <div className="space-y-0.5">
+                    <button
+                      id="aside-nav-api"
+                      onClick={() => setAppSection('api')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'api' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Cpu className="w-4 h-4 text-blue-400/80" />
+                      <span>Developer API</span>
+                    </button>
+
+                    <button
+                      id="aside-nav-docs"
+                      onClick={() => setAppSection('docs')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'docs' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <BookOpen className="w-4 h-4 text-blue-400/80" />
+                      <span>Documentation</span>
+                    </button>
+
+                    <button
+                      id="aside-nav-pricing"
+                      onClick={() => setAppSection('pricing')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'pricing' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <CreditCard className="w-4 h-4 text-blue-400/80" />
+                      <span>Workspace Plans</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider px-2.5 mb-1.5">Settings</div>
+                  <div className="space-y-0.5">
+                    <button
+                      id="aside-nav-profile"
+                      onClick={() => setAppSection('profile')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'profile' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <User className="w-4 h-4 text-blue-400/80" />
+                      <span>Profile & Keys</span>
+                    </button>
+
+                    <button
+                      id="aside-nav-settings"
+                      onClick={() => setAppSection('settings')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'settings' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-500 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Settings className="w-4 h-4 text-blue-400/80" />
+                      <span>System Settings</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Profile badge (using extracted user email engr.buru@gmail.com) */}
             <div className="p-4 border-t border-zinc-800/40 space-y-2">
-              <div className="flex items-center gap-2.5 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-800">
-                <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-black text-white">
+              <div 
+                id="sidebar-profile-card"
+                onClick={() => setAppSection('profile')}
+                className="flex items-center gap-2.5 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-850 hover:border-blue-500/55 hover:bg-zinc-900/70 transition-all cursor-pointer group"
+              >
+                <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-black text-white group-hover:bg-blue-500 transition-colors">
                   EB
                 </div>
                 <div className="truncate space-y-0.5">
-                  <div className="font-bold text-[11px] text-zinc-200">Buru Security</div>
+                  <div className="font-bold text-[11px] text-zinc-200 group-hover:text-white transition-colors">Buru Security</div>
                   <div className="text-[9.5px] text-zinc-500 truncate select-all">{userEmail}</div>
                 </div>
               </div>
@@ -618,6 +755,13 @@ export default function App() {
                   {appSection === 'dashboard' && 'Operations Dashboard'}
                   {appSection === 'tools' && 'Forensic Intelligence Tools'}
                   {appSection === 'mitre' && 'MITRE ATT&CK Mapping'}
+                  {appSection === 'kb' && 'Threat Knowledge Base'}
+                  {appSection === 'saved-reports' && 'Saved Reports & Audits'}
+                  {appSection === 'notifications' && 'Live Alert Feed'}
+                  {appSection === 'api' && 'Developer API Portal'}
+                  {appSection === 'docs' && 'Platform Documentation'}
+                  {appSection === 'pricing' && 'Workspace Plans'}
+                  {appSection === 'profile' && 'User Settings & Credentials'}
                   {appSection === 'settings' && 'Workbench Configuration'}
                 </h1>
               </div>
@@ -650,6 +794,34 @@ export default function App() {
                 <MitreExplorer />
               )}
 
+              {appSection === 'kb' && (
+                <KnowledgeBase onNavigateToTool={handleLaunchTool} />
+              )}
+
+              {appSection === 'saved-reports' && (
+                <SavedReports />
+              )}
+
+              {appSection === 'notifications' && (
+                <Notifications />
+              )}
+
+              {appSection === 'api' && (
+                <ApiDoc />
+              )}
+
+              {appSection === 'docs' && (
+                <Documentation />
+              )}
+
+              {appSection === 'pricing' && (
+                <Pricing />
+              )}
+
+              {appSection === 'profile' && (
+                <Profile />
+              )}
+
               {appSection === 'settings' && (
                 <div className="max-w-3xl space-y-6">
                   {/* API Configuration block */}
@@ -660,7 +832,7 @@ export default function App() {
                         Credentials & Integrations
                       </h3>
                       <p className="text-xs text-zinc-400 leading-relaxed">
-                        Karrents uses Google Cloud AI Studio secrets management to power dynamic CVE lookups, threat indicators lookup, security headers evaluation, and advisory queries.
+                        Karrents Security Intelligence uses Google Cloud AI Studio secrets management to power dynamic CVE lookups, threat indicators lookup, security headers evaluation, and advisory queries.
                       </p>
                     </div>
 
