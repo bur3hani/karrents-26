@@ -2,4 +2,5 @@
 process.env.NODE_ENV = 'production';
 
 // Load the compiled and optimized production server bundle
-require('./dist/server.cjs');
+import './dist/server.cjs';
+
