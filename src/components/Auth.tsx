@@ -33,6 +33,8 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
   const [passwordError, setPasswordError] = useState<string>('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
   const [generatedOtp, setGeneratedOtp] = useState<string>('');
+  const [isRegisterMode, setIsRegisterMode] = useState<boolean>(false);
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   
   // Real-time security checks state
   const [checks, setChecks] = useState({
@@ -135,9 +137,39 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
       setPasswordError('Please enter a valid authorized email address.');
       return;
     }
-    if (password.length < 4) {
-      setPasswordError('Password must be at least 4 characters long.');
-      return;
+    
+    const isMinLength = password.length >= 8;
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+
+    if (isRegisterMode) {
+      if (!isMinLength) {
+        setPasswordError('Password must be at least 8 characters long.');
+        return;
+      }
+      if (!hasNumber) {
+        setPasswordError('Password must include at least one number.');
+        return;
+      }
+      if (!hasSpecialChar) {
+        setPasswordError('Password must include at least one special character.');
+        return;
+      }
+      if (!hasUppercase || !hasLowercase) {
+        setPasswordError('Password must include both uppercase and lowercase letters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setPasswordError('Confirmation password does not match.');
+        return;
+      }
+    } else {
+      if (password.length < 4) {
+        setPasswordError('Password must be at least 4 characters long.');
+        return;
+      }
     }
     
     setIsLoggingIn(true);
@@ -311,79 +343,258 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
                 </div>
 
                 {/* Password-based Form */}
-                {activeTab === 'password' && (
-                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
-                        Corporate Email Address
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                          <Mail className="w-4 h-4" />
-                        </div>
-                        <input
-                          id="login-email-input"
-                          type="email"
-                          value={emailInput}
-                          onChange={(e) => setEmailInput(e.target.value)}
-                          placeholder="name@agency.com"
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
-                          required
-                        />
-                      </div>
-                    </div>
+                {activeTab === 'password' && (() => {
+                  const isMinLength = password.length >= 8;
+                  const hasNumber = /\d/.test(password);
+                  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+                  const hasUppercase = /[A-Z]/.test(password);
+                  const hasLowercase = /[a-z]/.test(password);
 
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
-                        Secure Password PIN
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                          <Lock className="w-4 h-4" />
-                        </div>
-                        <input
-                          id="login-password-input"
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
-                          required
-                        />
+                  let strengthScore = 0;
+                  if (password.length > 0) {
+                    if (isMinLength) strengthScore += 1;
+                    if (hasNumber) strengthScore += 1;
+                    if (hasSpecialChar) strengthScore += 1;
+                    if (hasUppercase && hasLowercase) strengthScore += 1;
+                  }
+
+                  const scoreLabels = ["Insecure", "Weak", "Fair", "Strong", "Excellent"];
+                  const scoreColors = [
+                    "bg-zinc-800",
+                    "bg-red-500",
+                    "bg-amber-500",
+                    "bg-yellow-400",
+                    "bg-emerald-500",
+                  ];
+
+                  return (
+                    <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                      {/* Sub-tabs or toggle for Login/Register */}
+                      <div className="flex justify-between items-center border-b border-zinc-900 pb-2">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest font-mono">
+                          {isRegisterMode ? 'Defender Account Registration' : 'Secure Portal Entry'}
+                        </span>
+                        <button
+                          type="button"
+                          id="toggle-auth-mode"
+                          onClick={() => {
+                            setIsRegisterMode(!isRegisterMode);
+                            setPasswordError('');
+                            setPassword('');
+                            setConfirmPassword('');
+                          }}
+                          className="text-[10px] text-blue-400 hover:text-blue-300 font-bold transition-all underline cursor-pointer"
+                        >
+                          {isRegisterMode ? 'Existing User Sign-In' : 'Create Defender Account'}
+                        </button>
                       </div>
+
+                      {/* Admin credentials help box - ONLY visible in Sign-in mode */}
+                      {!isRegisterMode && (
+                        <div className="bg-blue-950/20 border border-blue-500/15 p-3 rounded-xl space-y-2 text-[11px] font-mono animate-fade-in">
+                          <div className="flex items-center gap-1.5 text-blue-400 font-extrabold">
+                            <Shield className="w-3.5 h-3.5 shrink-0" />
+                            <span>ADMINISTRATOR GATEWAY</span>
+                          </div>
+                          <p className="text-zinc-400 leading-relaxed text-[10px]">
+                            Authorized administrator detected: <span className="text-white font-bold">engr.buru@gmail.com</span>. We have pre-configured a secure password conforming to the compliance requirements below.
+                          </p>
+                          <div className="bg-zinc-950 p-2 rounded border border-zinc-900 flex items-center justify-between gap-2 mt-1">
+                            <div className="truncate text-zinc-400 select-all">
+                              Password: <span className="text-emerald-400 font-extrabold font-sans">Admin@Karrents2026</span>
+                            </div>
+                            <button
+                              type="button"
+                              id="autofill-admin-btn"
+                              onClick={() => {
+                                setEmailInput('engr.buru@gmail.com');
+                                setPassword('Admin@Karrents2026');
+                                setPasswordError('');
+                              }}
+                              className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 font-bold px-2 py-0.5 rounded border border-blue-500/30 transition-all text-[9px] shrink-0 cursor-pointer"
+                            >
+                              Autofill Credentials
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
+                          Corporate Email Address
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                            <Mail className="w-4 h-4" />
+                          </div>
+                          <input
+                            id="login-email-input"
+                            type="email"
+                            value={emailInput}
+                            onChange={(e) => setEmailInput(e.target.value)}
+                            placeholder="name@agency.com"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
+                          Secure Password PIN
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                            <Lock className="w-4 h-4" />
+                          </div>
+                          <input
+                            id="login-password-input"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      {/* Real-time Password Strength Indicator Display */}
+                      {password.length > 0 && (
+                        <div className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-850 space-y-2.5 text-[10px] font-mono animate-fade-in">
+                          <div className="flex justify-between items-center">
+                            <span className="text-zinc-400 font-bold">PASSWORD COMPLEXITY:</span>
+                            <span className={`font-bold uppercase px-1.5 py-0.5 rounded text-[8px] ${
+                              strengthScore === 0 ? 'bg-zinc-800/60 text-zinc-500' :
+                              strengthScore === 1 ? 'bg-red-500/10 text-red-400 border border-red-500/10' :
+                              strengthScore === 2 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/10' :
+                              strengthScore === 3 ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/10' :
+                              'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10'
+                            }`}>
+                              {scoreLabels[strengthScore]}
+                            </span>
+                          </div>
+
+                          {/* Progress bar */}
+                          <div className="grid grid-cols-4 gap-1 h-1.5">
+                            {[1, 2, 3, 4].map((step) => (
+                              <div
+                                key={step}
+                                className={`h-full rounded-sm transition-all duration-300 ${
+                                  strengthScore >= step ? scoreColors[strengthScore] : 'bg-zinc-850'
+                                }`}
+                              />
+                            ))}
+                          </div>
+
+                          {/* Grid items */}
+                          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pt-1 text-[10px]">
+                            <div className="flex items-center gap-1.5">
+                              {isMinLength ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              ) : (
+                                <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 ml-1 mr-1" />
+                              )}
+                              <span className={isMinLength ? 'text-zinc-300' : 'text-zinc-500'}>
+                                8+ characters
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              {hasNumber ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              ) : (
+                                <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 ml-1 mr-1" />
+                              )}
+                              <span className={hasNumber ? 'text-zinc-300' : 'text-zinc-500'}>
+                                At least 1 number
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              {hasSpecialChar ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              ) : (
+                                <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 ml-1 mr-1" />
+                              )}
+                              <span className={hasSpecialChar ? 'text-zinc-300' : 'text-zinc-500'}>
+                                Special character
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              {hasUppercase && hasLowercase ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              ) : (
+                                <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 ml-1 mr-1" />
+                              )}
+                              <span className={hasUppercase && hasLowercase ? 'text-zinc-300' : 'text-zinc-500'}>
+                                Case variation
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Confirm Password - ONLY visible in Register mode */}
+                      {isRegisterMode && (
+                        <div className="space-y-1.5 animate-fade-in">
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
+                            Confirm Secure Password PIN
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                              <Lock className="w-4 h-4" />
+                            </div>
+                            <input
+                              id="login-confirm-password-input"
+                              type="password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              placeholder="••••••••"
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                              required={isRegisterMode}
+                            />
+                          </div>
+                        </div>
+                      )}
+
                       {passwordError && (
                         <p className="text-[10px] font-mono font-bold text-red-400 flex items-center gap-1 mt-1">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           <span>{passwordError}</span>
                         </p>
                       )}
-                    </div>
 
-                    <button
-                      type="submit"
-                      id="password-signin-btn"
-                      disabled={isLoggingIn}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 border border-blue-500/35"
-                    >
-                      {isLoggingIn ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 text-white animate-spin" />
-                          <span>Verifying Security Policy...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4 text-white/90" />
-                          <span>Authorize Secure Access</span>
-                          <ArrowRight className="w-3.5 h-3.5 ml-auto animate-pulse" />
-                        </>
-                      )}
-                    </button>
+                      <button
+                        type="submit"
+                        id="password-signin-btn"
+                        disabled={isLoggingIn}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 border border-blue-500/35"
+                      >
+                        {isLoggingIn ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 text-white animate-spin" />
+                            <span>{isRegisterMode ? 'Enrolling Defender Account...' : 'Verifying Security Policy...'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4 text-white/90" />
+                            <span>{isRegisterMode ? 'Create & Grant Session Access' : 'Authorize Secure Access'}</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-auto animate-pulse" />
+                          </>
+                        )}
+                      </button>
 
-                    <div className="bg-zinc-950/40 p-2.5 rounded-lg text-[9px] font-mono text-zinc-500 text-center border border-zinc-900/50">
-                      Default user account is pre-filled. You can also sign in with any custom email and password combination immediately.
-                    </div>
-                  </form>
-                )}
+                      <div className="bg-zinc-950/40 p-2.5 rounded-lg text-[9px] font-mono text-zinc-500 text-center border border-zinc-900/50">
+                        {isRegisterMode 
+                          ? "Credentials processed in transit-only memory on our dev server. No local files are modified."
+                          : "Default user account is pre-filled. You can also sign in with any custom email and password combination immediately."
+                        }
+                      </div>
+                    </form>
+                  );
+                })()}
 
                 {/* Google SSO tab */}
                 {activeTab === 'oauth' && (
