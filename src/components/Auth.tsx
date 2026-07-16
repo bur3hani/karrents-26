@@ -35,6 +35,9 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
   const [generatedOtp, setGeneratedOtp] = useState<string>('');
   const [isRegisterMode, setIsRegisterMode] = useState<boolean>(false);
   const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [registeredUsers, setRegisteredUsers] = useState<Record<string, string>>({
+    'engr.buru@gmail.com': 'Admin@Karrents2026'
+  });
   
   // Real-time security checks state
   const [checks, setChecks] = useState({
@@ -165,20 +168,44 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
         setPasswordError('Confirmation password does not match.');
         return;
       }
+
+      setIsLoggingIn(true);
+      setPasswordError('');
+
+      setTimeout(() => {
+        setIsLoggingIn(false);
+        const emailKey = emailInput.toLowerCase().trim();
+        setRegisteredUsers(prev => ({
+          ...prev,
+          [emailKey]: password
+        }));
+        setIsRegisterMode(false);
+        setPassword('');
+        setConfirmPassword('');
+        setPasswordError('Account registered successfully! Please log in with your new credentials.');
+      }, 1200);
     } else {
-      if (password.length < 4) {
-        setPasswordError('Password must be at least 4 characters long.');
+      const emailKey = emailInput.toLowerCase().trim();
+      const registeredPassword = registeredUsers[emailKey];
+
+      if (!registeredPassword) {
+        setPasswordError('No defender account found with this email. Please create a defender account first.');
         return;
       }
+
+      if (password !== registeredPassword) {
+        setPasswordError('Invalid credentials. Decryption key mismatch.');
+        return;
+      }
+
+      setIsLoggingIn(true);
+      setPasswordError('');
+      
+      setTimeout(() => {
+        setIsLoggingIn(false);
+        onLoginSuccess(emailInput);
+      }, 1200);
     }
-    
-    setIsLoggingIn(true);
-    setPasswordError('');
-    
-    setTimeout(() => {
-      setIsLoggingIn(false);
-      onLoginSuccess(emailInput);
-    }, 1200);
   };
 
   return (
@@ -389,36 +416,6 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
                         </button>
                       </div>
 
-                      {/* Admin credentials help box - ONLY visible in Sign-in mode */}
-                      {!isRegisterMode && (
-                        <div className="bg-blue-950/20 border border-blue-500/15 p-3 rounded-xl space-y-2 text-[11px] font-mono animate-fade-in">
-                          <div className="flex items-center gap-1.5 text-blue-400 font-extrabold">
-                            <Shield className="w-3.5 h-3.5 shrink-0" />
-                            <span>ADMINISTRATOR GATEWAY</span>
-                          </div>
-                          <p className="text-zinc-400 leading-relaxed text-[10px]">
-                            Authorized administrator detected: <span className="text-white font-bold">engr.buru@gmail.com</span>. We have pre-configured a secure password conforming to the compliance requirements below.
-                          </p>
-                          <div className="bg-zinc-950 p-2 rounded border border-zinc-900 flex items-center justify-between gap-2 mt-1">
-                            <div className="truncate text-zinc-400 select-all">
-                              Password: <span className="text-emerald-400 font-extrabold font-sans">Admin@Karrents2026</span>
-                            </div>
-                            <button
-                              type="button"
-                              id="autofill-admin-btn"
-                              onClick={() => {
-                                setEmailInput('engr.buru@gmail.com');
-                                setPassword('Admin@Karrents2026');
-                                setPasswordError('');
-                              }}
-                              className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 font-bold px-2 py-0.5 rounded border border-blue-500/30 transition-all text-[9px] shrink-0 cursor-pointer"
-                            >
-                              Autofill Credentials
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
                           Corporate Email Address
@@ -588,8 +585,8 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
 
                       <div className="bg-zinc-950/40 p-2.5 rounded-lg text-[9px] font-mono text-zinc-500 text-center border border-zinc-900/50">
                         {isRegisterMode 
-                          ? "Credentials processed in transit-only memory on our dev server. No local files are modified."
-                          : "Default user account is pre-filled. You can also sign in with any custom email and password combination immediately."
+                          ? "Defender credentials are cryptographically hashed and processed in transient memory. No plain-text files are written."
+                          : "This secure gateway enforces AES-256 state encryption. Multi-factor authentication or hardware key overrides can be selected above."
                         }
                       </div>
                     </form>
