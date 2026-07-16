@@ -12,7 +12,8 @@ import {
   Fingerprint, 
   Server,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Mail
 } from 'lucide-react';
 import KarrentsLogo from './KarrentsLogo';
 
@@ -26,6 +27,12 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
   const [selectedEmail, setSelectedEmail] = useState<string>(userEmail);
   const [mfaCode, setMfaCode] = useState<string>('');
   const [mfaError, setMfaError] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'password' | 'oauth' | 'fido'>('password');
+  const [emailInput, setEmailInput] = useState<string>(userEmail);
+  const [password, setPassword] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+  const [generatedOtp, setGeneratedOtp] = useState<string>('');
   
   // Real-time security checks state
   const [checks, setChecks] = useState({
@@ -89,17 +96,22 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
 
   const handleGoogleSignIn = () => {
     setAuthStep('google-loading');
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    setMfaCode('');
+    setMfaError('');
+    setSelectedEmail(emailInput);
     
     // Simulate OAuth exchange with PKCE and JWT signature validation
     setTimeout(() => {
       setAuthStep('mfa-challenge');
-    }, 1800);
+    }, 1500);
   };
 
   const handleMfaSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (mfaCode.trim().length !== 6 || isNaN(Number(mfaCode))) {
-      setMfaError('Invalid cryptographic verification token. Must be 6 digits.');
+    if (mfaCode.trim() !== generatedOtp && mfaCode.trim() !== '123456') {
+      setMfaError(`Invalid cryptographic verification token. Expected ${generatedOtp} or 123456.`);
       return;
     }
     
@@ -109,11 +121,32 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
 
   const handleHwKeyLogin = () => {
     setAuthStep('hw-key-touch');
+    setSelectedEmail(emailInput);
     
     // Simulate WebAuthn authentication with FIDO2 hardware token
     setTimeout(() => {
-      onLoginSuccess(selectedEmail);
-    }, 2000);
+      onLoginSuccess(emailInput);
+    }, 1800);
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput.trim() || !emailInput.includes('@')) {
+      setPasswordError('Please enter a valid authorized email address.');
+      return;
+    }
+    if (password.length < 4) {
+      setPasswordError('Password must be at least 4 characters long.');
+      return;
+    }
+    
+    setIsLoggingIn(true);
+    setPasswordError('');
+    
+    setTimeout(() => {
+      setIsLoggingIn(false);
+      onLoginSuccess(emailInput);
+    }, 1200);
   };
 
   return (
@@ -229,52 +262,177 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
               </p>
             </div>
 
-            {/* Step 1: Default Auth Gateway */}
+            {/* Step 1: Default Auth Gateway with Tabs */}
             {authStep === 'gateway' && (
-              <div className="space-y-4">
-                {/* Google Sign In button */}
-                <button
-                  id="google-signin-btn"
-                  onClick={handleGoogleSignIn}
-                  className="w-full bg-white hover:bg-zinc-100 text-zinc-900 px-4 py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2.5 border border-zinc-200"
-                >
-                  {/* Google SVG Logo */}
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-                  <span>Sign In with Google Secure OAuth</span>
-                </button>
-
-                <div className="relative flex items-center justify-center py-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-zinc-800/60" />
-                  </div>
-                  <span className="relative bg-zinc-950 px-3 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                    Or Use Hardware Key
-                  </span>
+              <div className="space-y-5">
+                {/* Tabs selection */}
+                <div className="flex bg-zinc-950/60 p-1 border border-zinc-850/80 rounded-xl">
+                  <button
+                    type="button"
+                    id="tab-password-login"
+                    onClick={() => setActiveTab('password')}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                      activeTab === 'password'
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30'
+                    }`}
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Password</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="tab-oauth-login"
+                    onClick={() => setActiveTab('oauth')}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                      activeTab === 'oauth'
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="currentColor"/>
+                    </svg>
+                    <span>Google SSO</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="tab-fido-login"
+                    onClick={() => setActiveTab('fido')}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                      activeTab === 'fido'
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30'
+                    }`}
+                  >
+                    <Fingerprint className="w-3.5 h-3.5" />
+                    <span>MFA Key</span>
+                  </button>
                 </div>
 
-                {/* WebAuthn / FIDO2 Hardware Key button */}
-                <button
-                  id="hardware-key-btn"
-                  onClick={handleHwKeyLogin}
-                  className="w-full bg-zinc-950 hover:bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 px-4 py-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2"
-                >
-                  <Fingerprint className="w-4 h-4 text-blue-400" />
-                  <span>Verify Hardware Security Key (FIDO2)</span>
-                </button>
+                {/* Password-based Form */}
+                {activeTab === 'password' && (
+                  <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
+                        Corporate Email Address
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                          <Mail className="w-4 h-4" />
+                        </div>
+                        <input
+                          id="login-email-input"
+                          type="email"
+                          value={emailInput}
+                          onChange={(e) => setEmailInput(e.target.value)}
+                          placeholder="name@agency.com"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                          required
+                        />
+                      </div>
+                    </div>
 
-                {/* Safety notice */}
-                <div className="bg-zinc-950/60 border border-zinc-900 p-3.5 rounded-xl text-[10px] text-zinc-500 leading-relaxed flex gap-2.5 items-start">
-                  <Lock className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold text-zinc-400 block mb-0.5">Secure-by-Default Operations Mode</span>
-                    Your connection undergoes strict end-to-end token validation. Credentials never touch local logs. System operates under absolute zero-knowledge persistence rules.
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
+                        Secure Password PIN
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <input
+                          id="login-password-input"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                          required
+                        />
+                      </div>
+                      {passwordError && (
+                        <p className="text-[10px] font-mono font-bold text-red-400 flex items-center gap-1 mt-1">
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          <span>{passwordError}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      id="password-signin-btn"
+                      disabled={isLoggingIn}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 border border-blue-500/35"
+                    >
+                      {isLoggingIn ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 text-white animate-spin" />
+                          <span>Verifying Security Policy...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4 text-white/90" />
+                          <span>Authorize Secure Access</span>
+                          <ArrowRight className="w-3.5 h-3.5 ml-auto animate-pulse" />
+                        </>
+                      )}
+                    </button>
+
+                    <div className="bg-zinc-950/40 p-2.5 rounded-lg text-[9px] font-mono text-zinc-500 text-center border border-zinc-900/50">
+                      Default user account is pre-filled. You can also sign in with any custom email and password combination immediately.
+                    </div>
+                  </form>
+                )}
+
+                {/* Google SSO tab */}
+                {activeTab === 'oauth' && (
+                  <div className="space-y-4">
+                    <button
+                      id="google-signin-btn"
+                      onClick={handleGoogleSignIn}
+                      className="w-full bg-white hover:bg-zinc-100 text-zinc-900 px-4 py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2.5 border border-zinc-200"
+                    >
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      </svg>
+                      <span>Sign In with Google Secure OAuth</span>
+                    </button>
+
+                    <div className="bg-zinc-950/60 border border-zinc-900 p-3.5 rounded-xl text-[10px] text-zinc-500 leading-relaxed flex gap-2.5 items-start">
+                      <Globe className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-zinc-400 block mb-0.5">Federated Identity Handshake</span>
+                        Validates cryptographically signed JSON Web Tokens (JWT) issued by Google identity services over strict TLS 1.3 tunnels.
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Hardware Key tab */}
+                {activeTab === 'fido' && (
+                  <div className="space-y-4">
+                    <button
+                      id="hardware-key-btn"
+                      onClick={handleHwKeyLogin}
+                      className="w-full bg-zinc-950 hover:bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 px-4 py-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2"
+                    >
+                      <Fingerprint className="w-4 h-4 text-blue-400 animate-pulse" />
+                      <span>Verify Hardware Security Key (FIDO2)</span>
+                    </button>
+
+                    <div className="bg-zinc-950/60 border border-zinc-900 p-3.5 rounded-xl text-[10px] text-zinc-500 leading-relaxed flex gap-2.5 items-start">
+                      <Key className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-zinc-400 block mb-0.5">Secure-by-Default FIDO2/WebAuthn</span>
+                        Communicates directly via standard client-to-authenticator protocols (CTAP). Complete immunity from typical network phishing vectors.
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -300,7 +458,7 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
               </div>
             )}
 
-            {/* Step 3: MFA Cryptographic input */}
+            {/* Step 3: MFA Cryptographic input with helper */}
             {authStep === 'mfa-challenge' && (
               <form onSubmit={handleMfaSubmit} className="space-y-4 animate-fade-in">
                 <div className="bg-blue-500/5 border border-blue-500/10 p-4 rounded-xl flex gap-3">
@@ -311,16 +469,20 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
-                    Cryptographic 2FA Token
-                  </label>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono block">
+                      Cryptographic 2FA Token
+                    </label>
+                    <span className="text-[9px] text-zinc-500 font-mono">Simulating secure delivery...</span>
+                  </div>
+                  
                   <input
                     id="mfa-token-input"
                     type="text"
                     value={mfaCode}
                     onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="Enter 6-digit code (e.g. 123456)"
+                    placeholder="Enter 6-digit code"
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-200 focus:outline-none focus:border-blue-500 font-mono text-center tracking-widest text-lg"
                     required
                     autoFocus
@@ -331,6 +493,28 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
                       <span>{mfaError}</span>
                     </p>
                   )}
+                </div>
+
+                {/* Simulated Auth Device delivery helper */}
+                <div className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-900 flex flex-col gap-2 text-[11px] font-mono">
+                  <div className="flex justify-between text-zinc-500 text-[10px]">
+                    <span>Authentication Method:</span>
+                    <span className="text-blue-500 font-bold">SMTP Mailbox</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-zinc-900 text-zinc-300">
+                    <span>Generated OTP Passcode:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMfaCode(generatedOtp);
+                        setMfaError('');
+                      }}
+                      className="text-[10px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-extrabold px-2 py-0.5 rounded border border-blue-500/20 transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <span className="tracking-widest">{generatedOtp}</span>
+                      <span className="text-[8px] text-zinc-500 font-normal">(Autofill)</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex gap-2.5">
@@ -346,7 +530,7 @@ export default function Auth({ onLoginSuccess, userEmail }: AuthProps) {
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/10"
                   >
                     <span>Verify & Grant Access</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 animate-pulse" />
                   </button>
                 </div>
               </form>
