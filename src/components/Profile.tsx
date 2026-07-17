@@ -10,7 +10,11 @@ import {
   Check, 
   Copy,
   Terminal,
-  RefreshCw
+  RefreshCw,
+  CreditCard,
+  LogOut,
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 
 interface ApiKey {
@@ -21,7 +25,14 @@ interface ApiKey {
   lastUsed: string;
 }
 
-export default function Profile() {
+interface ProfileProps {
+  userEmail: string;
+  userPlan: string;
+  onChangePlan?: (plan: string) => void;
+  onLogout?: () => void;
+}
+
+export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }: ProfileProps) {
   const [activeTab, setActiveTab] = useState<string>('keys');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -129,6 +140,29 @@ export default function Profile() {
             <Activity className="w-4 h-4" />
             <span>Audit History Logs</span>
           </button>
+          <button
+            id="profile-tab-billing"
+            onClick={() => { setActiveTab('billing'); }}
+            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
+              activeTab === 'billing' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>Billing & Plan</span>
+          </button>
+          {onLogout && (
+            <>
+              <hr className="border-zinc-800/40 my-2" />
+              <button
+                id="profile-logout-btn"
+                onClick={onLogout}
+                className="w-full text-left px-3 py-2 text-xs rounded-lg text-red-400 hover:bg-red-950/20 hover:text-red-300 transition-colors flex items-center gap-2.5 cursor-pointer font-bold"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Log Out Session</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Content Sheets */}
@@ -333,6 +367,173 @@ export default function Profile() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* 4. Billing & Workspace Plan sheet */}
+          {activeTab === 'billing' && (
+            <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-6 shadow-md space-y-6">
+              <div className="border-b border-zinc-800/40 pb-4 flex items-center justify-between">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-blue-400" />
+                    Billing & Workspace Plan
+                  </h3>
+                  <p className="text-xs text-zinc-400">Review subscription features, update billing details, and view payment histories.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2 bg-zinc-950/40 border border-zinc-850 p-5 rounded-xl space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">Active Workspace Tier</span>
+                      <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5 capitalize">
+                        {userPlan}
+                        <span className="text-[8px] bg-blue-500/10 border border-blue-500/30 text-blue-400 font-mono font-bold px-1 rounded uppercase">Current</span>
+                      </h4>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">Rate / Cost</span>
+                      <span className="text-sm font-bold text-zinc-300 font-mono">
+                        {userPlan === 'Guest / Sandbox' ? '$0 / forever' : userPlan === 'SOC Professional' ? '$49 / month' : '$249 / month'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <hr className="border-zinc-900/50" />
+
+                  <div className="space-y-2.5">
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block font-mono">Included Tier Features</span>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-zinc-300">
+                      {userPlan === 'Guest / Sandbox' ? (
+                        <>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>5 manual DNS scans/hour</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>3 HTTP Header reports/hour</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>Standard TLS Handshakes</span>
+                          </li>
+                        </>
+                      ) : userPlan === 'SOC Professional' ? (
+                        <>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>Uncapped scans & reports</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>Unlimited Gemini AI prompts</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>60 req/min API Key limits</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>JSON/CSV/Markdown exports</span>
+                          </li>
+                        </>
+                      ) : (
+                        <>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>Shared team watchlists</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>Slack/Teams webhooks integration</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>300 req/min Priority API Key</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span>SLA 99.99% Guaranteed uptime</span>
+                          </li>
+                        </>
+                      )}
+                    </ul>
+                  </div>
+
+                  {userPlan !== 'Guest / Sandbox' && onChangePlan && (
+                    <div className="pt-2 flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm("Are you sure you want to cancel your paid workspace subscription? This will downgrade you to the Sandbox tier.")) {
+                            onChangePlan('Guest / Sandbox');
+                          }
+                        }}
+                        className="bg-red-950/25 hover:bg-red-900 border border-red-500/20 text-red-400 hover:text-white text-xs px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Cancel Plan / Downgrade
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-zinc-950/60 p-4 border border-zinc-900 rounded-xl space-y-3.5 text-xs">
+                  <div className="flex items-center gap-2 text-blue-400 font-semibold text-[11px] uppercase tracking-wider">
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                    <span>Workspace Admin</span>
+                  </div>
+                  <div className="space-y-2 text-zinc-400 leading-relaxed font-mono text-[10.5px]">
+                    <div>
+                      <span className="text-zinc-500 block">Workspace Email:</span>
+                      <span className="text-zinc-300 font-bold select-all truncate">{userEmail}</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 block">Next Renewal Date:</span>
+                      <span className="text-zinc-300">August 16, 2026</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 block">Payment Method:</span>
+                      <span className="text-zinc-300">•••• •••• •••• 4242 (Stripe)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Invoice History */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider font-mono">Invoice History Logs</h4>
+                <div className="bg-zinc-950/30 border border-zinc-850 rounded-xl overflow-hidden text-xs font-mono">
+                  <div className="grid grid-cols-4 bg-zinc-950 px-4 py-2 text-zinc-500 font-bold uppercase tracking-wider text-[9px] border-b border-zinc-850">
+                    <span>Invoice ID</span>
+                    <span>Date (UTC)</span>
+                    <span>Amount</span>
+                    <span className="text-right">Receipt File</span>
+                  </div>
+                  <div className="divide-y divide-zinc-900/60">
+                    {userPlan === 'Guest / Sandbox' ? (
+                      <div className="px-4 py-4 text-center text-zinc-500">
+                        No billing transactions registered. Complete a checkout in the Plans view to upgrade.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-4 px-4 py-3 items-center hover:bg-zinc-950/20 text-zinc-300">
+                        <span className="font-semibold text-zinc-200">INV-2026-0042</span>
+                        <span className="text-zinc-400">{new Date().toLocaleDateString()}</span>
+                        <span className="font-bold text-emerald-400">{userPlan === 'SOC Professional' ? '$49.00' : '$249.00'}</span>
+                        <button
+                          type="button"
+                          onClick={() => alert("Downloading encrypted invoice receipt... Done!")}
+                          className="text-right text-blue-400 hover:text-blue-300 hover:underline cursor-pointer"
+                        >
+                          Download (PDF)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}

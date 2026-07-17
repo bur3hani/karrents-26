@@ -11,7 +11,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const rawPort = process.env.PORT;
+const isSocket = rawPort && isNaN(Number(rawPort));
+const PORT = isSocket ? rawPort : (rawPort ? parseInt(rawPort, 10) : 3000);
 
 app.use(express.json());
 
@@ -825,9 +827,15 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Karrents Server running on port ${PORT}`);
-  });
+  if (isSocket) {
+    app.listen(PORT, () => {
+      console.log(`Karrents Server running on socket ${PORT}`);
+    });
+  } else {
+    app.listen(PORT as number, "0.0.0.0", () => {
+      console.log(`Karrents Server running on port ${PORT}`);
+    });
+  }
 }
 
 startServer().catch(err => {

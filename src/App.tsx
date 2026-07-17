@@ -48,7 +48,19 @@ import KarrentsLogo from './components/KarrentsLogo';
 
 export default function App() {
   const [viewMode, setViewMode] = useState<'landing' | 'app' | 'auth'>('landing');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('karrents_authenticated') === 'true';
+  });
+
+  const [userEmail, setUserEmail] = useState<string>(() => {
+    return localStorage.getItem('karrents_email') || '';
+  });
+
+  const [userPlan, setUserPlan] = useState<string>(() => {
+    return localStorage.getItem('karrents_plan') || 'Guest / Sandbox';
+  });
+
   const [appSection, setAppSection] = useState<'dashboard' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports'>('dashboard');
   const [selectedTool, setSelectedTool] = useState<string>('cve');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -59,7 +71,7 @@ export default function App() {
   });
 
   const toggleFaq = (index: number) => {
-    setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
+    setFaqOpen(prev => ({ ...prev, [index]: prev[index] }));
   };
 
   const handleLaunchTool = (toolName: string) => {
@@ -68,8 +80,26 @@ export default function App() {
     setViewMode(isAuthenticated ? 'app' : 'auth');
   };
 
-  // Profile Email extracted from metadata
-  const userEmail = "engr.buru@gmail.com";
+  const handleLoginSuccess = (email: string) => {
+    setIsAuthenticated(true);
+    setUserEmail(email);
+    localStorage.setItem('karrents_authenticated', 'true');
+    localStorage.setItem('karrents_email', email);
+    setViewMode('app');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserEmail('');
+    localStorage.removeItem('karrents_authenticated');
+    localStorage.removeItem('karrents_email');
+    setViewMode('landing');
+  };
+
+  const handleUpgradePlan = (plan: string) => {
+    setUserPlan(plan);
+    localStorage.setItem('karrents_plan', plan);
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none antialiased">
@@ -532,11 +562,9 @@ export default function App() {
          ========================================== */}
       {viewMode === 'auth' && (
         <Auth 
-          onLoginSuccess={(email) => { 
-            setIsAuthenticated(true); 
-            setViewMode('app'); 
-          }} 
+          onLoginSuccess={handleLoginSuccess} 
           userEmail={userEmail} 
+          onClose={() => setViewMode('landing')}
         />
       )}
 
@@ -561,11 +589,8 @@ export default function App() {
                 </div>
                 <button
                   id="btn-secure-logout"
-                  onClick={() => {
-                    setIsAuthenticated(false);
-                    setViewMode('landing');
-                  }}
-                  className="text-[9px] bg-red-950/40 border border-red-900/30 text-red-400 hover:bg-red-900/10 hover:text-red-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider transition-all shrink-0"
+                  onClick={handleLogout}
+                  className="text-[9px] bg-red-950/40 border border-red-900/30 text-red-400 hover:bg-red-900/10 hover:text-red-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer"
                 >
                   Logout
                 </button>
@@ -716,19 +741,21 @@ export default function App() {
               </div>
             </div>
 
-            {/* Profile badge (using extracted user email engr.buru@gmail.com) */}
+            {/* Profile badge (dynamic user management info) */}
             <div className="p-4 border-t border-zinc-800/40 space-y-2">
               <div 
                 id="sidebar-profile-card"
                 onClick={() => setAppSection('profile')}
                 className="flex items-center gap-2.5 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-850 hover:border-blue-500/55 hover:bg-zinc-900/70 transition-all cursor-pointer group"
               >
-                <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-black text-white group-hover:bg-blue-500 transition-colors">
-                  EB
+                <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-black text-white group-hover:bg-blue-500 transition-colors uppercase shrink-0">
+                  {userEmail ? userEmail.slice(0, 2).toUpperCase() : 'G'}
                 </div>
                 <div className="truncate space-y-0.5">
-                  <div className="font-bold text-[11px] text-zinc-200 group-hover:text-white transition-colors">Buru Security</div>
-                  <div className="text-[9.5px] text-zinc-500 truncate select-all">{userEmail}</div>
+                  <div className="font-bold text-[11px] text-zinc-200 group-hover:text-white transition-colors capitalize">
+                    {userEmail ? userEmail.split('@')[0] : 'Guest / Sandbox'}
+                  </div>
+                  <div className="text-[9.5px] text-zinc-500 truncate select-all font-mono">{userEmail || 'No Active Session'}</div>
                 </div>
               </div>
             </div>
@@ -815,11 +842,19 @@ export default function App() {
               )}
 
               {appSection === 'pricing' && (
-                <Pricing />
+                <Pricing 
+                  userPlan={userPlan} 
+                  onUpgradePlan={handleUpgradePlan} 
+                />
               )}
 
               {appSection === 'profile' && (
-                <Profile />
+                <Profile 
+                  userEmail={userEmail} 
+                  userPlan={userPlan} 
+                  onChangePlan={handleUpgradePlan} 
+                  onLogout={handleLogout} 
+                />
               )}
 
               {appSection === 'settings' && (
@@ -829,20 +864,20 @@ export default function App() {
                     <div className="space-y-1.5">
                       <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
                         <Lock className="w-4 h-4 text-blue-400" />
-                        Credentials & Integrations
+                        Credentials & Vault Integrations
                       </h3>
                       <p className="text-xs text-zinc-400 leading-relaxed">
-                        Karrents Security Intelligence uses Google Cloud AI Studio secrets management to power dynamic CVE lookups, threat indicators lookup, security headers evaluation, and advisory queries.
+                        Karrents Security Intelligence uses a secure, zero-trust vault key system to power dynamic CVE lookups, threat indicators lookup, security headers evaluation, and advisory queries.
                       </p>
                     </div>
 
                     <div className="bg-zinc-950 p-4 border border-zinc-850 rounded-lg text-xs space-y-3.5 leading-relaxed">
                       <div className="flex items-center gap-2 text-green-400 font-semibold text-[11px] uppercase tracking-wider">
                         <CheckCircle className="w-4 h-4" />
-                        AI Studio Core API Keys Synced
+                        Karrents Vault Core API Keys Synced
                       </div>
                       <p className="text-zinc-400">
-                        The Google GenAI client is actively proxying queries through <span className="font-mono text-zinc-300">process.env.GEMINI_API_KEY</span>. To configure or renew secrets, navigate to your workspace **Settings &gt; Secrets** panel.
+                        The integrated security engine is actively proxying queries through <span className="font-mono text-zinc-300">process.env.GEMINI_API_KEY</span>. To configure or renew secrets, navigate to your workspace **Settings &gt; Secrets** panel.
                       </p>
                       <div className="bg-zinc-900 border border-zinc-850 p-3 rounded font-mono text-[10.5px] text-zinc-500 flex items-center justify-between">
                         <span>GEMINI_API_KEY</span>
