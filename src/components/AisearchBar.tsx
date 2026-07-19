@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Sparkles, Terminal, Activity, HelpCircle, X, ChevronRight } from 'lucide-react';
 import { AdvisoryData } from '../types';
+import { apiFetch } from '../lib/api';
 
 interface AisearchBarProps {
   onNavigateToTool: (toolName: string) => void;
@@ -19,7 +20,7 @@ export default function AisearchBar({ onNavigateToTool }: AisearchBarProps) {
     setLoading(true);
     setIsOpen(true);
     try {
-      const response = await fetch('/api/ai-search', {
+      const response = await apiFetch('/api/ai-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })

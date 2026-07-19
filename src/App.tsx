@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   Shield,
@@ -45,6 +45,7 @@ import Profile from './components/Profile';
 import Notifications from './components/Notifications';
 import Auth from './components/Auth';
 import KarrentsLogo from './components/KarrentsLogo';
+import { apiFetch } from './lib/api';
 
 export default function App() {
   const [viewMode, setViewMode] = useState<'landing' | 'app' | 'auth'>('landing');
@@ -75,17 +76,49 @@ export default function App() {
     setFaqOpen(prev => ({ ...prev, [index]: prev[index] }));
   };
 
+  useEffect(() => {
+    async function verifyAndSyncSession() {
+      if (isAuthenticated && userEmail) {
+        try {
+          const res = await apiFetch('/api/auth/me');
+          if (!res.ok) {
+            // Server session is invalid or missing, attempt to restore it with silent SSO
+            const ssoRes = await apiFetch('/api/auth/sso', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: userEmail })
+            });
+            if (!ssoRes.ok) {
+              handleLogout();
+            } else {
+              const data = await ssoRes.json();
+              if (data.sessionToken) {
+                localStorage.setItem('karrents_session_token', data.sessionToken);
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Session verification failed:", err);
+        }
+      }
+    }
+    verifyAndSyncSession();
+  }, [isAuthenticated, userEmail]);
+
   const handleLaunchTool = (toolName: string) => {
     setSelectedTool(toolName);
     setAppSection('tools');
     setViewMode(isAuthenticated ? 'app' : 'auth');
   };
 
-  const handleLoginSuccess = (email: string) => {
+  const handleLoginSuccess = (email: string, sessionToken?: string) => {
     setIsAuthenticated(true);
     setUserEmail(email);
     localStorage.setItem('karrents_authenticated', 'true');
     localStorage.setItem('karrents_email', email);
+    if (sessionToken) {
+      localStorage.setItem('karrents_session_token', sessionToken);
+    }
     setViewMode('app');
   };
 
@@ -94,6 +127,7 @@ export default function App() {
     setUserEmail('');
     localStorage.removeItem('karrents_authenticated');
     localStorage.removeItem('karrents_email');
+    localStorage.removeItem('karrents_session_token');
     setViewMode('landing');
   };
 

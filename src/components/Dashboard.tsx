@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { Project, Finding, Asset, Report, AuditLog } from '../types';
+import { apiFetch } from '../lib/api';
 
 interface DashboardProps {
   onLaunchTool: (toolName: string) => void;
@@ -39,18 +40,23 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
       setError(null);
       try {
         // Fetch active projects
-        const projRes = await fetch('/api/projects');
-        if (!projRes.ok) throw new Error("Failed to load projects.");
+        const projRes = await apiFetch('/api/projects');
+        if (!projRes.ok) {
+          if (projRes.status === 401) {
+            throw new Error("Session unauthorized. Re-authenticating safe sandbox...");
+          }
+          throw new Error("Failed to load projects.");
+        }
         const projData = await projRes.json();
         const activeProjects: Project[] = projData.projects || [];
         setProjects(activeProjects);
 
         // Fetch audit logs
-        const auditRes = await fetch('/api/organizations/audit-logs');
+        const auditRes = await apiFetch('/api/org/audit');
         let logs: AuditLog[] = [];
         if (auditRes.ok) {
           const auditData = await auditRes.json();
-          logs = auditData.logs || [];
+          logs = Array.isArray(auditData) ? auditData : (auditData?.logs || []);
           setAuditLogs(logs);
         }
 
@@ -63,9 +69,9 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
           activeProjects.map(async (p) => {
             try {
               const [assetsRes, findingsRes, reportsRes] = await Promise.all([
-                fetch(`/api/projects/${p.id}/assets`),
-                fetch(`/api/projects/${p.id}/findings`),
-                fetch(`/api/projects/${p.id}/reports`),
+                apiFetch(`/api/projects/${p.id}/assets`),
+                apiFetch(`/api/projects/${p.id}/findings`),
+                apiFetch(`/api/projects/${p.id}/reports`),
               ]);
 
               if (assetsRes.ok) {

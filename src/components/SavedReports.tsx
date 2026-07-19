@@ -21,6 +21,7 @@ import {
   FileDown
 } from 'lucide-react';
 import { Project, Asset, Finding, Evidence, Report } from '../types';
+import { apiFetch } from '../lib/api';
 
 interface SavedReportsProps {
   onNavigateToTool?: (toolName: string) => void;
@@ -96,7 +97,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/projects');
+      const res = await apiFetch('/api/projects');
       if (!res.ok) throw new Error("Failed to load project directories.");
       const data = await res.json();
       setProjects(data.projects || []);
@@ -110,9 +111,9 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
   async function loadProjectDetails(projId: string) {
     try {
       const [assetsRes, findingsRes, reportsRes] = await Promise.all([
-        fetch(`/api/projects/${projId}/assets`),
-        fetch(`/api/projects/${projId}/findings`),
-        fetch(`/api/projects/${projId}/reports`)
+        apiFetch(`/api/projects/${projId}/assets`),
+        apiFetch(`/api/projects/${projId}/findings`),
+        apiFetch(`/api/projects/${projId}/reports`)
       ]);
 
       if (assetsRes.ok) {
@@ -141,7 +142,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!newProjName.trim()) return;
 
     try {
-      const res = await fetch('/api/projects', {
+      const res = await apiFetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newProjName, description: newProjDesc })
@@ -168,7 +169,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!selectedProjectId || !newAssetName.trim()) return;
 
     try {
-      const res = await fetch(`/api/projects/${selectedProjectId}/assets`, {
+      const res = await apiFetch(`/api/projects/${selectedProjectId}/assets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -202,7 +203,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!selectedProjectId || !newFindingTitle.trim()) return;
 
     try {
-      const res = await fetch(`/api/projects/${selectedProjectId}/findings`, {
+      const res = await apiFetch(`/api/projects/${selectedProjectId}/findings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -241,7 +242,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!evidenceFindingId || !newEvidenceValue.trim()) return;
 
     try {
-      const res = await fetch(`/api/findings/${evidenceFindingId}/evidence`, {
+      const res = await apiFetch(`/api/findings/${evidenceFindingId}/evidence`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -273,7 +274,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!selectedProjectId || !newReportTitle.trim()) return;
 
     try {
-      const res = await fetch(`/api/projects/${selectedProjectId}/reports`, {
+      const res = await apiFetch(`/api/projects/${selectedProjectId}/reports`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -311,7 +312,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!window.confirm(`Are you sure you want to delete the project '${name}' and ALL associated assets, findings, and reports? This cannot be undone.`)) return;
 
     try {
-      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/projects/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Failed to delete project.");
 
       setProjects(prev => prev.filter(p => p.id !== id));
@@ -327,7 +328,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!window.confirm("Delete this registered client asset?")) return;
 
     try {
-      const res = await fetch(`/api/assets/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/assets/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Failed to delete asset.");
       setAssets(prev => prev.filter(a => a.id !== id));
     } catch (err: any) {
@@ -339,7 +340,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!window.confirm("Delete this logged vulnerability finding?")) return;
 
     try {
-      const res = await fetch(`/api/findings/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/findings/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Failed to delete finding.");
       setFindings(prev => prev.filter(f => f.id !== id));
     } catch (err: any) {
@@ -351,7 +352,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!window.confirm("Delete this compiled report?")) return;
 
     try {
-      const res = await fetch(`/api/reports/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/reports/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Failed to delete report.");
       setReports(prev => prev.filter(r => r.id !== id));
       if (activeReportDetails?.id === id) {

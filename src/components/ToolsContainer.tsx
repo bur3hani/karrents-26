@@ -19,6 +19,7 @@ import {
   Info
 } from 'lucide-react';
 import { CVEData, IOCData, DNSData, EmailSecurityData, HeaderData, SSLData } from '../types';
+import { apiFetch } from '../lib/api';
 
 interface ToolsContainerProps {
   initialActiveTool?: string;
@@ -54,7 +55,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(endpoint, {
+      const response = await apiFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)

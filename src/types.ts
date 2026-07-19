@@ -127,7 +127,7 @@ export interface UserProfile {
   id: string;
   email: string;
   name: string;
-  role: 'Super Administrator' | 'Workspace Administrator' | 'Security Analyst' | 'Read-Only Auditor';
+  role: 'Super Admin' | 'Organization Admin' | 'Security Analyst' | 'Researcher' | 'Viewer';
   organization_id: string;
   status: 'active' | 'inactive';
   created_at: string;

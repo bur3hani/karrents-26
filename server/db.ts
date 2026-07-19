@@ -19,7 +19,7 @@ export interface User {
   password_hash: string;
   salt: string;
   name: string;
-  role: 'Super Administrator' | 'Organization Administrator' | 'Security Analyst' | 'Researcher' | 'Viewer';
+  role: 'Super Admin' | 'Organization Admin' | 'Security Analyst' | 'Researcher' | 'Viewer';
   organization_id: string;
   status: 'active' | 'suspended' | 'pending';
   mfa_enabled: boolean;
@@ -184,11 +184,11 @@ export interface DatabaseSchema {
 
 // Role Permissions matrix
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
-  'Super Administrator': [
+  'Super Admin': [
     'users.view', 'users.create', 'users.manage', 'projects.manage', 'reports.generate', 'assets.manage', 'settings.update', 'audit.view'
   ],
-  'Organization Administrator': [
-    'users.view', 'users.create', 'projects.manage', 'reports.generate', 'assets.manage', 'settings.update', 'audit.view'
+  'Organization Admin': [
+    'users.view', 'users.create', 'users.manage', 'projects.manage', 'reports.generate', 'assets.manage', 'settings.update', 'audit.view'
   ],
   'Security Analyst': [
     'users.view', 'projects.manage', 'reports.generate', 'assets.manage'
@@ -258,20 +258,7 @@ function loadDatabase(): DatabaseSchema {
         password_hash: defaultHash,
         salt: defaultSalt,
         name: 'Buru Security',
-        role: 'Super Administrator',
-        organization_id: defaultOrgId,
-        status: 'active',
-        mfa_enabled: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 'user_analyst',
-        email: 'burhnaimtebgea@gmail.com',
-        password_hash: defaultHash,
-        salt: defaultSalt,
-        name: 'Burhnaim Analyst',
-        role: 'Security Analyst',
+        role: 'Super Admin',
         organization_id: defaultOrgId,
         status: 'active',
         mfa_enabled: false,
@@ -488,6 +475,10 @@ export const db = {
         if (store.users.some(u => u.email.toLowerCase() === cleanEmail)) {
           throw new Error('User with this email already exists.');
         }
+        // Foreign Key Validation
+        if (!store.organizations.some(o => o.id === data.organization_id)) {
+          throw new Error(`Foreign Key Violation: Organization ID '${data.organization_id}' does not exist.`);
+        }
         const { hash, salt } = hashPassword(data.passwordPlain);
         const newUser: User = {
           id: 'user_' + crypto.randomBytes(8).toString('hex'),
@@ -597,6 +588,10 @@ export const db = {
     },
     create(orgId: string, name: string, description: string) {
       return db.transaction(store => {
+        // Foreign Key Validation
+        if (!store.organizations.some(o => o.id === orgId)) {
+          throw new Error(`Foreign Key Violation: Organization ID '${orgId}' does not exist.`);
+        }
         const newProj: Project = {
           id: 'proj_' + crypto.randomBytes(8).toString('hex'),
           organization_id: orgId,
@@ -653,10 +648,10 @@ export const db = {
     },
     create(data: Omit<Asset, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>) {
       return db.transaction(store => {
-        // Verify project exists
+        // Foreign Key Validation (verify project exists)
         const proj = store.projects.find(p => p.id === data.project_id);
         if (!proj || proj.deleted_at !== null) {
-          throw new Error('Project does not exist or has been deleted.');
+          throw new Error(`Foreign Key Violation: Project ID '${data.project_id}' does not exist or has been deleted.`);
         }
 
         const newAsset: Asset = {
@@ -718,9 +713,10 @@ export const db = {
     },
     create(data: Omit<Finding, 'id' | 'created_at' | 'updated_at' | 'deleted_at'> & { affectedAssetIds?: string[] }) {
       return db.transaction(store => {
+        // Foreign Key Validation (verify project exists)
         const proj = store.projects.find(p => p.id === data.project_id);
         if (!proj || proj.deleted_at !== null) {
-          throw new Error('Project does not exist or has been deleted.');
+          throw new Error(`Foreign Key Violation: Project ID '${data.project_id}' does not exist or has been deleted.`);
         }
 
         const newFinding: Finding = {
@@ -740,11 +736,13 @@ export const db = {
         };
         store.findings.push(newFinding);
 
-        // Associate with assets
+        // Associate with assets & validate asset IDs exist (Foreign Key constraint)
         if (data.affectedAssetIds) {
           data.affectedAssetIds.forEach(assetId => {
             if (store.assets.some(a => a.id === assetId && a.deleted_at === null)) {
               store.finding_assets.push({ finding_id: newFinding.id, asset_id: assetId });
+            } else {
+              throw new Error(`Foreign Key Violation: Asset ID '${assetId}' does not exist or has been deleted.`);
             }
           });
         }

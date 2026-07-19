@@ -18,7 +18,7 @@ import {
 import KarrentsLogo from './KarrentsLogo';
 
 interface AuthProps {
-  onLoginSuccess: (email: string) => void;
+  onLoginSuccess: (email: string, sessionToken?: string) => void;
   userEmail: string;
   onClose?: () => void;
 }
@@ -48,9 +48,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
       }
     }
     return {
-      'engr.buru@gmail.com': 'Admin@Karrents2026',
-      'burhnaimtebgea': 'Admin@Karrents2026',
-      'burhnaimtebgea@gmail.com': 'Admin@Karrents2026'
+      'engr.buru@gmail.com': 'Admin@Karrents2026'
     };
   });
 
@@ -118,6 +116,24 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
     };
   }, []);
 
+  const triggerSsoAndLogin = async (email: string) => {
+    let sessionToken = '';
+    try {
+      const res = await fetch('/api/auth/sso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.sessionToken) {
+        sessionToken = data.sessionToken;
+      }
+    } catch (err) {
+      console.error("SSO sync error:", err);
+    }
+    onLoginSuccess(email, sessionToken);
+  };
+
   const handleGoogleSignIn = () => {
     setAuthStep('google-chooser');
   };
@@ -126,7 +142,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
     setSelectedEmail(email);
     setAuthStep('google-loading');
     setTimeout(() => {
-      onLoginSuccess(email);
+      triggerSsoAndLogin(email);
     }, 1550);
   };
 
@@ -138,7 +154,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
     }
     
     setMfaError('');
-    onLoginSuccess(selectedEmail);
+    triggerSsoAndLogin(selectedEmail);
   };
 
   const handleHwKeyLogin = () => {
@@ -147,7 +163,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
     
     // Simulate WebAuthn authentication with FIDO2 hardware token
     setTimeout(() => {
-      onLoginSuccess(emailInput);
+      triggerSsoAndLogin(emailInput);
     }, 1800);
   };
 
@@ -228,7 +244,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
           throw new Error(data.error || 'Invalid credentials or decryption key mismatch.');
         }
 
-        onLoginSuccess(email);
+        onLoginSuccess(email, data.sessionToken);
       } catch (err: any) {
         setPasswordError(err.message || 'Login failed.');
       } finally {
@@ -717,21 +733,6 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                         <span className="text-[9.5px] text-zinc-500 font-mono">Buru Security Admin</span>
                       </div>
                       <span className="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono font-bold px-1.5 py-0.5 rounded uppercase shrink-0">Connected</span>
-                    </button>
-
-                    {/* Account 2: burhnaimtebgea@gmail.com */}
-                    <button
-                      type="button"
-                      onClick={() => handleGoogleAccountSelected('burhnaimtebgea@gmail.com')}
-                      className="w-full bg-zinc-950/60 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-800 p-3 rounded-xl flex items-center gap-3 transition-all text-left group cursor-pointer"
-                    >
-                      <div className="h-7 w-7 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 font-bold text-xs flex items-center justify-center shrink-0">
-                        B
-                      </div>
-                      <div className="shrink min-w-0 flex-grow">
-                        <span className="text-[11px] font-bold text-zinc-200 block group-hover:text-white leading-none">burhnaimtebgea@gmail.com</span>
-                        <span className="text-[9.5px] text-zinc-500 font-mono">Premium Analyst</span>
-                      </div>
                     </button>
                   </div>
 
