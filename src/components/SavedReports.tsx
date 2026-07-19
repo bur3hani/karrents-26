@@ -100,7 +100,8 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       const res = await apiFetch('/api/projects');
       if (!res.ok) throw new Error("Failed to load project directories.");
       const data = await res.json();
-      setProjects(data.projects || []);
+      const projectsList = Array.isArray(data) ? data : (data.projects || data.data || []);
+      setProjects(projectsList);
     } catch (err: any) {
       setError(err.message || "Failed to load database projects.");
     } finally {
@@ -154,8 +155,13 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       }
 
       const data = await res.json();
-      setProjects(prev => [...prev, data.project]);
-      setSelectedProjectId(data.project.id);
+      const createdProject = data.project || data;
+      if (createdProject && createdProject.id) {
+        setProjects(prev => [...prev, createdProject]);
+        setSelectedProjectId(createdProject.id);
+      } else {
+        throw new Error("Invalid project response payload returned by server.");
+      }
       setNewProjName('');
       setNewProjDesc('');
       setShowProjModal(false);

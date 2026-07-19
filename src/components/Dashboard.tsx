@@ -48,7 +48,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
           throw new Error("Failed to load projects.");
         }
         const projData = await projRes.json();
-        const activeProjects: Project[] = projData.projects || [];
+        const activeProjects: Project[] = Array.isArray(projData) ? projData : (projData.projects || projData.data || []);
         setProjects(activeProjects);
 
         // Fetch audit logs
