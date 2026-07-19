@@ -43,6 +43,7 @@ import ApiDoc from './components/ApiDoc';
 import Pricing from './components/Pricing';
 import Profile from './components/Profile';
 import Notifications from './components/Notifications';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import Auth from './components/Auth';
 import KarrentsLogo from './components/KarrentsLogo';
 import { apiFetch } from './lib/api';
@@ -845,12 +846,14 @@ export default function App() {
             {/* Workbench Main Body Scroll Area */}
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
               {appSection === 'dashboard' && (
-                <Dashboard 
-                  onLaunchTool={handleLaunchTool} 
-                  onNavigateToSection={(section) => setAppSection(section)}
-                  selectedProjectId={selectedProjectId}
-                  setSelectedProjectId={setSelectedProjectId}
-                />
+                <ErrorBoundary>
+                  <Dashboard 
+                    onLaunchTool={handleLaunchTool} 
+                    onNavigateToSection={(section) => setAppSection(section)}
+                    selectedProjectId={selectedProjectId}
+                    setSelectedProjectId={setSelectedProjectId}
+                  />
+                </ErrorBoundary>
               )}
 
               {appSection === 'tools' && (
@@ -866,10 +869,12 @@ export default function App() {
               )}
 
               {appSection === 'saved-reports' && (
-                <SavedReports 
-                  selectedProjectId={selectedProjectId}
-                  setSelectedProjectId={setSelectedProjectId}
-                />
+                <ErrorBoundary>
+                  <SavedReports 
+                    selectedProjectId={selectedProjectId}
+                    setSelectedProjectId={setSelectedProjectId}
+                  />
+                </ErrorBoundary>
               )}
 
               {appSection === 'notifications' && (

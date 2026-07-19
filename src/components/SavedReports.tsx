@@ -112,22 +112,22 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
   async function loadProjectDetails(projId: string) {
     try {
       const [assetsRes, findingsRes, reportsRes] = await Promise.all([
-        apiFetch(`/api/projects/${projId}/assets`),
-        apiFetch(`/api/projects/${projId}/findings`),
-        apiFetch(`/api/projects/${projId}/reports`)
+        apiFetch(`/api/assets?projectId=${projId}`),
+        apiFetch(`/api/findings?projectId=${projId}`),
+        apiFetch(`/api/reports?projectId=${projId}`)
       ]);
 
       if (assetsRes.ok) {
         const d = await assetsRes.json();
-        setAssets(d.assets || []);
+        setAssets(Array.isArray(d) ? d : (d.assets || []));
       }
       if (findingsRes.ok) {
         const d = await findingsRes.json();
-        setFindings(d.findings || []);
+        setFindings(Array.isArray(d) ? d : (d.findings || []));
       }
       if (reportsRes.ok) {
         const d = await reportsRes.json();
-        setReports(d.reports || []);
+        setReports(Array.isArray(d) ? d : (d.reports || []));
       }
     } catch (err) {
       console.error("Failed to load workspace details:", err);
@@ -175,10 +175,11 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!selectedProjectId || !newAssetName.trim()) return;
 
     try {
-      const res = await apiFetch(`/api/projects/${selectedProjectId}/assets`, {
+      const res = await apiFetch(`/api/assets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          project_id: selectedProjectId,
           name: newAssetName,
           type: newAssetType,
           notes: newAssetNotes,
@@ -193,7 +194,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       }
 
       const d = await res.json();
-      setAssets(prev => [...prev, d.asset]);
+      setAssets(prev => [...prev, d]);
       setNewAssetName('');
       setNewAssetNotes('');
       setNewAssetRisk(0);
@@ -209,10 +210,11 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!selectedProjectId || !newFindingTitle.trim()) return;
 
     try {
-      const res = await apiFetch(`/api/projects/${selectedProjectId}/findings`, {
+      const res = await apiFetch(`/api/findings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          project_id: selectedProjectId,
           title: newFindingTitle,
           description: newFindingDesc,
           severity: newFindingSeverity,
@@ -230,7 +232,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       }
 
       const d = await res.json();
-      setFindings(prev => [...prev, d.finding]);
+      setFindings(prev => [...prev, d]);
       setNewFindingTitle('');
       setNewFindingDesc('');
       setNewFindingRec('');
@@ -280,10 +282,11 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
     if (!selectedProjectId || !newReportTitle.trim()) return;
 
     try {
-      const res = await apiFetch(`/api/projects/${selectedProjectId}/reports`, {
+      const res = await apiFetch(`/api/reports`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          project_id: selectedProjectId,
           title: newReportTitle,
           executive_summary: newReportExec,
           scope: newReportScope,
@@ -298,7 +301,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       }
 
       const d = await res.json();
-      setReports(prev => [...prev, d.report]);
+      setReports(prev => [...prev, d]);
       setNewReportTitle('');
       setNewReportExec('');
       setNewReportScope('');
@@ -474,7 +477,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
             className="bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-zinc-200 font-semibold focus:outline-none focus:border-blue-500"
           >
             <option value="">-- No Project Selected --</option>
-            {projects.map(p => (
+            {(projects || []).filter(p => p && p.id).map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
@@ -507,7 +510,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {projects.map(p => (
+              {(projects || []).filter(p => p && p.id).map(p => (
                 <div
                   key={p.id}
                   className={`bg-zinc-900/40 border p-5 rounded-xl space-y-4 relative group hover:border-zinc-700 transition-colors cursor-pointer ${selectedProjectId === p.id ? 'border-blue-500/60 bg-blue-600/5 shadow' : 'border-zinc-800/50'}`}
@@ -515,7 +518,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-black text-sm text-zinc-100">{p.name}</h3>
+                      <h3 className="font-black text-sm text-zinc-100">{p.name || "Unnamed Workspace"}</h3>
                       <span className="text-[9px] font-mono text-zinc-500">ID: {p.id}</span>
                     </div>
                     <button
@@ -530,7 +533,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                     {p.description || "No workspace description compiled."}
                   </p>
                   <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-3 border-t border-zinc-800/40">
-                    <span>Created: {new Date(p.created_at).toLocaleDateString()}</span>
+                    <span>Created: {p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</span>
                     {selectedProjectId === p.id ? (
                       <span className="text-blue-400 font-bold flex items-center gap-1">
                         Active Context <CheckCircle className="w-3.5 h-3.5" />

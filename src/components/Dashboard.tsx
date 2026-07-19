@@ -67,24 +67,28 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
 
         await Promise.all(
           activeProjects.map(async (p) => {
+            if (!p || !p.id) return;
             try {
               const [assetsRes, findingsRes, reportsRes] = await Promise.all([
-                apiFetch(`/api/projects/${p.id}/assets`),
-                apiFetch(`/api/projects/${p.id}/findings`),
-                apiFetch(`/api/projects/${p.id}/reports`),
+                apiFetch(`/api/assets?projectId=${p.id}`),
+                apiFetch(`/api/findings?projectId=${p.id}`),
+                apiFetch(`/api/reports?projectId=${p.id}`),
               ]);
 
               if (assetsRes.ok) {
                 const assetsData = await assetsRes.json();
-                assetsAccum.push(...(assetsData.assets || []));
+                const assetsList = Array.isArray(assetsData) ? assetsData : (assetsData.assets || []);
+                assetsAccum.push(...assetsList);
               }
               if (findingsRes.ok) {
                 const findingsData = await findingsRes.json();
-                findingsAccum.push(...(findingsData.findings || []));
+                const findingsList = Array.isArray(findingsData) ? findingsData : (findingsData.findings || []);
+                findingsAccum.push(...findingsList);
               }
               if (reportsRes.ok) {
                 const reportsData = await reportsRes.json();
-                reportsAccum.push(...(reportsData.reports || []));
+                const reportsList = Array.isArray(reportsData) ? reportsData : (reportsData.reports || []);
+                reportsAccum.push(...reportsList);
               }
             } catch (err) {
               console.error(`Error loading details for project ${p.id}:`, err);
@@ -107,32 +111,24 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
     loadDashboardData();
   }, []);
 
-  // Filter based on selected project
-  const filteredProjects = selectedProjectId 
-    ? projects.filter(p => p.id === selectedProjectId)
-    : projects;
+  // Filter based on selected project safely
+  const filteredProjects = (projects || []).filter(p => p && p.id && (!selectedProjectId || p.id === selectedProjectId));
 
-  const filteredFindings = selectedProjectId
-    ? allFindings.filter(f => f.project_id === selectedProjectId)
-    : allFindings;
+  const filteredFindings = (allFindings || []).filter(f => f && f.project_id && (!selectedProjectId || f.project_id === selectedProjectId));
 
-  const filteredAssets = selectedProjectId
-    ? allAssets.filter(a => a.project_id === selectedProjectId)
-    : allAssets;
+  const filteredAssets = (allAssets || []).filter(a => a && a.project_id && (!selectedProjectId || a.project_id === selectedProjectId));
 
-  const filteredReports = selectedProjectId
-    ? allReports.filter(r => r.project_id === selectedProjectId)
-    : allReports;
+  const filteredReports = (allReports || []).filter(r => r && r.project_id && (!selectedProjectId || r.project_id === selectedProjectId));
 
-  // Aggregate stats
-  const openFindings = filteredFindings.filter(f => f.status !== 'remediated' && f.status !== 'false_positive');
-  const criticalFindings = filteredFindings.filter(f => f.severity === 'Critical' || f.severity === 'High');
-  const activeAssets = filteredAssets.filter(a => a.status === 'active');
+  // Aggregate stats safely
+  const openFindings = filteredFindings.filter(f => f && f.status && f.status !== 'remediated' && f.status !== 'false_positive');
+  const criticalFindings = filteredFindings.filter(f => f && f.severity && (f.severity === 'Critical' || f.severity === 'High'));
+  const activeAssets = filteredAssets.filter(a => a && a.status === 'active');
 
   // Chart data: Distribution of findings by severity (using REAL data)
   const severities = ['Critical', 'High', 'Medium', 'Low', 'Informational'];
   const severityDistribution = severities.map(sev => {
-    const count = filteredFindings.filter(f => f.severity.toLowerCase() === sev.toLowerCase()).length;
+    const count = filteredFindings.filter(f => f && f.severity && f.severity.toLowerCase() === sev.toLowerCase()).length;
     let fill = '#3b82f6';
     if (sev === 'Critical') fill = '#ef4444';
     if (sev === 'High') fill = '#f97316';
@@ -184,7 +180,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
             className="bg-zinc-900 border border-zinc-800 text-xs font-semibold rounded-lg text-zinc-300 py-1.5 px-2.5 focus:outline-none focus:border-blue-500 transition-colors"
           >
             <option value="">All Projects Combined</option>
-            {projects.map(p => (
+            {(projects || []).filter(p => p && p.id).map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
@@ -275,8 +271,9 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {filteredProjects.slice(0, 4).map(p => {
-                  const pFindings = allFindings.filter(f => f.project_id === p.id);
-                  const pAssets = allAssets.filter(a => a.project_id === p.id);
+                  if (!p || !p.id) return null;
+                  const pFindings = (allFindings || []).filter(f => f && f.project_id === p.id);
+                  const pAssets = (allAssets || []).filter(a => a && a.project_id === p.id);
                   return (
                     <div
                       key={p.id}
@@ -284,9 +281,9 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
                       className="bg-zinc-950/40 hover:bg-zinc-850 border border-zinc-800/60 hover:border-blue-500/40 p-4 rounded-xl cursor-pointer transition-all space-y-2 group"
                     >
                       <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-xs text-zinc-100 group-hover:text-blue-400 transition-colors">{p.name}</h4>
-                        <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${p.status === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>
-                          {p.status}
+                        <h4 className="font-bold text-xs text-zinc-100 group-hover:text-blue-400 transition-colors">{p.name || "Unnamed Workspace"}</h4>
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${(p.status || 'active') === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                          {p.status || 'active'}
                         </span>
                       </div>
                       <p className="text-[11px] text-zinc-400 line-clamp-2 min-h-[32px]">{p.description || "No workspace description compiled."}</p>
@@ -328,24 +325,32 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/20">
-                    {openFindings.slice(0, 6).map((f) => (
-                      <tr key={f.id} className="hover:bg-zinc-800/10 transition-colors">
-                        <td className="py-3 font-semibold text-zinc-200 max-w-[200px] truncate">{f.title}</td>
-                        <td className="py-3">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
-                            f.severity === 'Critical' ? 'bg-red-500/15 text-red-500 border border-red-500/25' :
-                            f.severity === 'High' ? 'bg-orange-500/15 text-orange-400 border border-orange-500/25' :
-                            f.severity === 'Medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25' :
-                            'bg-blue-500/15 text-blue-400 border border-blue-500/25'
-                          }`}>
-                            {f.severity}
-                          </span>
-                        </td>
-                        <td className="py-3 font-mono font-bold text-zinc-300">{f.cvss_score.toFixed(1)}</td>
-                        <td className="py-3 text-[10px] text-zinc-400 uppercase font-bold">{f.status.replace('_', ' ')}</td>
-                        <td className="py-3 text-right font-mono text-[10px] text-zinc-500">{f.owner}</td>
-                      </tr>
-                    ))}
+                    {openFindings.slice(0, 6).map((f) => {
+                      if (!f || !f.id) return null;
+                      const severity = f.severity || 'Medium';
+                      const title = f.title || 'Untitled Finding';
+                      const cvss = typeof f.cvss_score === 'number' ? f.cvss_score : parseFloat(f.cvss_score) || 0.0;
+                      const status = f.status || 'open';
+                      const owner = f.owner || 'Unassigned';
+                      return (
+                        <tr key={f.id} className="hover:bg-zinc-800/10 transition-colors">
+                          <td className="py-3 font-semibold text-zinc-200 max-w-[200px] truncate">{title}</td>
+                          <td className="py-3">
+                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${
+                              severity === 'Critical' ? 'bg-red-500/15 text-red-500 border border-red-500/25' :
+                              severity === 'High' ? 'bg-orange-500/15 text-orange-400 border border-orange-500/25' :
+                              severity === 'Medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25' :
+                              'bg-blue-500/15 text-blue-400 border border-blue-500/25'
+                            }`}>
+                              {severity}
+                            </span>
+                          </td>
+                          <td className="py-3 font-mono font-bold text-zinc-300">{cvss.toFixed(1)}</td>
+                          <td className="py-3 text-[10px] text-zinc-400 uppercase font-bold">{status.replace('_', ' ')}</td>
+                          <td className="py-3 text-right font-mono text-[10px] text-zinc-500">{owner}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -400,21 +405,28 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredAssets.slice(0, 4).map(asset => (
-                  <div key={asset.id} className="bg-zinc-950/40 border border-zinc-850 p-2.5 rounded-lg flex items-center justify-between">
-                    <div>
-                      <div className="text-[11px] font-bold text-zinc-200 truncate max-w-[150px]">{asset.name}</div>
-                      <div className="text-[9px] text-zinc-500 font-mono">{asset.type} | Owner: {asset.owner}</div>
+                {filteredAssets.slice(0, 4).map(asset => {
+                  if (!asset || !asset.id) return null;
+                  const name = asset.name || "Unnamed Asset";
+                  const type = asset.type || "Other";
+                  const owner = asset.owner || "Unassigned";
+                  const riskScore = typeof asset.risk_score === 'number' ? asset.risk_score : 0;
+                  return (
+                    <div key={asset.id} className="bg-zinc-950/40 border border-zinc-850 p-2.5 rounded-lg flex items-center justify-between">
+                      <div>
+                        <div className="text-[11px] font-bold text-zinc-200 truncate max-w-[150px]">{name}</div>
+                        <div className="text-[9px] text-zinc-500 font-mono">{type} | Owner: {owner}</div>
+                      </div>
+                      <span className={`text-[10px] font-bold font-mono px-1.5 py-0.2 rounded ${
+                        riskScore >= 70 ? 'bg-red-500/10 text-red-400' :
+                        riskScore >= 35 ? 'bg-orange-500/10 text-orange-400' :
+                        'bg-green-500/10 text-green-400'
+                      }`}>
+                        Risk {riskScore}
+                      </span>
                     </div>
-                    <span className={`text-[10px] font-bold font-mono px-1.5 py-0.2 rounded ${
-                      asset.risk_score >= 70 ? 'bg-red-500/10 text-red-400' :
-                      asset.risk_score >= 35 ? 'bg-orange-500/10 text-orange-400' :
-                      'bg-green-500/10 text-green-400'
-                    }`}>
-                      Risk {asset.risk_score}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -431,32 +443,37 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredReports.slice(0, 3).map(rep => (
-                  <div key={rep.id} className="bg-zinc-950/40 border border-zinc-850 p-2.5 rounded-lg flex items-center justify-between">
-                    <div className="max-w-[160px]">
-                      <div className="text-[11px] font-bold text-zinc-200 truncate">{rep.title}</div>
-                      <div className="text-[9px] text-zinc-500">Status: <span className="uppercase text-zinc-400">{rep.status}</span></div>
+                {filteredReports.slice(0, 3).map(rep => {
+                  if (!rep || !rep.id) return null;
+                  const title = rep.title || "Untitled Report";
+                  const status = rep.status || "draft";
+                  return (
+                    <div key={rep.id} className="bg-zinc-950/40 border border-zinc-850 p-2.5 rounded-lg flex items-center justify-between">
+                      <div className="max-w-[160px]">
+                        <div className="text-[11px] font-bold text-zinc-200 truncate">{title}</div>
+                        <div className="text-[9px] text-zinc-500">Status: <span className="uppercase text-zinc-400">{status}</span></div>
+                      </div>
+                      <div className="flex gap-1">
+                        <a
+                          href={`/api/reports/${rep.id}/export/json`}
+                          download
+                          className="p-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
+                          title="Export JSON"
+                        >
+                          <Download className="w-3 h-3" />
+                        </a>
+                        <a
+                          href={`/api/reports/${rep.id}/export/markdown`}
+                          download
+                          className="p-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
+                          title="Export Markdown"
+                        >
+                          <FileText className="w-3 h-3" />
+                        </a>
+                      </div>
                     </div>
-                    <div className="flex gap-1">
-                      <a
-                        href={`/api/reports/${rep.id}/export/json`}
-                        download
-                        className="p-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
-                        title="Export JSON"
-                      >
-                        <Download className="w-3 h-3" />
-                      </a>
-                      <a
-                        href={`/api/reports/${rep.id}/export/markdown`}
-                        download
-                        className="p-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
-                        title="Export Markdown"
-                      >
-                        <FileText className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
