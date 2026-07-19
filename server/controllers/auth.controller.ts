@@ -255,7 +255,10 @@ export class AuthController {
 
   async githubUrl(req: AuthenticatedRequest, res: Response) {
     const clientId = process.env.GITHUB_CLIENT_ID || 'dummy_client_id';
-    const redirectUri = `${process.env.APP_URL || 'https://localhost:3000'}/api/auth/github/callback`;
+    const protocol = req.headers['x-forwarded-proto'] === 'https' || req.secure ? 'https' : 'http';
+    const host = req.headers.host || req.get('host') || 'localhost:3000';
+    const origin = process.env.APP_URL || `${protocol}://${host}`;
+    const redirectUri = `${origin.replace(/\/$/, '')}/api/auth/github/callback`;
     const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user:email`;
     return res.json({ url });
   }
@@ -270,7 +273,10 @@ export class AuthController {
     const clientSecret = process.env.GITHUB_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      const formattedUrl = (process.env.APP_URL || 'https://localhost:3000').replace(/\/$/, '') + '/api/auth/github/callback';
+      const protocol = req.headers['x-forwarded-proto'] === 'https' || req.secure ? 'https' : 'http';
+      const host = req.headers.host || req.get('host') || 'localhost:3000';
+      const origin = process.env.APP_URL || `${protocol}://${host}`;
+      const formattedUrl = origin.replace(/\/$/, '') + '/api/auth/github/callback';
       return res.send(`
         <html>
           <body style="font-family: sans-serif; background: #09090b; color: #f4f4f5; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;">
