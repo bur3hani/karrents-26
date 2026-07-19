@@ -63,6 +63,7 @@ export default function App() {
 
   const [appSection, setAppSection] = useState<'dashboard' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports'>('dashboard');
   const [selectedTool, setSelectedTool] = useState<string>('cve');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({
     0: true,
@@ -810,7 +811,12 @@ export default function App() {
             {/* Workbench Main Body Scroll Area */}
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
               {appSection === 'dashboard' && (
-                <Dashboard onLaunchTool={handleLaunchTool} />
+                <Dashboard 
+                  onLaunchTool={handleLaunchTool} 
+                  onNavigateToSection={(section) => setAppSection(section)}
+                  selectedProjectId={selectedProjectId}
+                  setSelectedProjectId={setSelectedProjectId}
+                />
               )}
 
               {appSection === 'tools' && (
@@ -826,7 +832,10 @@ export default function App() {
               )}
 
               {appSection === 'saved-reports' && (
-                <SavedReports />
+                <SavedReports 
+                  selectedProjectId={selectedProjectId}
+                  setSelectedProjectId={setSelectedProjectId}
+                />
               )}
 
               {appSection === 'notifications' && (

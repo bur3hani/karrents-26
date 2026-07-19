@@ -11,538 +11,1239 @@ import {
   ExternalLink, 
   AlertTriangle,
   FileCode,
-  Printer,
-  ChevronRight,
-  Info,
+  Plus,
   Layers,
-  ArrowDown
+  Briefcase,
+  Cpu,
+  BadgeAlert,
+  X,
+  PlusCircle,
+  FileDown
 } from 'lucide-react';
-
-export interface SavedReport {
-  id: string;
-  title: string;
-  target: string;
-  toolType: string;
-  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-  score: number;
-  timestamp: string;
-  toolVersion: string;
-  executiveSummary: string;
-  technicalSummary: string;
-  businessImpact: string;
-  technicalImpact: string;
-  evidence: string; // JSON or raw string
-  recommendations: string[];
-  references: { title: string; url: string }[];
-}
+import { Project, Asset, Finding, Evidence, Report } from '../types';
 
 interface SavedReportsProps {
   onNavigateToTool?: (toolName: string) => void;
+  selectedProjectId: string | null;
+  setSelectedProjectId: (id: string | null) => void;
 }
 
-export default function SavedReports({ onNavigateToTool }: SavedReportsProps) {
-  const [reports, setReports] = useState<SavedReport[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filterSeverity, setFilterSeverity] = useState<string>('ALL');
-  const [selectedReport, setSelectedReport] = useState<SavedReport | null>(null);
+export default function SavedReports({ onNavigateToTool, selectedProjectId, setSelectedProjectId }: SavedReportsProps) {
+  // DB States
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [findings, setFindings] = useState<Finding[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
 
+  // UI Selection Contexts
+  const [activeTab, setActiveTab] = useState<'projects' | 'assets' | 'findings' | 'reports'>('projects');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Modal / Creator States
+  const [showProjModal, setShowProjModal] = useState<boolean>(false);
+  const [newProjName, setNewProjName] = useState<string>('');
+  const [newProjDesc, setNewProjDesc] = useState<string>('');
+
+  const [showAssetModal, setShowAssetModal] = useState<boolean>(false);
+  const [newAssetName, setNewAssetName] = useState<string>('');
+  const [newAssetType, setNewAssetType] = useState<Asset['type']>('Domain');
+  const [newAssetNotes, setNewAssetNotes] = useState<string>('');
+  const [newAssetRisk, setNewAssetRisk] = useState<number>(0);
+  const [newAssetOwner, setNewAssetOwner] = useState<string>('');
+
+  const [showFindingModal, setShowFindingModal] = useState<boolean>(false);
+  const [newFindingTitle, setNewFindingTitle] = useState<string>('');
+  const [newFindingDesc, setNewFindingDesc] = useState<string>('');
+  const [newFindingSeverity, setNewFindingSeverity] = useState<Finding['severity']>('Medium');
+  const [newFindingCvss, setNewFindingCvss] = useState<number>(5.0);
+  const [newFindingRec, setNewFindingRec] = useState<string>('');
+  const [newFindingRef, setNewFindingRef] = useState<string>('');
+  const [newFindingOwner, setNewFindingOwner] = useState<string>('');
+  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
+
+  const [showEvidenceModal, setShowEvidenceModal] = useState<boolean>(false);
+  const [evidenceFindingId, setEvidenceFindingId] = useState<string>('');
+  const [newEvidenceType, setNewEvidenceType] = useState<Evidence['type']>('other');
+  const [newEvidenceValue, setNewEvidenceValue] = useState<string>('');
+  const [newEvidenceNotes, setNewEvidenceNotes] = useState<string>('');
+
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
+  const [newReportTitle, setNewReportTitle] = useState<string>('');
+  const [newReportExec, setNewReportExec] = useState<string>('');
+  const [newReportScope, setNewReportScope] = useState<string>('');
+  const [newReportRisk, setNewReportRisk] = useState<string>('');
+  const [newReportAppendices, setNewReportAppendices] = useState<string>('');
+
+  const [activeReportDetails, setActiveReportDetails] = useState<Report | null>(null);
+
+  // Sync core lists
   useEffect(() => {
-    // Load from localStorage or seed with high-fidelity defaults
-    const stored = localStorage.getItem('karrents_saved_reports') || localStorage.getItem('buruops_saved_reports');
-    if (stored) {
-      try {
-        setReports(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to parse saved reports", e);
-        loadDefaultSeedReports();
-      }
-    } else {
-      loadDefaultSeedReports();
-    }
+    loadProjects();
   }, []);
 
-  const loadDefaultSeedReports = () => {
-    const seed: SavedReport[] = [
-      {
-        id: 'REP-2026-001',
-        title: 'HTTP Security Headers Penetration Audit',
-        target: 'github.com',
-        toolType: 'Security Headers',
-        severity: 'MEDIUM',
-        score: 80,
-        timestamp: '2026-07-15T15:24:00Z',
-        toolVersion: 'Karrents Analyzer v1.3.1',
-        executiveSummary: 'Automated vulnerability sweep identified 4 out of 6 standard HTTP security headers on github.com. Communication path utilizes TLS 1.3 encryption. Passive monitoring suggests high reputation, but mitigation actions should be queued to achieve full baseline alignment.',
-        technicalSummary: 'Target hosts enforce Strict-Transport-Security (HSTS) with preloads and secure Referrer Policies. However, the Content-Security-Policy is missing standard sandbox definitions, and no Permissions-Policy was broadcast. Frame options are handled via frame-ancestors directives inside CSP.',
-        businessImpact: 'Unconfigured headers facilitate micro-clickjacking exploitation and hardware permissions hijacking vectors in legacy browser engines, potentially leading to brand-reputation degradation and minor user session compromises.',
-        technicalImpact: 'Absence of strict Content-Security-Policy rules could enable Cross-Site Scripting (XSS) and code-injection vectors if secondary input validation mechanisms fail. Clickjacking risks are moderate but mitigated by modern client engines.',
-        evidence: JSON.stringify({
-          scanned_url: 'https://github.com',
-          grade: 'B',
-          score: 80,
-          detected_headers: {
-            'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
-            'referrer-policy': 'origin-when-cross-origin',
-            'x-content-type-options': 'nosniff',
-            'x-frame-options': 'deny'
-          },
-          missing_headers: [
-            'content-security-policy',
-            'permissions-policy'
-          ]
-        }, null, 2),
-        recommendations: [
-          'Enable Strict Content-Security-Policy (CSP) headers limiting default-src to self and trusted API domains.',
-          'Inject browser Permissions-Policy directives to strictly forbid client hardware requests (camera, microphone, geolocation) by default.',
-          'Verify TLS cipher parity to forbid legacy AES-CBC handshakes.'
-        ],
-        references: [
-          { title: 'OWASP Secure Headers Project', url: 'https://owasp.org/www-project-secure-headers/' },
-          { title: 'CISA Web Application Configuration Guide', url: 'https://www.cisa.gov' }
-        ]
-      },
-      {
-        id: 'REP-2026-002',
-        title: 'Critical Infrastructure Exploit Intelligence Assessment',
-        target: 'CVE-2021-44228',
-        toolType: 'CVE Explorer',
-        severity: 'CRITICAL',
-        score: 100,
-        timestamp: '2026-07-15T14:12:00Z',
-        toolVersion: 'Karrents Advisor Engine v3.0-flash',
-        executiveSummary: 'Critical threat advisory concerning Apache Log4j JNDI Remote Code Execution (Log4Shell). Wild exploitation is actively tracked across enterprise networks. Immediate patch compliance is required.',
-        technicalSummary: 'Log4j JNDI lookups fail to sanitize attacker-controlled LDAP endpoints, allowing dynamic loading of malicious Java class files. Attacker-controlled variables inside headers, search forms, or logs immediately trigger code payload execution.',
-        businessImpact: 'Total loss of server confidentiality, data integrity, and business continuity. Exploit vectors are directly utilized by global ransomware syndicates and APT actors, risking catastrophic operational shutdowns and multi-million dollar liabilities.',
-        technicalImpact: 'Unauthenticated full remote code execution (RCE) with the security context of the parent Java execution runtime. Enables EDR evasion, credential exfiltration, and lateral active directory movement.',
-        evidence: JSON.stringify({
-          cve_id: 'CVE-2021-44228',
-          cvss_score: 10.0,
-          cvss_vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H',
-          exploit_status: 'Active Wild Exploitation',
-          platform_affected: 'Java JVM Runtime / Apache Log4j 2.0-beta9 to 2.15.0'
-        }, null, 2),
-        recommendations: [
-          'Update all active systems to Apache Log4j version 2.16.0 or higher instantly.',
-          'For legacy systems unable to patch, apply the JVM argument flag -Dlog4j2.formatMsgNoLookups=true.',
-          'Deploy network signature rules blocklisting inbound LDAP and RMI directory connections from egress channels.'
-        ],
-        references: [
-          { title: 'NIST NVD CVE-2021-44228 Entry', url: 'https://nvd.nist.gov/vuln/detail/CVE-2021-44228' },
-          { title: 'CISA Apache Log4j Vulnerability Guidance', url: 'https://www.cisa.gov' }
-        ]
+  useEffect(() => {
+    if (selectedProjectId) {
+      loadProjectDetails(selectedProjectId);
+    } else {
+      setAssets([]);
+      setFindings([]);
+      setReports([]);
+    }
+  }, [selectedProjectId]);
+
+  async function loadProjects() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/projects');
+      if (!res.ok) throw new Error("Failed to load project directories.");
+      const data = await res.json();
+      setProjects(data.projects || []);
+    } catch (err: any) {
+      setError(err.message || "Failed to load database projects.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadProjectDetails(projId: string) {
+    try {
+      const [assetsRes, findingsRes, reportsRes] = await Promise.all([
+        fetch(`/api/projects/${projId}/assets`),
+        fetch(`/api/projects/${projId}/findings`),
+        fetch(`/api/projects/${projId}/reports`)
+      ]);
+
+      if (assetsRes.ok) {
+        const d = await assetsRes.json();
+        setAssets(d.assets || []);
       }
-    ];
-    setReports(seed);
-    localStorage.setItem('karrents_saved_reports', JSON.stringify(seed));
-  };
+      if (findingsRes.ok) {
+        const d = await findingsRes.json();
+        setFindings(d.findings || []);
+      }
+      if (reportsRes.ok) {
+        const d = await reportsRes.json();
+        setReports(d.reports || []);
+      }
+    } catch (err) {
+      console.error("Failed to load workspace details:", err);
+    }
+  }
 
-  const saveReportsToStorage = (updated: SavedReport[]) => {
-    setReports(updated);
-    localStorage.setItem('karrents_saved_reports', JSON.stringify(updated));
-  };
+  // --------------------------------------------------------------------------
+  // CREATORS
+  // --------------------------------------------------------------------------
 
-  const handleDeleteReport = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const updated = reports.filter(r => r.id !== id);
-    saveReportsToStorage(updated);
-    if (selectedReport?.id === id) {
-      setSelectedReport(null);
+  const handleCreateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProjName.trim()) return;
+
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newProjName, description: newProjDesc })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to create project workspace.");
+      }
+
+      const data = await res.json();
+      setProjects(prev => [...prev, data.project]);
+      setSelectedProjectId(data.project.id);
+      setNewProjName('');
+      setNewProjDesc('');
+      setShowProjModal(false);
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
-  const handleClearAll = () => {
-    if (window.confirm("Are you sure you want to delete all saved reports? This action cannot be undone.")) {
-      saveReportsToStorage([]);
-      setSelectedReport(null);
+  const handleCreateAsset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProjectId || !newAssetName.trim()) return;
+
+    try {
+      const res = await fetch(`/api/projects/${selectedProjectId}/assets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newAssetName,
+          type: newAssetType,
+          notes: newAssetNotes,
+          risk_score: Number(newAssetRisk),
+          owner: newAssetOwner
+        })
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || "Failed to register client asset.");
+      }
+
+      const d = await res.json();
+      setAssets(prev => [...prev, d.asset]);
+      setNewAssetName('');
+      setNewAssetNotes('');
+      setNewAssetRisk(0);
+      setNewAssetOwner('');
+      setShowAssetModal(false);
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
-  // Export functions
-  const downloadFile = (content: string, filename: string, contentType: string) => {
-    const blob = new Blob([content], { type: contentType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  const handleCreateFinding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProjectId || !newFindingTitle.trim()) return;
 
-  const exportAsJSON = (report: SavedReport) => {
-    downloadFile(JSON.stringify(report, null, 2), `${report.id}_${report.target}_security_report.json`, 'application/json');
-  };
+    try {
+      const res = await fetch(`/api/projects/${selectedProjectId}/findings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newFindingTitle,
+          description: newFindingDesc,
+          severity: newFindingSeverity,
+          cvss_score: Number(newFindingCvss),
+          recommendations: newFindingRec,
+          references: newFindingRef.split('\n').filter(Boolean),
+          owner: newFindingOwner,
+          affectedAssetIds: selectedAssetIds
+        })
+      });
 
-  const exportAsMarkdown = (report: SavedReport) => {
-    const md = `# SECURITY ANALYSIS REPORT: ${report.id}
-## ${report.title}
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || "Failed to log finding.");
+      }
 
-* **Target:** ${report.target}
-* **Tool / Engine:** ${report.toolType} (${report.toolVersion})
-* **Severity:** ${report.severity}
-* **Risk Score:** ${report.score}/100
-* **Timestamp:** ${new Date(report.timestamp).toUTCString()}
-
----
-
-### 1. EXECUTIVE SUMMARY
-${report.executiveSummary}
-
-### 2. TECHNICAL SUMMARY
-${report.technicalSummary}
-
-### 3. IMPACT ANALYSIS
-* **Business Impact:** ${report.businessImpact}
-* **Technical Impact:** ${report.technicalImpact}
-
-### 4. EVIDENCE & TECHNICAL TELEMETRY
-\`\`\`json
-${report.evidence}
-\`\`\`
-
-### 5. MITIGATION & REMEDIATION RECOMMENDATIONS
-${report.recommendations.map((rec, idx) => `${idx + 1}. [ ] ${rec}`).join('\n')}
-
-### 6. INTEL REFERENCES
-${report.references.map(ref => `* [${ref.title}](${ref.url})`).join('\n')}
-
----
-*Report generated securely by Karrents Security Intelligence Cybersecurity Workbench*
-`;
-    downloadFile(md, `${report.id}_${report.target}_security_report.md`, 'text/markdown');
-  };
-
-  const exportAsCSV = (report: SavedReport) => {
-    const headers = ['Report ID', 'Title', 'Target', 'Tool', 'Severity', 'Score', 'Timestamp'];
-    const row = [report.id, report.title, report.target, report.toolType, report.severity, report.score, report.timestamp];
-    const csvContent = [headers.join(','), row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')].join('\n');
-    downloadFile(csvContent, `${report.id}_${report.target}_security_report.csv`, 'text/csv');
-  };
-
-  const triggerPrint = () => {
-    window.print();
-  };
-
-  // Filters
-  const filteredReports = reports.filter(r => {
-    const matchesSearch = 
-      r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.toolType.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesSev = filterSeverity === 'ALL' || r.severity === filterSeverity;
-    return matchesSearch && matchesSev;
-  });
-
-  const getSeverityColor = (sev: string) => {
-    switch (sev) {
-      case 'CRITICAL': return 'bg-red-500/10 border-red-500/30 text-red-400';
-      case 'HIGH': return 'bg-orange-500/10 border-orange-500/30 text-orange-400';
-      case 'MEDIUM': return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400';
-      case 'LOW': return 'bg-green-500/10 border-green-500/30 text-green-400';
-      default: return 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400';
+      const d = await res.json();
+      setFindings(prev => [...prev, d.finding]);
+      setNewFindingTitle('');
+      setNewFindingDesc('');
+      setNewFindingRec('');
+      setNewFindingRef('');
+      setNewFindingOwner('');
+      setSelectedAssetIds([]);
+      setShowFindingModal(false);
+    } catch (err: any) {
+      alert(err.message);
     }
   };
+
+  const handleCreateEvidence = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!evidenceFindingId || !newEvidenceValue.trim()) return;
+
+    try {
+      const res = await fetch(`/api/findings/${evidenceFindingId}/evidence`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: newEvidenceType,
+          value: newEvidenceValue,
+          notes: newEvidenceNotes
+        })
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || "Failed to submit evidence.");
+      }
+
+      // Reload project details to sync evidence
+      if (selectedProjectId) loadProjectDetails(selectedProjectId);
+
+      setEvidenceFindingId('');
+      setNewEvidenceValue('');
+      setNewEvidenceNotes('');
+      setShowEvidenceModal(false);
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleCreateReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProjectId || !newReportTitle.trim()) return;
+
+    try {
+      const res = await fetch(`/api/projects/${selectedProjectId}/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newReportTitle,
+          executive_summary: newReportExec,
+          scope: newReportScope,
+          risk_summary: newReportRisk,
+          appendices: newReportAppendices
+        })
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || "Failed to compile security report.");
+      }
+
+      const d = await res.json();
+      setReports(prev => [...prev, d.report]);
+      setNewReportTitle('');
+      setNewReportExec('');
+      setNewReportScope('');
+      setNewReportRisk('');
+      setNewReportAppendices('');
+      setShowReportModal(false);
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // DELETERS
+  // --------------------------------------------------------------------------
+
+  const handleDeleteProject = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete the project '${name}' and ALL associated assets, findings, and reports? This cannot be undone.`)) return;
+
+    try {
+      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error("Failed to delete project.");
+
+      setProjects(prev => prev.filter(p => p.id !== id));
+      if (selectedProjectId === id) {
+        setSelectedProjectId(null);
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteAsset = async (id: string) => {
+    if (!window.confirm("Delete this registered client asset?")) return;
+
+    try {
+      const res = await fetch(`/api/assets/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error("Failed to delete asset.");
+      setAssets(prev => prev.filter(a => a.id !== id));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteFinding = async (id: string) => {
+    if (!window.confirm("Delete this logged vulnerability finding?")) return;
+
+    try {
+      const res = await fetch(`/api/findings/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error("Failed to delete finding.");
+      setFindings(prev => prev.filter(f => f.id !== id));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteReport = async (id: string) => {
+    if (!window.confirm("Delete this compiled report?")) return;
+
+    try {
+      const res = await fetch(`/api/reports/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error("Failed to delete report.");
+      setReports(prev => prev.filter(r => r.id !== id));
+      if (activeReportDetails?.id === id) {
+        setActiveReportDetails(null);
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="py-20 flex flex-col items-center justify-center space-y-3">
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-mono text-zinc-500">Connecting workspace registry...</span>
+      </div>
+    );
+  }
 
   return (
     <div id="saved-reports-view" className="space-y-6">
-      {/* Top filter section */}
+      {/* Top Controller */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-400" />
-            Security Reports & Audits Archive
+            <Briefcase className="w-4 h-4 text-blue-400" />
+            Workspace Assessment Builder & Registry
           </h2>
           <p className="text-xs text-zinc-400">
-            Persistent local registry of professional security posture audits and forensic CVE investigations.
+            Define client projects, map active network assets, log CVE vulnerability findings, and compile client reports.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-full sm:w-60">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-500" />
-            <input
-              id="report-search-input"
-              type="text"
-              placeholder="Search reports..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
-            />
-          </div>
-          <select
-            id="report-severity-select"
-            value={filterSeverity}
-            onChange={(e) => setFilterSeverity(e.target.value)}
-            className="bg-zinc-950/80 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500"
-          >
-            <option value="ALL">All Severities</option>
-            <option value="CRITICAL">Critical Only</option>
-            <option value="HIGH">High Severity</option>
-            <option value="MEDIUM">Medium Severity</option>
-            <option value="LOW">Low Severity</option>
-          </select>
-          {reports.length > 0 && (
+        <div className="flex items-center gap-2">
+          {activeTab === 'projects' && (
             <button
-              id="clear-reports-btn"
-              onClick={handleClearAll}
-              className="bg-red-950/40 text-red-400 hover:bg-red-900 hover:text-white border border-red-500/20 text-xs px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+              id="new-project-btn"
+              onClick={() => setShowProjModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Clear Archive</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Create Project</span>
+            </button>
+          )}
+          {activeTab === 'assets' && selectedProjectId && (
+            <button
+              id="new-asset-btn"
+              onClick={() => setShowAssetModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Register Asset</span>
+            </button>
+          )}
+          {activeTab === 'findings' && selectedProjectId && (
+            <button
+              id="new-finding-btn"
+              onClick={() => setShowFindingModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Log Finding</span>
+            </button>
+          )}
+          {activeTab === 'reports' && selectedProjectId && (
+            <button
+              id="new-report-btn"
+              onClick={() => setShowReportModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Compile Report</span>
             </button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Reports List */}
-        <div className="lg:col-span-1 space-y-3 max-h-[70vh] overflow-y-auto pr-1 custom-scrollbar">
-          {filteredReports.length > 0 ? (
-            filteredReports.map((report) => {
-              const isSelected = selectedReport?.id === report.id;
-              return (
+      {/* Tabs */}
+      <div className="flex border-b border-zinc-800/60 text-xs font-semibold">
+        <button
+          onClick={() => setActiveTab('projects')}
+          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'projects' ? 'border-blue-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+        >
+          Client Projects ({projects.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('assets')}
+          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'assets' ? 'border-blue-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+        >
+          Project Assets ({assets.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('findings')}
+          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'findings' ? 'border-blue-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+        >
+          Vulnerability Findings ({findings.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('reports')}
+          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'reports' ? 'border-blue-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+        >
+          Reports & Exports ({reports.length})
+        </button>
+      </div>
+
+      {/* Workspace Picker Info Bar */}
+      {activeTab !== 'projects' && (
+        <div className="flex items-center gap-2 bg-zinc-900/30 p-3 rounded-lg border border-zinc-800/40 text-xs">
+          <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Active Project Context:</span>
+          <select
+            id="workspace-picker-selector"
+            value={selectedProjectId || ""}
+            onChange={(e) => setSelectedProjectId(e.target.value ? e.target.value : null)}
+            className="bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-zinc-200 font-semibold focus:outline-none focus:border-blue-500"
+          >
+            <option value="">-- No Project Selected --</option>
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+          {!selectedProjectId && (
+            <span className="text-amber-400 font-medium">⚠️ Please select or create a project context to view/manage elements.</span>
+          )}
+        </div>
+      )}
+
+      {/* ----------------------------------------------------------------------
+          1. CLIENT PROJECTS TAB
+         ---------------------------------------------------------------------- */}
+      {activeTab === 'projects' && (
+        <div className="space-y-4">
+          {projects.length === 0 ? (
+            <div className="bg-zinc-900/20 border border-zinc-800/40 rounded-xl p-16 text-center text-zinc-500 space-y-4">
+              <Briefcase className="w-12 h-12 mx-auto stroke-1" />
+              <div className="space-y-1">
+                <h3 className="font-bold text-zinc-300 text-sm">No Client Projects Registered</h3>
+                <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
+                  Start mapping security postures by creating your first client namespace or active project directory.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowProjModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg"
+              >
+                Create Project Workspace
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {projects.map(p => (
                 <div
-                  key={report.id}
-                  id={`report-item-${report.id}`}
-                  onClick={() => setSelectedReport(report)}
-                  className={`border p-4 rounded-xl cursor-pointer transition-all space-y-2.5 ${
-                    isSelected
-                      ? 'bg-blue-600/5 border-blue-500/60 shadow-md'
-                      : 'bg-zinc-900/40 border-zinc-800/40 hover:bg-zinc-800/20 hover:border-zinc-700/50'
-                  }`}
+                  key={p.id}
+                  className={`bg-zinc-900/40 border p-5 rounded-xl space-y-4 relative group hover:border-zinc-700 transition-colors cursor-pointer ${selectedProjectId === p.id ? 'border-blue-500/60 bg-blue-600/5 shadow' : 'border-zinc-800/50'}`}
+                  onClick={() => setSelectedProjectId(p.id)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-black text-sm text-zinc-100">{p.name}</h3>
+                      <span className="text-[9px] font-mono text-zinc-500">ID: {p.id}</span>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteProject(p.id, p.name); }}
+                      className="p-1.5 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-800 hover:border-red-500/30 transition-colors"
+                      title="Delete Project & Cascade Dependencies"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-zinc-400 line-clamp-3 leading-relaxed min-h-[48px]">
+                    {p.description || "No workspace description compiled."}
+                  </p>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-3 border-t border-zinc-800/40">
+                    <span>Created: {new Date(p.created_at).toLocaleDateString()}</span>
+                    {selectedProjectId === p.id ? (
+                      <span className="text-blue-400 font-bold flex items-center gap-1">
+                        Active Context <CheckCircle className="w-3.5 h-3.5" />
+                      </span>
+                    ) : (
+                      <span className="text-zinc-500 group-hover:text-zinc-300 transition-colors">Click to select</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ----------------------------------------------------------------------
+          2. PROJECT ASSETS TAB
+         ---------------------------------------------------------------------- */}
+      {activeTab === 'assets' && selectedProjectId && (
+        <div className="space-y-4">
+          {assets.length === 0 ? (
+            <div className="bg-zinc-900/20 border border-zinc-800/40 rounded-xl p-12 text-center text-zinc-500 space-y-2">
+              <Cpu className="w-10 h-10 mx-auto stroke-1" />
+              <h3 className="font-bold text-zinc-300 text-sm">No Registered Assets</h3>
+              <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
+                Add IP addresses, domains, cloud containers, or application targets in scope for security checks.
+              </p>
+              <button
+                onClick={() => setShowAssetModal(true)}
+                className="bg-zinc-850 hover:bg-zinc-850 border border-zinc-700 text-zinc-200 text-xs px-3 py-1.5 rounded-lg mt-2 font-semibold"
+              >
+                Register First Asset
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto bg-zinc-900/20 border border-zinc-800/50 rounded-xl">
+              <table className="w-full text-left text-xs text-zinc-400">
+                <thead>
+                  <tr className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider border-b border-zinc-800/50 bg-zinc-900/40">
+                    <th className="p-4">Asset Name / Endpoint</th>
+                    <th className="p-4">Asset Class</th>
+                    <th className="p-4">Owner Email</th>
+                    <th className="p-4">Risk Rating</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/30">
+                  {assets.map(a => (
+                    <tr key={a.id} className="hover:bg-zinc-800/10 transition-colors">
+                      <td className="p-4 font-bold text-zinc-200 select-all">{a.name}</td>
+                      <td className="p-4 font-mono text-zinc-400">{a.type}</td>
+                      <td className="p-4 font-mono text-[11px] text-zinc-400">{a.owner}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          a.risk_score >= 70 ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                          a.risk_score >= 35 ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' :
+                          'bg-green-500/10 text-green-400 border border-green-500/20'
+                        }`}>
+                          Risk: {a.risk_score}/100
+                        </span>
+                      </td>
+                      <td className="p-4 uppercase font-bold text-[10px] text-zinc-500">{a.status}</td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() => handleDeleteAsset(a.id)}
+                          className="p-1.5 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-850 hover:border-red-500/30 transition-colors"
+                          title="Revoke Asset"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ----------------------------------------------------------------------
+          3. VULNERABILITY FINDINGS TAB
+         ---------------------------------------------------------------------- */}
+      {activeTab === 'findings' && selectedProjectId && (
+        <div className="space-y-4">
+          {findings.length === 0 ? (
+            <div className="bg-zinc-900/20 border border-zinc-800/40 rounded-xl p-12 text-center text-zinc-500 space-y-2">
+              <BadgeAlert className="w-10 h-10 mx-auto stroke-1" />
+              <h3 className="font-bold text-zinc-300 text-sm">No Vulnerabilities Logged</h3>
+              <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
+                Log identified software vulnerabilities, unconfigured headers, outdated libraries, or system misconfigurations.
+              </p>
+              <button
+                onClick={() => setShowFindingModal(true)}
+                className="bg-zinc-850 hover:bg-zinc-850 border border-zinc-700 text-zinc-200 text-xs px-3 py-1.5 rounded-lg mt-2 font-semibold"
+              >
+                Log Finding Manual
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {findings.map(f => {
+                const fEvidence = f.id ? [] : []; // Wait, let's load or display details
+                return (
+                  <div key={f.id} className="bg-zinc-900/30 border border-zinc-800/60 rounded-xl p-5 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                            f.severity === 'Critical' ? 'bg-red-500/15 text-red-500 border border-red-500/35' :
+                            f.severity === 'High' ? 'bg-orange-500/15 text-orange-400 border border-orange-500/35' :
+                            f.severity === 'Medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/35' :
+                            'bg-blue-500/15 text-blue-400 border border-blue-500/35'
+                          }`}>
+                            {f.severity} Severity
+                          </span>
+                          <span className="font-mono text-xs font-bold text-zinc-400 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-850">
+                            CVSS {f.cvss_score.toFixed(1)}
+                          </span>
+                          <span className="text-[10px] uppercase font-bold text-zinc-500 font-mono">
+                            Status: {f.status.replace('_', ' ')}
+                          </span>
+                        </div>
+                        <h3 className="font-black text-sm text-zinc-100">{f.title}</h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => { setEvidenceFindingId(f.id); setShowEvidenceModal(true); }}
+                          className="text-[10px] font-bold text-zinc-300 hover:text-white bg-zinc-950 hover:bg-zinc-850 px-2.5 py-1.5 border border-zinc-850 rounded-lg transition-colors flex items-center gap-1"
+                        >
+                          <PlusCircle className="w-3.5 h-3.5 text-blue-400" />
+                          <span>Attach Evidence</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteFinding(f.id)}
+                          className="p-1.5 text-zinc-500 hover:text-red-400 bg-zinc-950 rounded border border-zinc-850 hover:border-red-500/30 transition-colors"
+                          title="Revoke Finding"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-zinc-300 leading-relaxed">{f.description}</p>
+
+                    {f.recommendations && (
+                      <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-850 space-y-1">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Remediation Action Playbook:</span>
+                        <p className="text-xs text-zinc-300 leading-relaxed font-semibold">{f.recommendations}</p>
+                      </div>
+                    )}
+
+                    {/* Affected Assets */}
+                    {f.affectedAssets && f.affectedAssets.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Affected Scope Assets:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {f.affectedAssets.map(asset => (
+                            <span key={asset.id} className="text-[9.5px] font-mono font-bold text-zinc-400 bg-zinc-950 border border-zinc-850 px-2 py-0.5 rounded">
+                              {asset.name} ({asset.type})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ----------------------------------------------------------------------
+          4. REPORTS & EXPORTS TAB
+         ---------------------------------------------------------------------- */}
+      {activeTab === 'reports' && selectedProjectId && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Reports List */}
+          <div className="lg:col-span-1 space-y-3">
+            {reports.length === 0 ? (
+              <div className="bg-zinc-900/20 border border-zinc-800/40 rounded-xl p-8 text-center text-zinc-500 space-y-2">
+                <FileText className="w-8 h-8 mx-auto stroke-1" />
+                <h3 className="font-bold text-zinc-300 text-sm">No Reports Drafted</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Generate client deliverables containing mapped assets, aggregated severities, and playbooks.
+                </p>
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-3 py-1.5 rounded mt-2"
+                >
+                  Create New Report
+                </button>
+              </div>
+            ) : (
+              reports.map(r => (
+                <div
+                  key={r.id}
+                  onClick={() => setActiveReportDetails(r)}
+                  className={`border p-4 rounded-xl cursor-pointer transition-all space-y-2.5 ${activeReportDetails?.id === r.id ? 'bg-blue-600/5 border-blue-500/60' : 'bg-zinc-900/40 border-zinc-850 hover:border-zinc-700'}`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] text-blue-400 font-bold bg-blue-500/5 px-1.5 py-0.5 rounded border border-blue-500/10">
-                      {report.id}
-                    </span>
-                    <span className={`px-2 py-0.2 rounded text-[9px] font-bold border ${getSeverityColor(report.severity)}`}>
-                      {report.severity}
+                    <span className="text-[10px] font-mono text-zinc-500 font-bold">REPORT MODULE</span>
+                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold uppercase border ${r.status === 'published' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-zinc-800 text-zinc-500 border-zinc-750'}`}>
+                      {r.status}
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-zinc-100 text-xs tracking-tight line-clamp-1">{report.title}</h3>
-                    <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 mt-1 font-mono">
-                      <span className="text-zinc-300 font-bold select-all">{report.target}</span>
-                      <span>•</span>
-                      <span>{report.toolType}</span>
+                    <h4 className="font-bold text-zinc-100 text-xs line-clamp-1">{r.title}</h4>
+                    <span className="text-[9.5px] text-zinc-500">Drafted: {new Date(r.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-800/40 text-[9.5px]">
+                    <span className="text-blue-400 font-bold hover:underline">Inspect details</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteReport(r.id); }}
+                      className="text-zinc-500 hover:text-red-400 p-1"
+                      title="Delete Report"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Report Viewer / Details Pane */}
+          <div className="lg:col-span-2">
+            {activeReportDetails ? (
+              <div className="bg-zinc-900/40 border border-zinc-800/60 p-6 rounded-xl space-y-6">
+                <div className="flex justify-between items-start pb-4 border-b border-zinc-800/40">
+                  <div>
+                    <h3 className="font-black text-base text-zinc-100">{activeReportDetails.title}</h3>
+                    <span className="text-[10px] font-mono text-zinc-500">Report Reference: {activeReportDetails.id}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <a
+                      href={`/api/reports/${activeReportDetails.id}/export/json`}
+                      download
+                      className="bg-zinc-950 hover:bg-zinc-850 text-zinc-300 hover:text-white px-3 py-1.5 rounded border border-zinc-800 text-xs flex items-center gap-1 transition-colors"
+                      title="Download JSON Payload"
+                    >
+                      <FileCode className="w-3.5 h-3.5 text-blue-400" />
+                      <span>Export JSON</span>
+                    </a>
+                    <a
+                      href={`/api/reports/${activeReportDetails.id}/export/markdown`}
+                      download
+                      className="bg-zinc-950 hover:bg-zinc-850 text-zinc-300 hover:text-white px-3 py-1.5 rounded border border-zinc-800 text-xs flex items-center gap-1 transition-colors"
+                      title="Download Professional Markdown report"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-green-400" />
+                      <span>Export Markdown</span>
+                    </a>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-850 space-y-1">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">1. Executive Summary:</span>
+                    <p className="text-zinc-300 leading-relaxed font-semibold">{activeReportDetails.executive_summary || "No executive summary configured."}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-850 space-y-1">
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">2. Assessment Scope:</span>
+                      <p className="text-zinc-400 leading-relaxed">{activeReportDetails.scope || "No scope configured."}</p>
+                    </div>
+                    <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-850 space-y-1">
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">3. Vulnerability & Risk Summary:</span>
+                      <p className="text-zinc-400 leading-relaxed">{activeReportDetails.risk_summary || "No risk summary compiled."}</p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-800/30 text-[10px] text-zinc-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(report.timestamp).toLocaleDateString()}
-                    </span>
-                    <span className="font-mono text-zinc-400 font-bold">{report.score}/100 Score</span>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="bg-zinc-900/20 border border-zinc-800/40 rounded-xl p-8 text-center text-zinc-500 space-y-2">
-              <FileText className="w-8 h-8 mx-auto text-zinc-600" />
-              <p className="text-xs">No saved reports matches your query.</p>
-              <button 
-                onClick={loadDefaultSeedReports}
-                className="text-[10px] text-blue-400 font-semibold hover:underline"
-              >
-                Reload Default Demos
-              </button>
-            </div>
-          )}
-        </div>
 
-        {/* Detailed Report View Panel */}
-        <div className="lg:col-span-2">
-          {selectedReport ? (
-            <div id="printable-area" className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-6 shadow-md space-y-6">
-              {/* Report Title Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-800/40">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-mono text-xs text-blue-400 font-bold bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded">
-                      {selectedReport.id}
-                    </span>
-                    <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold border ${getSeverityColor(selectedReport.severity)}`}>
-                      {selectedReport.severity}
-                    </span>
-                    <span className="text-[10px] font-mono text-zinc-500 font-bold">{selectedReport.toolVersion}</span>
-                  </div>
-                  <h3 className="font-bold text-zinc-100 text-base leading-tight tracking-tight">
-                    {selectedReport.title}
-                  </h3>
-                  <div className="text-xs text-zinc-400">
-                    Target Audit Parity: <span className="font-mono font-bold text-zinc-200 select-all">{selectedReport.target}</span>
-                  </div>
-                </div>
-
-                {/* Actions Menu */}
-                <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
-                  <button
-                    id="btn-print-report"
-                    onClick={triggerPrint}
-                    className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white p-2 rounded-lg border border-zinc-800 text-xs transition-colors"
-                    title="Print / Export to PDF"
-                  >
-                    <Printer className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    id="btn-export-json"
-                    onClick={() => exportAsJSON(selectedReport)}
-                    className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-zinc-800 text-xs transition-colors flex items-center gap-1 font-semibold"
-                  >
-                    <FileCode className="w-3.5 h-3.5" />
-                    <span>JSON</span>
-                  </button>
-                  <button
-                    id="btn-export-md"
-                    onClick={() => exportAsMarkdown(selectedReport)}
-                    className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-zinc-800 text-xs transition-colors flex items-center gap-1 font-semibold"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Markdown</span>
-                  </button>
-                  <button
-                    id="btn-export-csv"
-                    onClick={() => exportAsCSV(selectedReport)}
-                    className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-zinc-800 text-xs transition-colors flex items-center gap-1 font-semibold"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>CSV</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* KPI Score Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-900/60 text-center space-y-1">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Security score</span>
-                  <div className="text-xl font-extrabold font-mono text-zinc-100">{selectedReport.score}/100</div>
-                  <div className="text-[9.5px] text-zinc-500">Based on standard risk matrix</div>
-                </div>
-                <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-900/60 text-center space-y-1">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Timestamp (UTC)</span>
-                  <div className="text-xs font-semibold text-zinc-300 mt-1 font-mono truncate">
-                    {new Date(selectedReport.timestamp).toUTCString()}
-                  </div>
-                  <div className="text-[9.5px] text-zinc-500">Scan runtime signature</div>
-                </div>
-                <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-900/60 text-center space-y-1">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Remediations</span>
-                  <div className="text-xs font-semibold text-zinc-300 mt-1 flex items-center justify-center gap-1">
-                    <Activity className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
-                    <span>{selectedReport.recommendations.length} Queue Items</span>
-                  </div>
-                  <div className="text-[9.5px] text-zinc-500">Active corrective actions</div>
-                </div>
-              </div>
-
-              {/* Report Narrative Section */}
-              <div className="space-y-4 text-xs">
-                {/* 1. Executive Summary */}
-                <div className="space-y-1.5 p-4 bg-zinc-950/30 rounded-lg border border-zinc-900/50">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5 text-blue-400">
-                    <Info className="w-3.5 h-3.5" />
-                    1. Executive Summary
-                  </span>
-                  <p className="text-zinc-300 leading-relaxed font-medium">
-                    {selectedReport.executiveSummary}
-                  </p>
-                </div>
-
-                {/* 2. Technical Summary */}
-                <div className="space-y-1.5 p-4 bg-zinc-950/30 rounded-lg border border-zinc-900/50">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5 text-blue-400">
-                    <Activity className="w-3.5 h-3.5" />
-                    2. Technical Deep Dive
-                  </span>
-                  <p className="text-zinc-300 leading-relaxed">
-                    {selectedReport.technicalSummary}
-                  </p>
-                </div>
-
-                {/* 3. Impact Matrix */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 p-4 bg-zinc-950/30 rounded-lg border border-zinc-900/50">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5 text-red-400">
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      Business Impact
-                    </span>
-                    <p className="text-zinc-400 leading-relaxed">{selectedReport.businessImpact}</p>
-                  </div>
-                  <div className="space-y-1.5 p-4 bg-zinc-950/30 rounded-lg border border-zinc-900/50">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5 text-red-400">
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      Technical Impact
-                    </span>
-                    <p className="text-zinc-400 leading-relaxed">{selectedReport.technicalImpact}</p>
-                  </div>
-                </div>
-
-                {/* 4. Evidence Payload */}
-                <div className="space-y-2">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
-                    4. Technical Evidence & Telemetry JSON
-                  </span>
-                  <pre className="font-mono text-xs p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-blue-300 overflow-x-auto whitespace-pre-wrap leading-relaxed select-all">
-                    {selectedReport.evidence}
-                  </pre>
-                </div>
-
-                {/* 5. Remediation Recommendations */}
-                <div className="space-y-2.5 p-4 bg-zinc-950/30 rounded-lg border border-zinc-900/50">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5 text-green-400">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    5. Actions & Remediations Playbook
-                  </span>
-                  <ul className="space-y-2">
-                    {selectedReport.recommendations.map((rec, idx) => (
-                      <li key={idx} className="flex gap-2.5 items-start text-zinc-300 leading-relaxed">
-                        <span className="font-mono text-green-400 font-bold">[{idx+1}]</span>
-                        <span>{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* 6. Intel References */}
-                {selectedReport.references && selectedReport.references.length > 0 && (
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
-                      6. Intelligence References & Guidelines
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedReport.references.map((ref, idx) => (
-                        <a
-                          key={idx}
-                          href={ref.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3.5 py-1.5 rounded-lg border border-zinc-850 text-xs flex items-center gap-1.5 transition-colors font-mono"
-                        >
-                          <span>{ref.title}</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ))}
+                  {activeReportDetails.appendices && (
+                    <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-850 space-y-1">
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">4. Technical Appendices:</span>
+                      <p className="text-zinc-400 leading-relaxed font-mono">{activeReportDetails.appendices}</p>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="bg-zinc-900/20 border border-zinc-800/40 rounded-xl p-16 text-center text-zinc-500 space-y-3.5">
-              <FileText className="w-12 h-12 mx-auto text-zinc-600" />
-              <div className="space-y-1">
-                <h3 className="font-bold text-zinc-300 text-sm">No Report Selected</h3>
-                <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
-                  Select an audit report from the archive stream to view standard impacts, severity breakdown indicators, and copyable remediation blocks.
+            ) : (
+              <div className="bg-zinc-900/20 border border-zinc-800/40 rounded-xl p-16 text-center text-zinc-500">
+                <FileDown className="w-12 h-12 mx-auto stroke-1 mb-2 text-zinc-600" />
+                <h3 className="font-bold text-zinc-300 text-xs">No Report Selected</h3>
+                <p className="text-[11px] text-zinc-500 max-w-sm mx-auto leading-relaxed">
+                  Choose a report from the list to preview compiled executive notes, scopes, and execute formal downloads.
                 </p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+
+      {/* ======================================================================
+          MODALS / CREATORS POPUPS
+         ====================================================================== */}
+
+      {/* 1. Project Modal */}
+      {showProjModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl w-full max-w-md space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-extrabold text-sm text-zinc-100 uppercase tracking-wider">New Client Project</h3>
+              <button onClick={() => setShowProjModal(false)} className="text-zinc-500 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+            <form onSubmit={handleCreateProject} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Project Name / Target Client</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Acme Corp Internal Audit"
+                  value={newProjName}
+                  onChange={(e) => setNewProjName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Description / Scope Details</label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g., Annual external penetration testing of core APIs and web portals."
+                  value={newProjDesc}
+                  onChange={(e) => setNewProjDesc(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowProjModal(false)}
+                  className="px-3.5 py-2 rounded-lg bg-zinc-800 text-zinc-300 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                >
+                  Create Namespace
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Asset Modal */}
+      {showAssetModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl w-full max-w-md space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-extrabold text-sm text-zinc-100 uppercase tracking-wider">Register Client Asset</h3>
+              <button onClick={() => setShowAssetModal(false)} className="text-zinc-500 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+            <form onSubmit={handleCreateAsset} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Asset Name / URL / IP</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., api.acme.com or 10.0.4.1"
+                  value={newAssetName}
+                  onChange={(e) => setNewAssetName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase">Asset Class Type</label>
+                  <select
+                    value={newAssetType}
+                    onChange={(e) => setNewAssetType(e.target.value as any)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                  >
+                    <option value="Domain">Domain</option>
+                    <option value="IP Address">IP Address</option>
+                    <option value="Server">Server</option>
+                    <option value="Cloud Container">Cloud Container</option>
+                    <option value="Web Application">Web Application</option>
+                    <option value="API Endpoint">API Endpoint</option>
+                    <option value="Database">Database</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase">Risk Level (0-100)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={newAssetRisk}
+                    onChange={(e) => setNewAssetRisk(Number(e.target.value))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Owner Email / Custodian</label>
+                <input
+                  type="email"
+                  placeholder="e.g., sysops@acme.com"
+                  value={newAssetOwner}
+                  onChange={(e) => setNewAssetOwner(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Internal Notes</label>
+                <textarea
+                  rows={2}
+                  placeholder="Additional context about host dependencies..."
+                  value={newAssetNotes}
+                  onChange={(e) => setNewAssetNotes(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAssetModal(false)}
+                  className="px-3.5 py-2 rounded-lg bg-zinc-800 text-zinc-300 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                >
+                  Register Asset
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Finding Modal */}
+      {showFindingModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center">
+              <h3 className="font-extrabold text-sm text-zinc-100 uppercase tracking-wider">Log Vulnerability Finding</h3>
+              <button onClick={() => setShowFindingModal(false)} className="text-zinc-500 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+            <form onSubmit={handleCreateFinding} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Vulnerability Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Outdated SSL Cipher Suites configuration"
+                  value={newFindingTitle}
+                  onChange={(e) => setNewFindingTitle(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase">Severity</label>
+                  <select
+                    value={newFindingSeverity}
+                    onChange={(e) => setNewFindingSeverity(e.target.value as any)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                  >
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                    <option value="Informational">Informational</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase">CVSS 3.1 Score (0.0 - 10.0)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="10"
+                    value={newFindingCvss}
+                    onChange={(e) => setNewFindingCvss(Number(e.target.value))}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Vulnerability Description</label>
+                <textarea
+                  rows={2}
+                  required
+                  placeholder="Detailed description of vulnerability findings and exploits..."
+                  value={newFindingDesc}
+                  onChange={(e) => setNewFindingDesc(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Mitigation Recommendations</label>
+                <textarea
+                  rows={2}
+                  placeholder="Exact remediation configs or patches..."
+                  value={newFindingRec}
+                  onChange={(e) => setNewFindingRec(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Owner Email Analyst</label>
+                <input
+                  type="email"
+                  placeholder="analyst@acme.com"
+                  value={newFindingOwner}
+                  onChange={(e) => setNewFindingOwner(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">References (one per line)</label>
+                <textarea
+                  rows={2}
+                  placeholder="https://nvd.nist.gov/..."
+                  value={newFindingRef}
+                  onChange={(e) => setNewFindingRef(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+
+              {/* Map affected assets */}
+              {assets.length > 0 && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase block">Link Affected Assets</label>
+                  <div className="grid grid-cols-2 gap-1.5 max-h-24 overflow-y-auto bg-zinc-950 p-2.5 rounded-lg border border-zinc-850">
+                    {assets.map(a => (
+                      <label key={a.id} className="flex items-center gap-1.5 text-[10px] text-zinc-300">
+                        <input
+                          type="checkbox"
+                          checked={selectedAssetIds.includes(a.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) setSelectedAssetIds(prev => [...prev, a.id]);
+                            else setSelectedAssetIds(prev => prev.filter(id => id !== a.id));
+                          }}
+                          className="rounded border-zinc-800 bg-zinc-900 text-blue-500 focus:ring-0"
+                        />
+                        <span className="truncate">{a.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowFindingModal(false)}
+                  className="px-3.5 py-2 rounded-lg bg-zinc-800 text-zinc-300 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                >
+                  Save Finding
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Evidence Modal */}
+      {showEvidenceModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl w-full max-w-md space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-extrabold text-sm text-zinc-100 uppercase tracking-wider">Attach Technical Evidence</h3>
+              <button onClick={() => { setEvidenceFindingId(''); setShowEvidenceModal(false); }} className="text-zinc-500 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+            <form onSubmit={handleCreateEvidence} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Evidence Type</label>
+                <select
+                  value={newEvidenceType}
+                  onChange={(e) => setNewEvidenceType(e.target.value as any)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                >
+                  <option value="terminal_log">Terminal/CLI Log</option>
+                  <option value="dns_record">DNS Record</option>
+                  <option value="http_header">HTTP Header dump</option>
+                  <option value="ssl_cert">SSL/TLS Cert Details</option>
+                  <option value="raw_payload">Raw Payload block</option>
+                  <option value="other">Other text payload</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Evidence Value / Log Output</label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Paste raw terminal stdout, TLS handshake outputs, or headers..."
+                  value={newEvidenceValue}
+                  onChange={(e) => setNewEvidenceValue(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 font-mono text-xs text-blue-300"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Description Notes</label>
+                <input
+                  type="text"
+                  placeholder="Notes explaining what this evidence block represents"
+                  value={newEvidenceNotes}
+                  onChange={(e) => setNewEvidenceNotes(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setEvidenceFindingId(''); setShowEvidenceModal(false); }}
+                  className="px-3.5 py-2 rounded-lg bg-zinc-800 text-zinc-300 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                >
+                  Save Evidence
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center">
+              <h3 className="font-extrabold text-sm text-zinc-100 uppercase tracking-wider">Compile Security Report</h3>
+              <button onClick={() => setShowReportModal(false)} className="text-zinc-500 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+            <form onSubmit={handleCreateReport} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Report Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Executive Cybersecurity Assessment - Q3 2026"
+                  value={newReportTitle}
+                  onChange={(e) => setNewReportTitle(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Executive Summary</label>
+                <textarea
+                  rows={2}
+                  placeholder="Consolidated executive high-level summary..."
+                  value={newReportExec}
+                  onChange={(e) => setNewReportExec(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase">Assessment Scope</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Specific domains, ranges, repositories in scope..."
+                    value={newReportScope}
+                    onChange={(e) => setNewReportScope(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase">Vulnerabilities Risk Summary</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Overview of severities and risk rankings..."
+                    value={newReportRisk}
+                    onChange={(e) => setNewReportRisk(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase">Appendices / Notes</label>
+                <textarea
+                  rows={2}
+                  placeholder="References, configurations, methodology notes..."
+                  value={newReportAppendices}
+                  onChange={(e) => setNewReportAppendices(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-zinc-100"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReportModal(false)}
+                  className="px-3.5 py-2 rounded-lg bg-zinc-800 text-zinc-300 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                >
+                  Compile Deliverable
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

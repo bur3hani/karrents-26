@@ -151,11 +151,15 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
     }, 1800);
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailInput.trim() || !emailInput.includes('@')) {
-      setPasswordError('Please enter a valid authorized email address.');
+    let email = emailInput.trim();
+    if (!email) {
+      setPasswordError('Please enter a valid authorized email or username.');
       return;
+    }
+    if (!email.includes('@')) {
+      email = `${email.toLowerCase()}@karrents.com`;
     }
     
     const isMinLength = password.length >= 8;
@@ -189,39 +193,47 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
       setIsLoggingIn(true);
       setPasswordError('');
 
-      setTimeout(() => {
-        setIsLoggingIn(false);
-        const emailKey = emailInput.toLowerCase().trim();
-        setRegisteredUsers(prev => ({
-          ...prev,
-          [emailKey]: password
-        }));
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, mfa_enabled: false })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to register account.');
+        }
+
         setIsRegisterMode(false);
         setPassword('');
         setConfirmPassword('');
-        setPasswordError('Account registered successfully! Please log in with your new credentials.');
-      }, 1200);
+        setPasswordError('Account registered successfully! Please log in with your credentials.');
+      } catch (err: any) {
+        setPasswordError(err.message || 'Registration failed.');
+      } finally {
+        setIsLoggingIn(false);
+      }
     } else {
-      const emailKey = emailInput.toLowerCase().trim();
-      const registeredPassword = registeredUsers[emailKey];
-
-      if (!registeredPassword) {
-        setPasswordError('No defender account found with this email. Please create a defender account first.');
-        return;
-      }
-
-      if (password !== registeredPassword) {
-        setPasswordError('Invalid credentials. Decryption key mismatch.');
-        return;
-      }
-
       setIsLoggingIn(true);
       setPasswordError('');
       
-      setTimeout(() => {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Invalid credentials or decryption key mismatch.');
+        }
+
+        onLoginSuccess(email);
+      } catch (err: any) {
+        setPasswordError(err.message || 'Login failed.');
+      } finally {
         setIsLoggingIn(false);
-        onLoginSuccess(emailInput);
-      }, 1200);
+      }
     }
   };
 

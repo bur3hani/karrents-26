@@ -115,3 +115,119 @@ export interface AdvisoryData {
   mitreTechniques: string[];
   relatedConcepts: string[];
 }
+
+export interface Organization {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: 'Super Administrator' | 'Workspace Administrator' | 'Security Analyst' | 'Read-Only Auditor';
+  organization_id: string;
+  status: 'active' | 'inactive';
+  created_at: string;
+}
+
+export interface Project {
+  id: string;
+  organization_id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'archived';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Asset {
+  id: string;
+  project_id: string;
+  name: string;
+  type: 'Domain' | 'IP Address' | 'Subnet' | 'Server' | 'Cloud Container' | 'Web Application' | 'API Endpoint' | 'Database';
+  tags: string[];
+  notes: string;
+  risk_score: number;
+  status: 'active' | 'archived' | 'decommissioned';
+  owner: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Finding {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string;
+  severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Informational';
+  cvss_score: number;
+  status: 'draft' | 'under_review' | 'confirmed' | 'remediated' | 'false_positive';
+  recommendations: string;
+  references: string[];
+  owner: string;
+  created_at: string;
+  updated_at: string;
+  affectedAssets?: { id: string; name: string; type: string }[];
+}
+
+export interface Evidence {
+  id: string;
+  finding_id: string;
+  type: 'terminal_log' | 'dns_record' | 'http_header' | 'ssl_cert' | 'screenshot_url' | 'cve_intel' | 'raw_payload' | 'other';
+  value: string;
+  notes: string;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface Note {
+  id: string;
+  project_id: string;
+  content: string;
+  created_by_email: string;
+  created_at: string;
+}
+
+export interface Report {
+  id: string;
+  project_id: string;
+  title: string;
+  executive_summary: string;
+  scope: string;
+  risk_summary: string;
+  appendices: string;
+  status: 'draft' | 'published';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AuditLog {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  user_email: string;
+  action: string;
+  details: string;
+  ip_address: string;
+  created_at: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface ApiToken {
+  id: string;
+  token_name: string;
+  last_used: string | null;
+  created_at: string;
+}
+
