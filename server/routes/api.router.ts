@@ -41,6 +41,16 @@ router.post('/auth/logout', hydrateAuth, authController.logout);
 
 router.post('/auth/sso', authController.sso);
 
+// GitHub OAuth Routes
+router.get('/auth/github/url', authController.githubUrl);
+router.get('/auth/github/callback', authController.githubCallback);
+
+// Google Authenticator (MFA) Routes
+router.post('/auth/mfa/setup', hydrateAuth, requireAuth, authController.mfaSetup);
+router.post('/auth/mfa/enable', hydrateAuth, requireAuth, authController.mfaEnable);
+router.post('/auth/mfa/disable', hydrateAuth, requireAuth, authController.mfaDisable);
+router.post('/auth/mfa/verify', authController.mfaVerify);
+
 router.get('/auth/me', hydrateAuth, authController.me);
 
 router.put(

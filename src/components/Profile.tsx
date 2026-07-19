@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../lib/api.ts';
 import { 
   User, 
   Key, 
@@ -35,6 +36,95 @@ interface ProfileProps {
 export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }: ProfileProps) {
   const [activeTab, setActiveTab] = useState<string>('keys');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // MFA states
+  const [mfaEnabled, setMfaEnabled] = useState<boolean>(false);
+  const [mfaSecret, setMfaSecret] = useState<string>('');
+  const [mfaQrCode, setMfaQrCode] = useState<string>('');
+  const [mfaSetupCode, setMfaSetupCode] = useState<string>('');
+  const [mfaStatusMsg, setMfaStatusMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [isSettingUpMfa, setIsSettingUpMfa] = useState<boolean>(false);
+  const [isSubmittingMfa, setIsSubmittingMfa] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await apiFetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          setMfaEnabled(data.user?.mfa_enabled || false);
+        }
+      } catch (err) {
+        console.error('Failed to load user profile details for MFA:', err);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleStartMfaSetup = async () => {
+    setMfaStatusMsg(null);
+    try {
+      const res = await apiFetch('/api/auth/mfa/setup', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setMfaSecret(data.secret);
+        setMfaQrCode(data.qrCodeDataUrl);
+        setIsSettingUpMfa(true);
+      } else {
+        const errData = await res.json();
+        setMfaStatusMsg({ type: 'error', text: errData.error || 'Failed to initialize MFA setup.' });
+      }
+    } catch (err: any) {
+      setMfaStatusMsg({ type: 'error', text: err.message || 'MFA setup error.' });
+    }
+  };
+
+  const handleVerifyAndEnableMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaSetupCode.trim()) return;
+    setIsSubmittingMfa(true);
+    setMfaStatusMsg(null);
+    try {
+      const res = await apiFetch('/api/auth/mfa/enable', {
+        method: 'POST',
+        body: JSON.stringify({ secret: mfaSecret, code: mfaSetupCode.trim() })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMfaEnabled(true);
+        setIsSettingUpMfa(false);
+        setMfaSetupCode('');
+        setMfaSecret('');
+        setMfaQrCode('');
+        setMfaStatusMsg({ type: 'success', text: 'Google Authenticator MFA enabled successfully!' });
+      } else {
+        setMfaStatusMsg({ type: 'error', text: data.error || 'Invalid verification code. Please check your app.' });
+      }
+    } catch (err: any) {
+      setMfaStatusMsg({ type: 'error', text: err.message || 'Verification failed.' });
+    } finally {
+      setIsSubmittingMfa(false);
+    }
+  };
+
+  const handleDisableMfa = async () => {
+    if (!confirm('Are you sure you want to disable Multi-Factor Authentication? Your account will be less secure.')) {
+      return;
+    }
+    setMfaStatusMsg(null);
+    try {
+      const res = await apiFetch('/api/auth/mfa/disable', { method: 'POST' });
+      if (res.ok) {
+        setMfaEnabled(false);
+        setMfaStatusMsg({ type: 'success', text: 'Multi-Factor Authentication disabled successfully.' });
+      } else {
+        const errData = await res.json();
+        setMfaStatusMsg({ type: 'error', text: errData.error || 'Failed to disable MFA.' });
+      }
+    } catch (err: any) {
+      setMfaStatusMsg({ type: 'error', text: err.message || 'Failed to disable MFA.' });
+    }
+  };
 
   // Webhook states
   const [webhookSlack, setWebhookSlack] = useState<string>('https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX');
@@ -149,6 +239,16 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
           >
             <CreditCard className="w-4 h-4" />
             <span>Billing & Plan</span>
+          </button>
+          <button
+            id="profile-tab-security"
+            onClick={() => { setActiveTab('security'); }}
+            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
+              activeTab === 'security' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+            }`}
+          >
+            <Shield className="w-4 h-4" />
+            <span>Security & MFA</span>
           </button>
           {onLogout && (
             <>
@@ -535,6 +635,159 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* 5. Security & MFA (Google Authenticator) */}
+          {activeTab === 'security' && (
+            <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-6 shadow-md space-y-6">
+              <div className="border-b border-zinc-800/40 pb-4">
+                <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-blue-400" />
+                  Multi-Factor Authentication (MFA)
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Secure your administrator session with Google Authenticator TOTP cryptological tokens.
+                </p>
+              </div>
+
+              {mfaStatusMsg && (
+                <div className={`p-4 rounded-lg text-xs flex items-center gap-2 ${
+                  mfaStatusMsg.type === 'success' ? 'bg-emerald-950/30 border border-emerald-500/20 text-emerald-400' : 'bg-red-950/30 border border-red-500/20 text-red-400'
+                }`}>
+                  <span>{mfaStatusMsg.text}</span>
+                </div>
+              )}
+
+              {/* MFA Active state */}
+              {mfaEnabled ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-emerald-950/10 border border-emerald-500/10 rounded-xl flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold text-emerald-400 block uppercase tracking-wider font-mono">Google Authenticator MFA Active</span>
+                        <span className="text-[11px] text-zinc-400 block">Your account is fully hardened against unauthorized access sessions.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    To log in to your dashboard, you are required to submit your 6-digit dynamic TOTP token generated by your Google Authenticator mobile app in addition to your standard master password credential.
+                  </p>
+
+                  <div className="pt-2">
+                    <button
+                      id="btn-disable-mfa"
+                      onClick={handleDisableMfa}
+                      className="bg-red-950/20 hover:bg-red-950/40 border border-red-500/20 text-red-400 font-bold px-4 py-2 rounded-lg text-xs transition-colors cursor-pointer"
+                    >
+                      Disable Multi-Factor Authentication
+                    </button>
+                  </div>
+                </div>
+              ) : isSettingUpMfa ? (
+                <div className="space-y-5 animate-fade-in">
+                  <div className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl space-y-4">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Step 1: Scan QR Code</span>
+                      <p className="text-xs text-zinc-400">Open Google Authenticator on your mobile device, tap "+" then choose "Scan a QR code".</p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-6 py-2">
+                      <div className="bg-white p-3 rounded-xl border border-zinc-800">
+                        <img 
+                          src={mfaQrCode} 
+                          alt="Google Authenticator QR Code" 
+                          className="w-40 h-40 object-contain"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div className="space-y-2 max-w-sm shrink">
+                        <span className="text-xs font-semibold text-zinc-300 block">Can't scan the code?</span>
+                        <p className="text-[11px] text-zinc-500 leading-relaxed">
+                          You can manually add this key into Google Authenticator under the "Enter a setup key" tab:
+                        </p>
+                        <div className="flex items-center gap-2 p-2 bg-zinc-900 border border-zinc-800 rounded font-mono text-[11px]">
+                          <span className="text-blue-400 select-all font-bold break-all">{mfaSecret}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(mfaSecret);
+                              alert('MFA secret key copied to clipboard!');
+                            }}
+                            className="text-zinc-400 hover:text-white shrink-0"
+                            title="Copy Secret Key"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleVerifyAndEnableMfa} className="space-y-4">
+                    <div className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl space-y-3">
+                      <div className="space-y-1">
+                        <label htmlFor="mfa-setup-code-input" className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                          Step 2: Enter Verification Code
+                        </label>
+                        <p className="text-xs text-zinc-400">Input the 6-digit authorization code displayed in Google Authenticator to synchronize.</p>
+                      </div>
+                      <input
+                        id="mfa-setup-code-input"
+                        type="text"
+                        required
+                        value={mfaSetupCode}
+                        onChange={(e) => setMfaSetupCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        className="w-32 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-center text-zinc-200 tracking-widest focus:outline-none focus:border-blue-500 font-mono font-bold"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        id="btn-confirm-mfa"
+                        type="submit"
+                        disabled={isSubmittingMfa || mfaSetupCode.length < 6}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-2"
+                      >
+                        {isSubmittingMfa ? 'Enabling MFA...' : 'Verify & Enable MFA'}
+                      </button>
+                      <button
+                        id="btn-cancel-mfa"
+                        type="button"
+                        onClick={() => {
+                          setIsSettingUpMfa(false);
+                          setMfaSecret('');
+                          setMfaQrCode('');
+                          setMfaSetupCode('');
+                        }}
+                        className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold px-4 py-2 rounded-lg text-xs transition-colors"
+                      >
+                        Cancel Setup
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                <div className="space-y-4 animate-fade-in">
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    By binding a Google Authenticator MFA configuration to your administrator account, you ensure that brute-force password guessing or physical key exposure is insufficient to compromise the platform.
+                  </p>
+                  
+                  <div className="pt-2">
+                    <button
+                      id="btn-setup-mfa"
+                      onClick={handleStartMfaSetup}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span>Setup Google Authenticator</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

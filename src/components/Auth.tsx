@@ -13,7 +13,8 @@ import {
   Server,
   RefreshCw,
   AlertTriangle,
-  Mail
+  Mail,
+  Github
 } from 'lucide-react';
 import KarrentsLogo from './KarrentsLogo';
 
@@ -116,6 +117,44 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
     };
   }, []);
 
+  useEffect(() => {
+    const handleOAuthMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'OAUTH_AUTH_SUCCESS') {
+        const { email, sessionToken } = event.data;
+        onLoginSuccess(email, sessionToken);
+      }
+    };
+    window.addEventListener('message', handleOAuthMessage);
+    return () => {
+      window.removeEventListener('message', handleOAuthMessage);
+    };
+  }, [onLoginSuccess]);
+
+  const handleGitHubSignIn = async () => {
+    try {
+      setPasswordError('');
+      const res = await fetch('/api/auth/github/url');
+      if (!res.ok) {
+        throw new Error('Failed to retrieve GitHub OAuth URL');
+      }
+      const data = await res.json();
+      if (data.url) {
+        const width = 600;
+        const height = 700;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        window.open(
+          data.url,
+          'GitHub OAuth Login',
+          `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes`
+        );
+      }
+    } catch (err: any) {
+      console.error('GitHub OAuth error:', err);
+      setPasswordError(err.message || 'Failed to initialize GitHub OAuth flow.');
+    }
+  };
+
   const triggerSsoAndLogin = async (email: string) => {
     let sessionToken = '';
     try {
@@ -146,15 +185,26 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
     }, 1550);
   };
 
-  const handleMfaSubmit = (e: React.FormEvent) => {
+  const handleMfaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mfaCode.trim() !== generatedOtp && mfaCode.trim() !== '123456') {
-      setMfaError(`Invalid cryptographic verification token. Expected ${generatedOtp} or 123456.`);
-      return;
-    }
+    if (!mfaCode.trim()) return;
     
-    setMfaError('');
-    triggerSsoAndLogin(selectedEmail);
+    try {
+      const res = await fetch('/api/auth/mfa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: selectedEmail, code: mfaCode.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Invalid verification code.');
+      }
+      
+      setMfaError('');
+      onLoginSuccess(selectedEmail, data.sessionToken);
+    } catch (err: any) {
+      setMfaError(err.message || 'MFA verification failed.');
+    }
   };
 
   const handleHwKeyLogin = () => {
@@ -242,6 +292,12 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
         const data = await res.json();
         if (!res.ok) {
           throw new Error(data.error || 'Invalid credentials or decryption key mismatch.');
+        }
+
+        if (data.mfaRequired) {
+          setSelectedEmail(data.email);
+          setAuthStep('mfa-challenge');
+          return;
         }
 
         onLoginSuccess(email, data.sessionToken);
@@ -654,6 +710,16 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                 {/* Google SSO tab */}
                 {activeTab === 'oauth' && (
                   <div className="space-y-4">
+                    {/* Real GitHub OAuth button */}
+                    <button
+                      id="github-signin-btn"
+                      onClick={handleGitHubSignIn}
+                      className="w-full bg-zinc-900 hover:bg-zinc-850 text-white px-4 py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2.5 border border-zinc-800"
+                    >
+                      <Github className="w-4 h-4 shrink-0 text-white" />
+                      <span>Sign In with GitHub Secure OAuth</span>
+                    </button>
+
                     <button
                       id="google-signin-btn"
                       onClick={handleGoogleSignIn}
@@ -672,7 +738,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                       <Globe className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-zinc-400 block mb-0.5">Federated Identity Handshake</span>
-                        Validates cryptographically signed JSON Web Tokens (JWT) issued by Google identity services over strict TLS 1.3 tunnels.
+                        Validates cryptographically signed JSON Web Tokens (JWT) or secure GitHub authentication sessions over strict TLS 1.3 tunnels.
                       </div>
                     </div>
                   </div>
