@@ -109,6 +109,15 @@ router.post(
   organizationController.createUser
 );
 
+router.delete(
+  '/org/users/:id',
+  hydrateAuth,
+  requireAuth,
+  requirePermission('users.manage'),
+  csrfProtection,
+  organizationController.deleteUser
+);
+
 router.get(
   '/org/audit',
   hydrateAuth,

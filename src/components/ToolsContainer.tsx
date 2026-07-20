@@ -16,7 +16,8 @@ import {
   Terminal,
   ExternalLink,
   ChevronRight,
-  Info
+  Info,
+  FileText
 } from 'lucide-react';
 import { CVEData, IOCData, DNSData, EmailSecurityData, HeaderData, SSLData } from '../types';
 import { apiFetch } from '../lib/api';
@@ -108,6 +109,31 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+  };
+
+  const convertToCSV = (rows: (string | number)[][]): string => {
+    return rows.map(row => 
+      row.map(value => {
+        const stringValue = typeof value === 'number' ? String(value) : (value || '');
+        const escaped = stringValue.replace(/"/g, '""');
+        if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('"')) {
+          return `"${escaped}"`;
+        }
+        return escaped;
+      }).join(',')
+    ).join('\n');
+  };
+
+  const downloadCSV = (fileName: string, csvContent: string) => {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', url);
+    downloadAnchor.setAttribute('download', `${fileName}.csv`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    URL.revokeObjectURL(url);
   };
 
   const saveToWorkbench = (title: string, target: string, toolType: string, severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW', score: number, data: any) => {
@@ -370,6 +396,37 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>Export Intel</span>
+                      </button>
+                      <button
+                        id="export-cve-csv"
+                        onClick={() => {
+                          if (!cveResult) return;
+                          const headers = [
+                            "Vulnerability ID", "Title", "Severity", "CVSS Score", "CVSS Vector", 
+                            "Published Date", "Exploit Status", "Description", "Business Impact", 
+                            "Technical Impact", "Mitigation", "Patch Info"
+                          ];
+                          const row = [
+                            cveResult.id,
+                            cveResult.title,
+                            cveResult.severity,
+                            cveResult.cvssScore,
+                            cveResult.cvssVector,
+                            cveResult.publishedDate,
+                            cveResult.exploitStatus,
+                            cveResult.description,
+                            cveResult.businessImpact,
+                            cveResult.technicalImpact,
+                            cveResult.remediation?.mitigation || '',
+                            cveResult.remediation?.patchInfo || ''
+                          ];
+                          const csv = convertToCSV([headers, row]);
+                          downloadCSV(`${cveResult.id}_findings`, csv);
+                        }}
+                        className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-750 text-xs flex items-center gap-1.5 transition-colors self-start font-semibold"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Export CSV</span>
                       </button>
                     </div>
                   </div>
@@ -729,6 +786,32 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span>Export Intel</span>
+                        </button>
+                        <button
+                          id="export-headers-csv"
+                          onClick={() => {
+                            if (!headersResult) return;
+                            const headers = [
+                              "Target URL", "Domain", "Grade", "Score", "Header Name", "Status", "Value", "Severity", "Description"
+                            ];
+                            const rows = headersResult.headers.map(h => [
+                              headersResult.url,
+                              headersResult.domain,
+                              headersResult.grade,
+                              headersResult.score,
+                              h.name,
+                              h.present ? "Present" : "Missing",
+                              h.value || 'N/A',
+                              h.severity,
+                              h.description
+                            ]);
+                            const csv = convertToCSV([headers, ...rows]);
+                            downloadCSV(`${headersResult.domain}_security_headers_findings`, csv);
+                          }}
+                          className="bg-zinc-950 hover:bg-zinc-850 text-zinc-400 hover:text-white px-3 py-1 rounded-lg border border-zinc-800 hover:border-zinc-750 text-[11px] flex items-center gap-1 transition-colors font-semibold"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Export CSV</span>
                         </button>
                       </div>
                     </div>

@@ -17,6 +17,7 @@ import {
   Github
 } from 'lucide-react';
 import KarrentsLogo from './KarrentsLogo';
+import { parseApiError } from '../lib/api';
 
 interface AuthProps {
   onLoginSuccess: (email: string, sessionToken?: string) => void;
@@ -265,10 +266,11 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password, mfa_enabled: false })
         });
-        const data = await res.json();
         if (!res.ok) {
-          throw new Error(data.error || 'Failed to register account.');
+          const errMsg = await parseApiError(res, 'Failed to register account.');
+          throw new Error(errMsg);
         }
+        const data = await res.json();
 
         setIsRegisterMode(false);
         setPassword('');
@@ -289,10 +291,11 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
-        const data = await res.json();
         if (!res.ok) {
-          throw new Error(data.error || 'Invalid credentials or decryption key mismatch.');
+          const errMsg = await parseApiError(res, 'Invalid credentials or decryption key mismatch.');
+          throw new Error(errMsg);
         }
+        const data = await res.json();
 
         if (data.mfaRequired) {
           setSelectedEmail(data.email);

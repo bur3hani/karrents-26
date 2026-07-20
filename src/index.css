@@ -11,6 +11,142 @@ body {
   background-color: #09090b;
   color: #f4f4f5;
   overflow-x: hidden;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ============================================================================
+   LIGHT THEME OVERRIDES
+   ============================================================================ */
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+html.light .bg-zinc-950 {
+  background-color: #ffffff !important;
+}
+
+html.light .bg-zinc-900 {
+  background-color: #f3f4f6 !important;
+}
+
+html.light .bg-zinc-900\/60 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html.light .bg-zinc-900\/50 {
+  background-color: rgba(243, 244, 246, 0.85) !important;
+}
+
+html.light .bg-zinc-900\/40 {
+  background-color: rgba(243, 244, 246, 0.65) !important;
+}
+
+html.light .bg-zinc-900\/10 {
+  background-color: rgba(243, 244, 246, 0.25) !important;
+}
+
+html.light .bg-zinc-950\/20 {
+  background-color: rgba(249, 250, 251, 0.3) !important;
+}
+
+html.light .bg-zinc-950\/40 {
+  background-color: rgba(249, 250, 251, 0.5) !important;
+}
+
+html.light .bg-zinc-950\/80 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html.light .bg-zinc-950\/60 {
+  background-color: rgba(255, 255, 255, 0.65) !important;
+}
+
+html.light .border-zinc-800\/50 {
+  border-color: rgba(229, 231, 235, 0.75) !important;
+}
+
+html.light .border-zinc-800\/40 {
+  border-color: rgba(229, 231, 235, 0.6) !important;
+}
+
+html.light .border-zinc-800\/30 {
+  border-color: rgba(229, 231, 235, 0.45) !important;
+}
+
+html.light .border-zinc-800 {
+  border-color: #e5e7eb !important;
+}
+
+html.light .border-zinc-850 {
+  border-color: #e5e7eb !important;
+}
+
+html.light .text-zinc-100 {
+  color: #111827 !important;
+}
+
+html.light .text-zinc-200 {
+  color: #1f2937 !important;
+}
+
+html.light .text-zinc-300 {
+  color: #374151 !important;
+}
+
+html.light .text-zinc-400 {
+  color: #4b5563 !important;
+}
+
+html.light .text-zinc-500 {
+  color: #6b7280 !important;
+}
+
+html.light .text-white {
+  color: #111827 !important;
+}
+
+html.light .hover\:text-white:hover {
+  color: #111827 !important;
+}
+
+html.light .bg-blue-600\/5 {
+  background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+html.light .border-blue-500\/20 {
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+html.light .bg-zinc-850 {
+  background-color: #e5e7eb !important;
+}
+
+html.light .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(243, 244, 246, 0.4);
+}
+
+html.light input, html.light textarea, html.light select {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+}
+
+html.light input::placeholder {
+  color: #9ca3af !important;
+}
+
+html.light button.bg-zinc-900, html.light a.bg-zinc-900 {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+html.light button.bg-zinc-900:hover, html.light a.bg-zinc-900:hover {
+  background-color: #e5e7eb !important;
 }
 
 /* Custom Scrollbar for modern dashboards */

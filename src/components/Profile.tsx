@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiFetch } from '../lib/api.ts';
+import { apiFetch, parseApiError } from '../lib/api';
 import { 
   User, 
   Key, 
@@ -15,7 +15,9 @@ import {
   CreditCard,
   LogOut,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Users,
+  Settings
 } from 'lucide-react';
 
 interface ApiKey {
@@ -36,6 +38,107 @@ interface ProfileProps {
 export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }: ProfileProps) {
   const [activeTab, setActiveTab] = useState<string>('keys');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Client Custom Keys states
+  const [customGeminiKey, setCustomGeminiKey] = useState<string>(() => {
+    return localStorage.getItem('karrents_custom_gemini_key') || '';
+  });
+  const [tempGeminiKey, setTempGeminiKey] = useState<string>('');
+
+  const handleSaveCustomGeminiKey = () => {
+    if (!tempGeminiKey.trim()) return;
+    localStorage.setItem('karrents_custom_gemini_key', tempGeminiKey.trim());
+    setCustomGeminiKey(tempGeminiKey.trim());
+    setTempGeminiKey('');
+    alert("Custom Gemini API Key saved successfully! All future AI requests will proxy through your custom credential.");
+  };
+
+  const handleClearCustomGeminiKey = () => {
+    localStorage.removeItem('karrents_custom_gemini_key');
+    setCustomGeminiKey('');
+    alert("Reverted to Karrents shared default API Key.");
+  };
+
+  // User Management states
+  const [orgUsers, setOrgUsers] = useState<any[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(false);
+  const [newUserEmail, setNewUserEmail] = useState<string>('');
+  const [newUserName, setNewUserName] = useState<string>('');
+  const [newUserRole, setNewUserRole] = useState<string>('SOC Analyst');
+  const [newUserPassword, setNewUserPassword] = useState<string>('');
+  const [userManageMsg, setUserManageMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const fetchOrgUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      const res = await apiFetch('/api/org/users');
+      if (res.ok) {
+        const data = await res.json();
+        setOrgUsers(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch org users:', err);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'sub-users' && userEmail === 'engr.buru@gmail.com') {
+      fetchOrgUsers();
+    }
+  }, [activeTab]);
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUserManageMsg(null);
+    if (!newUserEmail.trim() || !newUserName.trim() || !newUserPassword.trim()) {
+      setUserManageMsg({ type: 'error', text: 'Please fill in all user details.' });
+      return;
+    }
+    try {
+      const res = await apiFetch('/api/org/users', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: newUserEmail.trim(),
+          name: newUserName.trim(),
+          role: newUserRole,
+          password: newUserPassword
+        })
+      });
+      if (res.ok) {
+        setUserManageMsg({ type: 'success', text: `User ${newUserName} added successfully!` });
+        setNewUserEmail('');
+        setNewUserName('');
+        setNewUserPassword('');
+        fetchOrgUsers();
+      } else {
+        const errMsg = await parseApiError(res, "Failed to create user.");
+        setUserManageMsg({ type: 'error', text: errMsg });
+      }
+    } catch (err: any) {
+      setUserManageMsg({ type: 'error', text: err.message || 'Error creating user.' });
+    }
+  };
+
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to remove ${name} from your subscription?`)) return;
+    setUserManageMsg(null);
+    try {
+      const res = await apiFetch(`/api/org/users/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setUserManageMsg({ type: 'success', text: `User ${name} removed from subscription.` });
+        fetchOrgUsers();
+      } else {
+        const errMsg = await parseApiError(res, "Failed to delete user.");
+        setUserManageMsg({ type: 'error', text: errMsg });
+      }
+    } catch (err: any) {
+      setUserManageMsg({ type: 'error', text: err.message || 'Error deleting user.' });
+    }
+  };
 
   // MFA states
   const [mfaEnabled, setMfaEnabled] = useState<boolean>(false);
@@ -71,8 +174,8 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
         setMfaQrCode(data.qrCodeDataUrl);
         setIsSettingUpMfa(true);
       } else {
-        const errData = await res.json();
-        setMfaStatusMsg({ type: 'error', text: errData.error || 'Failed to initialize MFA setup.' });
+        const errMsg = await parseApiError(res, "Failed to initialize MFA setup.");
+        setMfaStatusMsg({ type: 'error', text: errMsg });
       }
     } catch (err: any) {
       setMfaStatusMsg({ type: 'error', text: err.message || 'MFA setup error.' });
@@ -89,7 +192,6 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
         method: 'POST',
         body: JSON.stringify({ secret: mfaSecret, code: mfaSetupCode.trim() })
       });
-      const data = await res.json();
       if (res.ok) {
         setMfaEnabled(true);
         setIsSettingUpMfa(false);
@@ -98,7 +200,8 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
         setMfaQrCode('');
         setMfaStatusMsg({ type: 'success', text: 'Google Authenticator MFA enabled successfully!' });
       } else {
-        setMfaStatusMsg({ type: 'error', text: data.error || 'Invalid verification code. Please check your app.' });
+        const errMsg = await parseApiError(res, "Invalid verification code. Please check your app.");
+        setMfaStatusMsg({ type: 'error', text: errMsg });
       }
     } catch (err: any) {
       setMfaStatusMsg({ type: 'error', text: err.message || 'Verification failed.' });
@@ -118,8 +221,8 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
         setMfaEnabled(false);
         setMfaStatusMsg({ type: 'success', text: 'Multi-Factor Authentication disabled successfully.' });
       } else {
-        const errData = await res.json();
-        setMfaStatusMsg({ type: 'error', text: errData.error || 'Failed to disable MFA.' });
+        const errMsg = await parseApiError(res, "Failed to disable MFA.");
+        setMfaStatusMsg({ type: 'error', text: errMsg });
       }
     } catch (err: any) {
       setMfaStatusMsg({ type: 'error', text: err.message || 'Failed to disable MFA.' });
@@ -250,6 +353,28 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             <Shield className="w-4 h-4" />
             <span>Security & MFA</span>
           </button>
+          <button
+            id="profile-tab-custom-keys"
+            onClick={() => { setActiveTab('custom-keys'); }}
+            className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
+              activeTab === 'custom-keys' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+            }`}
+          >
+            <Key className="w-4 h-4 text-emerald-400" />
+            <span>Custom API Keys</span>
+          </button>
+          {userEmail === 'engr.buru@gmail.com' && (
+            <button
+              id="profile-tab-sub-users"
+              onClick={() => { setActiveTab('sub-users'); }}
+              className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
+                activeTab === 'sub-users' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              }`}
+            >
+              <Users className="w-4 h-4 text-purple-400" />
+              <span>User & Subscriptions</span>
+            </button>
+          )}
           {onLogout && (
             <>
               <hr className="border-zinc-800/40 my-2" />
@@ -788,6 +913,214 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* 6. Custom API Keys */}
+          {activeTab === 'custom-keys' && (
+            <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-6 shadow-md space-y-6">
+              <div className="border-b border-zinc-800/40 pb-4">
+                <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
+                  <Key className="w-4 h-4 text-emerald-400" />
+                  Client Custom API Keys
+                </h3>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Configure your own custom third-party API credentials to run operations under your personal account limits.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl space-y-4">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-zinc-300">Custom Google Gemini API Key</label>
+                    <p className="text-[10px] text-zinc-500">
+                      Used for AI Advisory copilot, vulnerability analysis summaries, and automated compliance mappings.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      id="custom-gemini-key-input"
+                      type="password"
+                      placeholder={customGeminiKey ? "••••••••••••••••••••" : "AI Studio / Vertex AI Gemini Key"}
+                      value={tempGeminiKey}
+                      onChange={(e) => setTempGeminiKey(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 w-full focus:outline-none focus:border-emerald-500 font-mono"
+                    />
+                    <button
+                      id="btn-save-custom-gemini-key"
+                      onClick={handleSaveCustomGeminiKey}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors shrink-0 cursor-pointer"
+                    >
+                      Save Key
+                    </button>
+                  </div>
+                  {customGeminiKey && (
+                    <div className="flex items-center justify-between text-[11px] bg-emerald-950/20 border border-emerald-500/20 p-2.5 rounded-lg text-emerald-400">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Check className="w-3.5 h-3.5" />
+                        Custom Gemini Key Active
+                      </span>
+                      <button
+                        id="btn-delete-custom-gemini-key"
+                        onClick={handleClearCustomGeminiKey}
+                        className="text-red-400 hover:text-red-300 font-bold hover:underline cursor-pointer"
+                      >
+                        Revert to System Default
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 7. User & Subscriptions */}
+          {activeTab === 'sub-users' && userEmail === 'engr.buru@gmail.com' && (
+            <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-6 shadow-md space-y-6">
+              <div className="border-b border-zinc-800/40 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
+                    <Users className="w-4 h-4 text-purple-400" />
+                    Subscription User Manager (Super User View)
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Manage active users under your Enterprise Core Platform subscription seats.
+                  </p>
+                </div>
+                <div className="bg-purple-950/20 border border-purple-500/30 text-purple-400 text-[10.5px] px-2.5 py-1 rounded-full font-mono font-bold uppercase tracking-wider h-fit shrink-0">
+                  ⚡ Unlimited Active Seats
+                </div>
+              </div>
+
+              {userManageMsg && (
+                <div className={`p-4 rounded-lg text-xs ${
+                  userManageMsg.type === 'success' ? 'bg-emerald-950/30 border border-emerald-500/20 text-emerald-400' : 'bg-red-950/30 border border-red-500/20 text-red-400'
+                }`}>
+                  <span>{userManageMsg.text}</span>
+                </div>
+              )}
+
+              {/* Add user form */}
+              <div className="p-5 bg-zinc-950/40 border border-zinc-850 rounded-xl space-y-4">
+                <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider font-mono">Provision New Subscription Seat</h4>
+                <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 items-end">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Jane Doe"
+                      value={newUserName}
+                      onChange={(e) => setNewUserName(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-100 w-full focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="jane.doe@agency.com"
+                      value={newUserEmail}
+                      onChange={(e) => setNewUserEmail(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-100 w-full focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Role</label>
+                    <select
+                      value={newUserRole}
+                      onChange={(e) => setNewUserRole(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-100 w-full focus:outline-none focus:border-purple-500"
+                    >
+                      <option value="Admin">Super Admin</option>
+                      <option value="SOC Analyst">SOC Analyst</option>
+                      <option value="Viewer">Viewer / Auditor</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Temporary Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={newUserPassword}
+                      onChange={(e) => setNewUserPassword(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-100 w-full focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="lg:col-span-4 flex justify-end">
+                    <button
+                      type="submit"
+                      className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Provision Seat
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Active Users Directory Table */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider font-mono">Active Seats Directory</h4>
+                <div className="bg-zinc-950/30 border border-zinc-850 rounded-xl overflow-hidden text-xs">
+                  <div className="grid grid-cols-12 bg-zinc-950 px-4 py-2.5 text-zinc-500 font-bold uppercase tracking-wider text-[9px] border-b border-zinc-850">
+                    <span className="col-span-4">User Details</span>
+                    <span className="col-span-4">Email</span>
+                    <span className="col-span-2">Access Role</span>
+                    <span className="col-span-2 text-right">Action</span>
+                  </div>
+                  <div className="divide-y divide-zinc-900/60">
+                    {isLoadingUsers ? (
+                      <div className="p-6 text-center text-zinc-500 font-medium">
+                        Fetching organization directory...
+                      </div>
+                    ) : orgUsers.length === 0 ? (
+                      <div className="p-6 text-center text-zinc-500 font-medium">
+                        No active subscription seats registered.
+                      </div>
+                    ) : (
+                      orgUsers.map((u) => (
+                        <div key={u.id} className="grid grid-cols-12 px-4 py-3.5 items-center hover:bg-zinc-950/20 text-zinc-300">
+                          <div className="col-span-4 flex items-center gap-2.5">
+                            <div className="h-7 w-7 rounded-full bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-[10.5px] uppercase">
+                              {u.name.slice(0, 2)}
+                            </div>
+                            <span className="font-semibold text-zinc-200">{u.name}</span>
+                          </div>
+                          <span className="col-span-4 font-mono text-zinc-400 select-all">{u.email}</span>
+                          <div className="col-span-2">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              u.role === 'Admin' || u.role === 'Super Admin'
+                                ? 'bg-red-950/30 text-red-400 border border-red-500/10'
+                                : u.role === 'SOC Analyst'
+                                ? 'bg-blue-950/30 text-blue-400 border border-blue-500/10'
+                                : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
+                            }`}>
+                              {u.role || 'SOC Analyst'}
+                            </span>
+                          </div>
+                          <div className="col-span-2 text-right">
+                            {u.email === 'engr.buru@gmail.com' ? (
+                              <span className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mr-2">Subscription Manager</span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteUser(u.id, u.name)}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-950/30 p-1.5 rounded-md transition-all cursor-pointer"
+                                title="Revoke Subscription Seat"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

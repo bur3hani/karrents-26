@@ -30,7 +30,9 @@ import {
   HelpCircle,
   Play,
   Bell,
-  CreditCard
+  CreditCard,
+  Sun,
+  Moon
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import ToolsContainer from './components/ToolsContainer';
@@ -50,6 +52,21 @@ import { apiFetch } from './lib/api';
 
 export default function App() {
   const [viewMode, setViewMode] = useState<'landing' | 'app' | 'auth'>('landing');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('karrents_theme') as 'light' | 'dark') || 'dark';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    } else {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    }
+    localStorage.setItem('karrents_theme', theme);
+  }, [theme]);
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('karrents_authenticated') === 'true';
@@ -167,6 +184,14 @@ export default function App() {
 
             {/* CTA */}
             <div className="hidden md:flex items-center gap-3">
+              <button
+                id="btn-theme-toggle-landing"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800/40 transition-colors mr-1 flex items-center justify-center border border-zinc-850"
+                title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
+              </button>
               <button
                 id="btn-nav-sign-in"
                 onClick={() => setViewMode(isAuthenticated ? 'app' : 'auth')}
@@ -834,6 +859,15 @@ export default function App() {
 
               {/* System metrics */}
               <div className="hidden sm:flex items-center gap-3.5 font-mono text-[10px]">
+                <button
+                  id="btn-theme-toggle-workbench"
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="p-1.5 rounded-md hover:bg-zinc-800/40 text-zinc-400 hover:text-white transition-colors border border-zinc-800/50 flex items-center justify-center cursor-pointer mr-1"
+                  title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+                >
+                  {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-400" />}
+                </button>
+                <span className="text-zinc-800">|</span>
                 <div className="flex items-center gap-1.5 text-green-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
                   <span>API Connection Online</span>

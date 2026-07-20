@@ -523,6 +523,16 @@ export const db = {
         }
         return user;
       });
+    },
+    delete(id: string) {
+      return db.transaction(store => {
+        const index = store.users.findIndex(u => u.id === id);
+        if (index !== -1) {
+          store.users.splice(index, 1);
+          return true;
+        }
+        return false;
+      });
     }
   },
 

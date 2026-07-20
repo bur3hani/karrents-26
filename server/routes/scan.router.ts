@@ -26,6 +26,33 @@ if (apiKey && apiKey !== "MY_GEMINI_API_KEY") {
   }
 }
 
+// Middleware to bind client-provided Gemini API key if present
+router.use((req: any, res, next) => {
+  const clientApiKey = req.headers['x-gemini-api-key'] as string;
+  if (clientApiKey && clientApiKey.trim() !== "") {
+    try {
+      req.ai = new GoogleGenAI({
+        apiKey: clientApiKey.trim(),
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build-custom',
+          }
+        }
+      });
+    } catch (err) {
+      console.error("Failed to initialize custom client Google GenAI:", err);
+      req.ai = ai;
+    }
+  } else {
+    req.ai = ai;
+  }
+  next();
+});
+
+function getAi(req: Request): GoogleGenAI | null {
+  return (req as any).ai || ai;
+}
+
 // Domain sanitizer helper
 function cleanInputDomain(input: string): string {
   if (!input) return "";
@@ -281,6 +308,7 @@ router.get('/search', hydrateAuth, requireAuth, (req: any, res) => {
 });
 
 router.post('/cve', hydrateAuth, requireAuth, async (req, res) => {
+  const ai = getAi(req);
   const { cveId } = req.body;
   if (!cveId || !cveId.trim().match(/^CVE-\d{4}-\d{4,8}$/i)) {
     return res.status(400).json({ error: "Invalid CVE ID format. Must match CVE-YYYY-NNNNNN" });
@@ -338,6 +366,7 @@ router.post('/cve', hydrateAuth, requireAuth, async (req, res) => {
 });
 
 router.post('/ioc', hydrateAuth, requireAuth, async (req, res) => {
+  const ai = getAi(req);
   const { indicator } = req.body;
   if (!indicator || indicator.trim().length < 3) {
     return res.status(400).json({ error: "Invalid indicator specified" });
@@ -383,6 +412,7 @@ router.post('/ioc', hydrateAuth, requireAuth, async (req, res) => {
 });
 
 router.post('/dns', hydrateAuth, requireAuth, async (req, res) => {
+  const ai = getAi(req);
   const { domain, recordType = 'A' } = req.body;
   const cleanDomain = cleanInputDomain(domain);
 
@@ -438,6 +468,7 @@ router.post('/dns', hydrateAuth, requireAuth, async (req, res) => {
 });
 
 router.post('/whois', hydrateAuth, requireAuth, async (req, res) => {
+  const ai = getAi(req);
   const { domain } = req.body;
   const cleanDomain = cleanInputDomain(domain);
 
@@ -480,6 +511,7 @@ router.post('/whois', hydrateAuth, requireAuth, async (req, res) => {
 });
 
 router.post('/email-security', hydrateAuth, requireAuth, async (req, res) => {
+  const ai = getAi(req);
   const { domain } = req.body;
   const cleanDomain = cleanInputDomain(domain);
 
@@ -528,6 +560,7 @@ router.post('/email-security', hydrateAuth, requireAuth, async (req, res) => {
 });
 
 router.post('/security-headers', hydrateAuth, requireAuth, async (req, res) => {
+  const ai = getAi(req);
   const { url: targetUrl } = req.body;
   if (!targetUrl) {
     return res.status(400).json({ error: "Invalid URL specified" });
@@ -656,6 +689,7 @@ router.post('/security-headers', hydrateAuth, requireAuth, async (req, res) => {
 });
 
 router.post('/ssl-checker', hydrateAuth, requireAuth, async (req, res) => {
+  const ai = getAi(req);
   const { domain } = req.body;
   const cleanDomain = cleanInputDomain(domain);
 
@@ -753,6 +787,76 @@ router.post('/ssl-checker', hydrateAuth, requireAuth, async (req, res) => {
   } catch (error: any) {
     console.error("SSL/TLS checker error:", error);
     return res.status(500).json({ error: `Certificate check failed: ${error.message}` });
+  }
+});
+
+router.post('/ai-search', hydrateAuth, requireAuth, async (req, res) => {
+  const ai = getAi(req);
+  const { query } = req.body;
+  if (!query || typeof query !== 'string' || query.trim().length < 2) {
+    return res.status(400).json({ error: "Invalid query specified" });
+  }
+
+  const cleanQuery = query.trim();
+
+  const getFallbackAdvisory = (q: string) => {
+    const lower = q.toLowerCase();
+    let answer = "This is a security advice query. To mitigate common vulnerabilities, ensure your servers have configured proper HTTP security headers, SPF/DMARC records are strictly validated, and dependencies are regularly scanned for CVEs.";
+    let suggestedTools = ["CVE Advisor", "Security Headers Analyzer"];
+    let mitreTechniques = ["T1190"];
+    let relatedConcepts = ["mitigation", "best-practices"];
+
+    if (lower.includes("clickjacking")) {
+      answer = "Clickjacking (UI redressing) is mitigated primarily by defining the 'X-Frame-Options' header to 'DENY' or 'SAMEORIGIN', or using Content Security Policy (CSP) with a 'frame-ancestors' directive.";
+      suggestedTools = ["Security Headers Analyzer"];
+      mitreTechniques = ["T1189"];
+      relatedConcepts = ["clickjacking", "csp", "x-frame-options"];
+    } else if (lower.includes("log4") || lower.includes("cve-2021-44228")) {
+      answer = "CVE-2021-44228 (Log4Shell) is a critical RCE vulnerability in Apache Log4j. Mitigation involves upgrading to 2.15.0 or setting system property log4j2.formatMsgNoLookups=true.";
+      suggestedTools = ["CVE Advisor"];
+      mitreTechniques = ["T1190"];
+      relatedConcepts = ["rce", "log4j", "patching"];
+    } else if (lower.includes("dns") || lower.includes("dmarc") || lower.includes("spf")) {
+      answer = "Email spoofing and domain reputation risks can be audited by checking SPF, DKIM, and DMARC settings. Ensure SPF uses strict qualifiers and DMARC is set to p=quarantine or p=reject.";
+      suggestedTools = ["Email Security Auditor", "DNS Domain Auditor"];
+      mitreTechniques = ["T1114"];
+      relatedConcepts = ["dmarc", "spf", "email-security"];
+    }
+
+    return {
+      answer,
+      suggestedTools,
+      mitreTechniques,
+      relatedConcepts
+    };
+  };
+
+  try {
+    if (ai) {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `You are an AI Security Advisory Copilot. The user has asked the security-related question: "${cleanQuery}".
+        Provide an expert security advisory response. You MUST return a JSON object conforming exactly to this structure:
+        {
+          "answer": "A detailed, structured, clear and professional answer/advisory to the user's question, including remediation advice",
+          "suggestedTools": ["CVE Advisor", "IOC Intelligence Lookup", "DNS Domain Auditor", "Email Security Auditor", "Security Headers Analyzer", "SSL/TLS Certificate Checker"],
+          "mitreTechniques": ["T1190", "T1114"],
+          "relatedConcepts": ["clickjacking", "xss", "email-security", "patching"]
+        }`,
+        config: {
+          responseMimeType: "application/json"
+        }
+      });
+
+      const responseText = response.text || "{}";
+      const data = JSON.parse(responseText);
+      return res.json(data);
+    } else {
+      return res.json(getFallbackAdvisory(cleanQuery));
+    }
+  } catch (error: any) {
+    console.error("AI Search query failed:", error);
+    return res.json(getFallbackAdvisory(cleanQuery));
   }
 });
 

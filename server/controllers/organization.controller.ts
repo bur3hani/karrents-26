@@ -34,6 +34,22 @@ export class OrganizationController {
     }
   }
 
+  async deleteUser(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+
+      const deleted = await organizationService.deleteOrganizationUser(req.user, id, req.ip);
+      if (deleted) {
+        return res.json({ success: true, message: "User deleted successfully" });
+      } else {
+        return res.status(404).json({ error: "User not found" });
+      }
+    } catch (err: any) {
+      return res.status(400).json({ error: err.message });
+    }
+  }
+
   async listAuditLogs(req: AuthenticatedRequest, res: Response) {
     try {
       if (!req.user) return res.status(401).json({ error: "Unauthorized" });

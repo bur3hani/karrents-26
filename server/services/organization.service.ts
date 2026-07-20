@@ -49,6 +49,28 @@ export class OrganizationService {
     return newUser;
   }
 
+  async deleteOrganizationUser(adminUser: User, targetUserId: string, ip?: string): Promise<boolean> {
+    const targetUser = await userRepository.findById(targetUserId);
+    if (!targetUser) return false;
+    
+    if (adminUser.id === targetUserId) {
+      throw new Error("Cannot remove your own account from user management.");
+    }
+
+    const deleted = await userRepository.delete(targetUserId);
+    if (deleted) {
+      await organizationRepository.createAuditLog(
+        adminUser.organization_id,
+        adminUser.id,
+        adminUser.email,
+        'USER_DELETE',
+        `Deleted organization user ${targetUser.name} (${targetUser.email})`,
+        ip || '127.0.0.1'
+      );
+    }
+    return deleted;
+  }
+
   async getAuditLogs(orgId: string): Promise<AuditLog[]> {
     const logs = await organizationRepository.findAuditLogs(orgId);
     return [...logs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());

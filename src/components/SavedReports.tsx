@@ -21,7 +21,7 @@ import {
   FileDown
 } from 'lucide-react';
 import { Project, Asset, Finding, Evidence, Report } from '../types';
-import { apiFetch } from '../lib/api';
+import { apiFetch, parseApiError } from '../lib/api';
 
 interface SavedReportsProps {
   onNavigateToTool?: (toolName: string) => void;
@@ -150,8 +150,8 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to create project workspace.");
+        const errorMsg = await parseApiError(res, "Failed to create project workspace.");
+        throw new Error(errorMsg);
       }
 
       const data = await res.json();
@@ -189,8 +189,8 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       });
 
       if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Failed to register client asset.");
+        const errorMsg = await parseApiError(res, "Failed to register client asset.");
+        throw new Error(errorMsg);
       }
 
       const d = await res.json();
@@ -227,8 +227,8 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       });
 
       if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Failed to log finding.");
+        const errorMsg = await parseApiError(res, "Failed to log finding.");
+        throw new Error(errorMsg);
       }
 
       const d = await res.json();
@@ -261,8 +261,8 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       });
 
       if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Failed to submit evidence.");
+        const errorMsg = await parseApiError(res, "Failed to submit evidence.");
+        throw new Error(errorMsg);
       }
 
       // Reload project details to sync evidence
@@ -296,8 +296,8 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       });
 
       if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Failed to compile security report.");
+        const errorMsg = await parseApiError(res, "Failed to compile security report.");
+        throw new Error(errorMsg);
       }
 
       const d = await res.json();

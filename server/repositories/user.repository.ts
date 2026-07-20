@@ -25,6 +25,10 @@ export class UserRepository {
     return db.users.changePassword(id, passwordPlain);
   }
 
+  async delete(id: string): Promise<boolean> {
+    return db.users.delete(id);
+  }
+
   // --- Sessions operations ---
   async createSession(userId: string, ipAddress: string, userAgent: string): Promise<Session> {
     return db.sessions.create(userId, ipAddress, userAgent);
