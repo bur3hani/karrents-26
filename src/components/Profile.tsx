@@ -290,7 +290,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <User className="w-4 h-4 text-blue-400" />
+            <User className="w-4 h-4 text-brand-neon" />
             User Settings & Profile Control
           </h2>
           <p className="text-xs text-zinc-400">
@@ -307,7 +307,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             id="profile-tab-keys"
             onClick={() => { setActiveTab('keys'); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
-              activeTab === 'keys' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'keys' ? 'bg-brand-neon/10 text-brand-neon border-l-2 border-brand-neon font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <Key className="w-4 h-4" />
@@ -317,7 +317,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             id="profile-tab-webhooks"
             onClick={() => { setActiveTab('webhooks'); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
-              activeTab === 'webhooks' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'webhooks' ? 'bg-brand-neon/10 text-brand-neon border-l-2 border-brand-neon font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <Bell className="w-4 h-4" />
@@ -327,7 +327,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             id="profile-tab-audit"
             onClick={() => { setActiveTab('audit'); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
-              activeTab === 'audit' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'audit' ? 'bg-brand-neon/10 text-brand-neon border-l-2 border-brand-neon font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <Activity className="w-4 h-4" />
@@ -337,7 +337,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             id="profile-tab-billing"
             onClick={() => { setActiveTab('billing'); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
-              activeTab === 'billing' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'billing' ? 'bg-brand-neon/10 text-brand-neon border-l-2 border-brand-neon font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <CreditCard className="w-4 h-4" />
@@ -347,7 +347,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             id="profile-tab-security"
             onClick={() => { setActiveTab('security'); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
-              activeTab === 'security' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'security' ? 'bg-brand-neon/10 text-brand-neon border-l-2 border-brand-neon font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <Shield className="w-4 h-4" />
@@ -357,7 +357,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             id="profile-tab-custom-keys"
             onClick={() => { setActiveTab('custom-keys'); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
-              activeTab === 'custom-keys' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'custom-keys' ? 'bg-brand-neon/10 text-brand-neon border-l-2 border-brand-neon font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <Key className="w-4 h-4 text-emerald-400" />
@@ -368,7 +368,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
               id="profile-tab-sub-users"
               onClick={() => { setActiveTab('sub-users'); }}
               className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
-                activeTab === 'sub-users' ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                activeTab === 'sub-users' ? 'bg-brand-neon/10 text-brand-neon border-l-2 border-brand-neon font-semibold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
               }`}
             >
               <Users className="w-4 h-4 text-purple-400" />
@@ -398,7 +398,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
               <div className="flex items-center justify-between border-b border-zinc-800/40 pb-4">
                 <div className="space-y-1">
                   <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
-                    <Key className="w-4 h-4 text-blue-400" />
+                    <Key className="w-4 h-4 text-brand-neon" />
                     Programmatic API Credentials
                   </h3>
                   <p className="text-xs text-zinc-400">Keys enable full-access server operations over CLI integrations.</p>
@@ -406,7 +406,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                 <button
                   id="btn-create-api-key"
                   onClick={handleCreateKey}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3.5 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5"
+                  className="bg-brand-neon hover:bg-brand-neon/80 text-white font-medium px-3.5 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Generate Key</span>
@@ -420,7 +420,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                     <div className="space-y-1 shrink min-w-0">
                       <span className="font-bold text-zinc-200 truncate block">{k.name}</span>
                       <div className="flex flex-wrap items-center gap-2 text-[10px] text-zinc-500 font-mono">
-                        <span className="font-bold text-blue-400 select-all">{k.keyPrefix}</span>
+                        <span className="font-bold text-brand-neon select-all">{k.keyPrefix}</span>
                         <span>•</span>
                         <span>Created: {new Date(k.createdAt).toLocaleDateString()}</span>
                         <span>•</span>
@@ -461,7 +461,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-6 shadow-md space-y-6">
               <div className="border-b border-zinc-800/40 pb-4">
                 <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-blue-400" />
+                  <Bell className="w-4 h-4 text-brand-neon" />
                   Outgoing Webhooks & Teams Alert Delivery
                 </h3>
                 <p className="text-xs text-zinc-400">Configure outbound HTTP POST pipelines when certificate expirations or validation anomalies occur.</p>
@@ -477,7 +477,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                     value={webhookSlack}
                     onChange={(e) => setWebhookSlack(e.target.value)}
                     placeholder="https://hooks.slack.com/services/..."
-                    className="w-full bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                    className="w-full bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                   />
                 </div>
 
@@ -490,7 +490,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                     value={webhookTeams}
                     onChange={(e) => setWebhookTeams(e.target.value)}
                     placeholder="https://outlook.office.com/webhook/..."
-                    className="w-full bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                    className="w-full bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                   />
                 </div>
 
@@ -503,7 +503,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                     value={webhookDiscord}
                     onChange={(e) => setWebhookDiscord(e.target.value)}
                     placeholder="https://discord.com/api/webhooks/..."
-                    className="w-full bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                    className="w-full bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                   />
                 </div>
 
@@ -519,7 +519,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                         type="checkbox"
                         checked={hookEvents.certExp}
                         onChange={(e) => setHookEvents({ ...hookEvents, certExp: e.target.checked })}
-                        className="rounded bg-zinc-950 border-zinc-800 text-blue-600 focus:ring-0 focus:ring-offset-0"
+                        className="rounded bg-zinc-950 border-zinc-800 text-brand-neon focus:ring-0 focus:ring-offset-0"
                       />
                       <span>Inbound SSL Certificate Expiration Warnings (&lt;30 Days remaining)</span>
                     </label>
@@ -529,7 +529,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                         type="checkbox"
                         checked={hookEvents.headersFail}
                         onChange={(e) => setHookEvents({ ...hookEvents, headersFail: e.target.checked })}
-                        className="rounded bg-zinc-950 border-zinc-800 text-blue-600 focus:ring-0 focus:ring-offset-0"
+                        className="rounded bg-zinc-950 border-zinc-800 text-brand-neon focus:ring-0 focus:ring-offset-0"
                       />
                       <span>Security Headers grade drop warnings (below score of B)</span>
                     </label>
@@ -539,7 +539,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                         type="checkbox"
                         checked={hookEvents.cveAlert}
                         onChange={(e) => setHookEvents({ ...hookEvents, cveAlert: e.target.checked })}
-                        className="rounded bg-zinc-950 border-zinc-800 text-blue-600 focus:ring-0 focus:ring-offset-0"
+                        className="rounded bg-zinc-950 border-zinc-800 text-brand-neon focus:ring-0 focus:ring-offset-0"
                       />
                       <span>Urgent CISA KEV Exploitation Alerts corresponding to infrastructure catalog</span>
                     </label>
@@ -550,7 +550,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                   <button
                     id="btn-save-webhooks"
                     onClick={() => { alert("Webhook integration settings saved successfully!"); }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors"
+                    className="bg-brand-neon hover:bg-brand-neon/80 text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors"
                   >
                     Save Integrations Settings
                   </button>
@@ -564,7 +564,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-6 shadow-md space-y-4">
               <div className="border-b border-zinc-800/40 pb-4">
                 <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-blue-400" />
+                  <Activity className="w-4 h-4 text-brand-neon" />
                   Workspace Audit & Event Stream
                 </h3>
                 <p className="text-xs text-zinc-400">Passive forensic auditing of all platform sessions, API credential handshakes, and diagnostic lookups.</p>
@@ -602,7 +602,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
               <div className="border-b border-zinc-800/40 pb-4 flex items-center justify-between">
                 <div className="space-y-1">
                   <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-blue-400" />
+                    <CreditCard className="w-4 h-4 text-brand-neon" />
                     Billing & Workspace Plan
                   </h3>
                   <p className="text-xs text-zinc-400">Review subscription features, update billing details, and view payment histories.</p>
@@ -616,7 +616,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                       <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">Active Workspace Tier</span>
                       <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5 capitalize">
                         {userPlan}
-                        <span className="text-[8px] bg-blue-500/10 border border-blue-500/30 text-blue-400 font-mono font-bold px-1 rounded uppercase">Current</span>
+                        <span className="text-[8px] bg-brand-neon/10 border border-brand-neon/30 text-brand-neon font-mono font-bold px-1 rounded uppercase">Current</span>
                       </h4>
                     </div>
                     <div className="text-right">
@@ -635,53 +635,53 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                       {userPlan === 'Guest / Sandbox' ? (
                         <>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>5 manual DNS scans/hour</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>3 HTTP Header reports/hour</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>Standard TLS Handshakes</span>
                           </li>
                         </>
                       ) : userPlan === 'SOC Professional' ? (
                         <>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>Uncapped scans & reports</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>Unlimited Gemini AI prompts</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>60 req/min API Key limits</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>JSON/CSV/Markdown exports</span>
                           </li>
                         </>
                       ) : (
                         <>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>Shared team watchlists</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>Slack/Teams webhooks integration</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>300 req/min Priority API Key</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>SLA 99.99% Guaranteed uptime</span>
                           </li>
                         </>
@@ -707,7 +707,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                 </div>
 
                 <div className="bg-zinc-950/60 p-4 border border-zinc-900 rounded-xl space-y-3.5 text-xs">
-                  <div className="flex items-center gap-2 text-blue-400 font-semibold text-[11px] uppercase tracking-wider">
+                  <div className="flex items-center gap-2 text-brand-neon font-semibold text-[11px] uppercase tracking-wider font-mono">
                     <Sparkles className="w-4 h-4 animate-pulse" />
                     <span>Workspace Admin</span>
                   </div>
@@ -751,7 +751,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                         <button
                           type="button"
                           onClick={() => alert("Downloading encrypted invoice receipt... Done!")}
-                          className="text-right text-blue-400 hover:text-blue-300 hover:underline cursor-pointer"
+                          className="text-right text-brand-neon hover:text-brand-neon/80 hover:underline cursor-pointer font-bold"
                         >
                           Download (PDF)
                         </button>
@@ -768,7 +768,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
             <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-6 shadow-md space-y-6">
               <div className="border-b border-zinc-800/40 pb-4">
                 <h3 className="font-bold text-zinc-100 text-sm flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-blue-400" />
+                  <Shield className="w-4 h-4 text-brand-neon" />
                   Multi-Factor Authentication (MFA)
                 </h3>
                 <p className="text-xs text-zinc-400">
@@ -834,7 +834,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                           You can manually add this key into Google Authenticator under the "Enter a setup key" tab:
                         </p>
                         <div className="flex items-center gap-2 p-2 bg-zinc-900 border border-zinc-800 rounded font-mono text-[11px]">
-                          <span className="text-blue-400 select-all font-bold break-all">{mfaSecret}</span>
+                          <span className="text-brand-neon select-all font-bold break-all">{mfaSecret}</span>
                           <button
                             type="button"
                             onClick={() => {
@@ -866,7 +866,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                         value={mfaSetupCode}
                         onChange={(e) => setMfaSetupCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         placeholder="000000"
-                        className="w-32 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-center text-zinc-200 tracking-widest focus:outline-none focus:border-blue-500 font-mono font-bold"
+                        className="w-32 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-center text-zinc-200 tracking-widest focus:outline-none focus:border-brand-neon font-mono font-bold"
                       />
                     </div>
 
@@ -875,7 +875,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                         id="btn-confirm-mfa"
                         type="submit"
                         disabled={isSubmittingMfa || mfaSetupCode.length < 6}
-                        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-2"
+                        className="bg-brand-neon hover:bg-brand-neon/80 disabled:opacity-40 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-2"
                       >
                         {isSubmittingMfa ? 'Enabling MFA...' : 'Verify & Enable MFA'}
                       </button>
@@ -905,7 +905,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                     <button
                       id="btn-setup-mfa"
                       onClick={handleStartMfaSetup}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="bg-brand-neon hover:bg-brand-neon/80 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
                       <Shield className="w-4 h-4" />
                       <span>Setup Google Authenticator</span>
@@ -1095,7 +1095,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                               u.role === 'Admin' || u.role === 'Super Admin'
                                 ? 'bg-red-950/30 text-red-400 border border-red-500/10'
                                 : u.role === 'SOC Analyst'
-                                ? 'bg-blue-950/30 text-blue-400 border border-blue-500/10'
+                                ? 'bg-brand-neon/15 text-brand-neon border border-brand-neon/30'
                                 : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
                             }`}>
                               {u.role || 'SOC Analyst'}

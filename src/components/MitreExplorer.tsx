@@ -207,7 +207,7 @@ export default function MitreExplorer() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-blue-400" />
+            <Layers className="w-4 h-4 text-brand-neon" />
             MITRE ATT&CK® Matrix Explorer
           </h2>
           <p className="text-xs text-zinc-400">
@@ -222,7 +222,7 @@ export default function MitreExplorer() {
             placeholder="Search Techniques (e.g. Phishing)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-950/60 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full bg-zinc-950/60 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-brand-neon transition-colors"
           />
         </div>
       </div>
@@ -247,7 +247,7 @@ export default function MitreExplorer() {
                         onClick={() => setSelectedTechnique(tech)}
                         className={`w-full text-left p-2.5 rounded-lg border text-xs flex flex-col gap-1.5 transition-all ${
                           isSelected
-                            ? 'bg-blue-600/10 border-blue-500 text-blue-200 shadow-sm'
+                            ? 'bg-brand-neon/10 border-brand-neon text-brand-neon shadow-sm'
                             : 'bg-zinc-950/30 border-zinc-900/60 hover:border-zinc-800/50 text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
@@ -269,7 +269,7 @@ export default function MitreExplorer() {
           {selectedTechnique ? (
             <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-5 shadow-md space-y-5 h-fit lg:sticky lg:top-6">
               <div className="space-y-2">
-                <span className="text-[10px] font-mono font-bold bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">
+                <span className="text-[10px] font-mono font-bold bg-brand-neon/10 text-brand-neon px-2 py-0.5 rounded border border-brand-neon/20">
                   {selectedTechnique.id}
                 </span>
                 <h3 className="font-bold text-zinc-100 text-base leading-tight tracking-tight">
@@ -280,7 +280,7 @@ export default function MitreExplorer() {
               <div className="space-y-4 text-xs text-zinc-300">
                 <div className="space-y-1.5 p-3.5 bg-zinc-950/60 rounded-lg border border-zinc-900/60">
                   <div className="flex items-center gap-1.5 text-zinc-400 font-semibold text-[11px] uppercase tracking-wider mb-1">
-                    <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+                    <BookOpen className="w-3.5 h-3.5 text-brand-neon" />
                     Description
                   </div>
                   <p className="leading-relaxed text-zinc-400">{selectedTechnique.description}</p>

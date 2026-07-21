@@ -4,11 +4,16 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-brand-plum: #A6216A;
+  --color-brand-berry: #A62177;
+  --color-brand-neon: #EE05F2;
+  --color-brand-red: #F20505;
+  --color-brand-dark: #0D0D0D;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #09090b;
+  background-color: #0D0D0D;
   color: #f4f4f5;
   overflow-x: hidden;
   transition: background-color 0.2s, color 0.2s;
@@ -114,12 +119,12 @@ html.light .hover\:text-white:hover {
   color: #111827 !important;
 }
 
-html.light .bg-blue-600\/5 {
-  background-color: rgba(59, 130, 246, 0.05) !important;
+html.light .bg-brand-neon\/5 {
+  background-color: rgba(238, 5, 242, 0.05) !important;
 }
 
-html.light .border-blue-500\/20 {
-  border-color: rgba(59, 130, 246, 0.2) !important;
+html.light .border-brand-neon\/20 {
+  border-color: rgba(238, 5, 242, 0.2) !important;
 }
 
 html.light .bg-zinc-850 {

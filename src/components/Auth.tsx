@@ -315,17 +315,15 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none antialiased relative overflow-hidden">
       {/* Background visual styling */}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-zinc-950 to-zinc-950 pointer-events-none z-0" />
-      <div className="absolute top-[20%] left-[10%] w-[350px] h-[350px] bg-blue-500/5 blur-[100px] rounded-full pointer-events-none z-0" />
-      <div className="absolute bottom-[10%] right-[15%] w-[450px] h-[450px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none z-0" />
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-brand-plum/10 via-zinc-950 to-zinc-950 pointer-events-none z-0" />
+      <div className="absolute top-[20%] left-[10%] w-[350px] h-[350px] bg-brand-neon/5 blur-[100px] rounded-full pointer-events-none z-0" />
+      <div className="absolute bottom-[10%] right-[15%] w-[450px] h-[450px] bg-brand-berry/5 blur-[120px] rounded-full pointer-events-none z-0" />
 
       {/* Header Bar */}
       <header className="relative z-10 border-b border-zinc-900 bg-zinc-950/40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="bg-blue-600 p-1.5 rounded-lg border border-blue-500 shadow-lg shadow-blue-500/10">
-              <KarrentsLogo className="w-5 h-5 text-white animate-pulse" />
-            </div>
+            <KarrentsLogo className="w-6 h-6 text-brand-neon animate-pulse" glow={true} />
             <div className="flex flex-col">
               <span className="font-extrabold tracking-tight text-white text-sm leading-tight">Karrents</span>
               <span className="text-[9px] text-zinc-500 tracking-wider uppercase font-semibold">Security Intelligence</span>
@@ -359,7 +357,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
           <div className="md:col-span-5 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
               <div>
-                <span className="text-[10px] font-extrabold text-blue-500 uppercase tracking-widest block mb-1">
+                <span className="text-[10px] font-extrabold text-brand-neon uppercase tracking-widest block mb-1">
                   Security Posture Audit
                 </span>
                 <h2 className="text-lg font-bold text-white tracking-tight leading-snug">
@@ -383,7 +381,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                           </div>
                         ) : (
                           <div className="h-4 w-4 rounded-full border border-zinc-800 flex items-center justify-center shrink-0">
-                            <RefreshCw className="w-2.5 h-2.5 text-blue-400 animate-spin" />
+                            <RefreshCw className="w-2.5 h-2.5 text-brand-neon animate-spin" />
                           </div>
                         )}
                         <span className="text-[11px] text-zinc-300 truncate font-semibold">{checkItem.name}</span>
@@ -409,7 +407,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
               </div>
               <div className="flex justify-between">
                 <span>Zero-Logs Memory:</span>
-                <span className="text-blue-400 font-bold">TRANSIENT_ON_DEMAND</span>
+                <span className="text-brand-neon font-bold">TRANSIENT_ON_DEMAND</span>
               </div>
               <div className="flex justify-between">
                 <span>Domain Scope:</span>
@@ -426,7 +424,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
             
             {/* Brand Context */}
             <div className="text-center md:text-left space-y-1">
-              <div className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2.5 py-0.5 text-[9px] font-mono font-extrabold uppercase">
+              <div className="inline-flex items-center gap-1.5 bg-brand-neon/10 text-brand-neon border border-brand-neon/20 rounded-full px-2.5 py-0.5 text-[9px] font-mono font-extrabold uppercase">
                 <Cpu className="w-3 h-3" />
                 <span>Karrents Labs</span>
               </div>
@@ -449,7 +447,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                     onClick={() => setActiveTab('password')}
                     className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                       activeTab === 'password'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                        ? 'bg-brand-berry text-white shadow-md shadow-brand-neon/10'
                         : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30'
                     }`}
                   >
@@ -462,7 +460,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                     onClick={() => setActiveTab('oauth')}
                     className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                       activeTab === 'oauth'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                        ? 'bg-brand-berry text-white shadow-md shadow-brand-neon/10'
                         : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30'
                     }`}
                   >
@@ -477,7 +475,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                     onClick={() => setActiveTab('fido')}
                     className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                       activeTab === 'fido'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                        ? 'bg-brand-berry text-white shadow-md shadow-brand-neon/10'
                         : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/30'
                     }`}
                   >
@@ -527,7 +525,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                             setPassword('');
                             setConfirmPassword('');
                           }}
-                          className="text-[10px] text-blue-400 hover:text-blue-300 font-bold transition-all underline cursor-pointer"
+                          className="text-[10px] text-brand-neon hover:text-brand-neon/80 font-bold transition-all underline cursor-pointer"
                         >
                           {isRegisterMode ? 'Existing User Sign-In' : 'Create Defender Account'}
                         </button>
@@ -547,7 +545,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                             value={emailInput}
                             onChange={(e) => setEmailInput(e.target.value)}
                             placeholder="name@agency.com"
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                             required
                           />
                         </div>
@@ -567,7 +565,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
-                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                             required
                           />
                         </div>
@@ -666,7 +664,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                               value={confirmPassword}
                               onChange={(e) => setConfirmPassword(e.target.value)}
                               placeholder="••••••••"
-                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                               required={isRegisterMode}
                             />
                           </div>
@@ -684,7 +682,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                         type="submit"
                         id="password-signin-btn"
                         disabled={isLoggingIn}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 border border-blue-500/35"
+                        className="w-full bg-brand-berry hover:bg-brand-plum text-white px-4 py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 border border-brand-neon/35"
                       >
                         {isLoggingIn ? (
                           <>
@@ -738,7 +736,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                     </button>
 
                     <div className="bg-zinc-950/60 border border-zinc-900 p-3.5 rounded-xl text-[10px] text-zinc-500 leading-relaxed flex gap-2.5 items-start">
-                      <Globe className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                      <Globe className="w-4 h-4 text-brand-neon shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-zinc-400 block mb-0.5">Federated Identity Handshake</span>
                         Validates cryptographically signed JSON Web Tokens (JWT) or secure GitHub authentication sessions over strict TLS 1.3 tunnels.
@@ -755,12 +753,12 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                       onClick={handleHwKeyLogin}
                       className="w-full bg-zinc-950 hover:bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 px-4 py-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2"
                     >
-                      <Fingerprint className="w-4 h-4 text-blue-400 animate-pulse" />
+                      <Fingerprint className="w-4 h-4 text-brand-neon animate-pulse" />
                       <span>Verify Hardware Security Key (FIDO2)</span>
                     </button>
 
                     <div className="bg-zinc-950/60 border border-zinc-900 p-3.5 rounded-xl text-[10px] text-zinc-500 leading-relaxed flex gap-2.5 items-start">
-                      <Key className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                      <Key className="w-4 h-4 text-brand-berry shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-zinc-400 block mb-0.5">Secure-by-Default FIDO2/WebAuthn</span>
                         Communicates directly via standard client-to-authenticator protocols (CTAP). Complete immunity from typical network phishing vectors.
@@ -794,7 +792,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                       onClick={() => handleGoogleAccountSelected('engr.buru@gmail.com')}
                       className="w-full bg-zinc-950/60 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-800 p-3 rounded-xl flex items-center gap-3 transition-all text-left group cursor-pointer"
                     >
-                      <div className="h-7 w-7 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 font-bold text-xs flex items-center justify-center shrink-0">
+                      <div className="h-7 w-7 rounded-full bg-brand-neon/10 border border-brand-neon/20 text-brand-neon font-bold text-xs flex items-center justify-center shrink-0">
                         E
                       </div>
                       <div className="shrink min-w-0 flex-grow">
@@ -821,12 +819,12 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                         value={customEmail}
                         onChange={(e) => setCustomEmail(e.target.value)}
                         placeholder="your-email@gmail.com"
-                        className="flex-grow bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                        className="flex-grow bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                         required
                       />
                       <button
                         type="submit"
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 rounded-lg transition-all cursor-pointer"
+                        className="bg-brand-berry hover:bg-brand-plum text-white text-xs font-bold px-3 rounded-lg transition-all cursor-pointer"
                       >
                         Next
                       </button>
@@ -850,9 +848,9 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
             {authStep === 'google-loading' && (
               <div className="space-y-6 py-6 flex flex-col items-center justify-center text-center">
                 <div className="relative">
-                  <div className="h-14 w-14 rounded-full border-t-2 border-b-2 border-blue-500 animate-spin" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600/10 p-2.5 rounded-full border border-blue-500/20">
-                    <Shield className="w-5 h-5 text-blue-400" />
+                  <div className="h-14 w-14 rounded-full border-t-2 border-b-2 border-brand-neon animate-spin" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-neon/10 p-2.5 rounded-full border border-brand-neon/20">
+                    <Shield className="w-5 h-5 text-brand-neon" />
                   </div>
                 </div>
                 <div className="space-y-1.5 font-mono">
@@ -860,7 +858,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                     Google OAuth Signature Handshake
                   </h3>
                   <div className="text-[10px] text-zinc-500 space-y-1">
-                    <p className="text-blue-400 animate-pulse">● Initializing OAuth2 transaction with PKCE</p>
+                    <p className="text-brand-neon animate-pulse">● Initializing OAuth2 transaction with PKCE</p>
                     <p className="text-zinc-500">● Awaiting Google Identity JWT response token</p>
                     <p className="text-zinc-600">● Redirect mapping verified for karrents.com</p>
                   </div>
@@ -871,8 +869,8 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
             {/* Step 3: MFA Cryptographic input with helper */}
             {authStep === 'mfa-challenge' && (
               <form onSubmit={handleMfaSubmit} className="space-y-4 animate-fade-in">
-                <div className="bg-blue-500/5 border border-blue-500/10 p-4 rounded-xl flex gap-3">
-                  <Smartphone className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+                <div className="bg-brand-neon/5 border border-brand-neon/10 p-4 rounded-xl flex gap-3">
+                  <Smartphone className="w-5 h-5 text-brand-neon shrink-0 mt-0.5" />
                   <div className="text-xs text-zinc-400 leading-relaxed">
                     <span className="font-bold text-white block mb-0.5">Security Notice: 2FA Active</span>
                     An end-to-end verified login request was registered for <strong className="text-zinc-200">{selectedEmail}</strong>. Please input your 6-digit cryptographic verification token below.
@@ -893,7 +891,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                     value={mfaCode}
                     onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="Enter 6-digit code"
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-200 focus:outline-none focus:border-blue-500 font-mono text-center tracking-widest text-lg"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-200 focus:outline-none focus:border-brand-neon font-mono text-center tracking-widest text-lg"
                     required
                     autoFocus
                   />
@@ -909,7 +907,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                 <div className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-900 flex flex-col gap-2 text-[11px] font-mono">
                   <div className="flex justify-between text-zinc-500 text-[10px]">
                     <span>Authentication Method:</span>
-                    <span className="text-blue-500 font-bold">SMTP Mailbox</span>
+                    <span className="text-brand-berry font-bold">SMTP Mailbox</span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-zinc-900 text-zinc-300">
                     <span>Generated OTP Passcode:</span>
@@ -919,7 +917,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                         setMfaCode(generatedOtp);
                         setMfaError('');
                       }}
-                      className="text-[10px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-extrabold px-2 py-0.5 rounded border border-blue-500/20 transition-all flex items-center gap-1 cursor-pointer"
+                      className="text-[10px] bg-brand-neon/10 hover:bg-brand-neon/20 text-brand-neon font-extrabold px-2 py-0.5 rounded border border-brand-neon/20 transition-all flex items-center gap-1 cursor-pointer"
                     >
                       <span className="tracking-widest">{generatedOtp}</span>
                       <span className="text-[8px] text-zinc-500 font-normal">(Autofill)</span>
@@ -937,7 +935,7 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/10"
+                    className="flex-1 bg-brand-berry hover:bg-brand-plum text-white px-4 py-2.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-brand-neon/10"
                   >
                     <span>Verify & Grant Access</span>
                     <ArrowRight className="w-3.5 h-3.5 animate-pulse" />
@@ -950,9 +948,9 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
             {authStep === 'hw-key-touch' && (
               <div className="space-y-6 py-6 flex flex-col items-center justify-center text-center animate-fade-in">
                 <div className="relative">
-                  <div className="h-16 w-16 rounded-full border-t-2 border-b-2 border-blue-400 animate-spin" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600/15 p-3 rounded-full border border-blue-500/30">
-                    <Fingerprint className="w-6 h-6 text-blue-400 animate-pulse" />
+                  <div className="h-16 w-16 rounded-full border-t-2 border-b-2 border-brand-neon animate-spin" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-neon/15 p-3 rounded-full border border-brand-neon/30">
+                    <Fingerprint className="w-6 h-6 text-brand-neon animate-pulse" />
                   </div>
                 </div>
                 <div className="space-y-1.5 font-mono">

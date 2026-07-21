@@ -201,7 +201,7 @@ export default function KnowledgeBase({ onNavigateToTool }: KnowledgeBaseProps) 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-blue-400" />
+            <BookOpen className="w-4 h-4 text-brand-neon" />
             Cybersecurity Knowledge Graph & Advisories
           </h2>
           <p className="text-xs text-zinc-400">
@@ -217,7 +217,7 @@ export default function KnowledgeBase({ onNavigateToTool }: KnowledgeBaseProps) 
               placeholder="Search CWE, Group, CAPEC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-brand-neon transition-colors"
             />
           </div>
           <div className="flex bg-zinc-950 rounded-lg p-0.5 border border-zinc-800">
@@ -227,7 +227,7 @@ export default function KnowledgeBase({ onNavigateToTool }: KnowledgeBaseProps) 
                 id={`btn-kb-filter-${cat}`}
                 onClick={() => { setActiveCategory(cat); }}
                 className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                  activeCategory === cat ? 'bg-blue-600/25 text-blue-400 font-extrabold' : 'text-zinc-500 hover:text-zinc-300'
+                  activeCategory === cat ? 'bg-brand-neon/25 text-brand-neon font-extrabold' : 'text-zinc-500 hover:text-zinc-300'
                 }`}
               >
                 {cat === 'ALL' ? 'Show All' : cat.replace('_', ' ')}
@@ -249,12 +249,12 @@ export default function KnowledgeBase({ onNavigateToTool }: KnowledgeBaseProps) 
                 onClick={() => setSelectedEntry(entry)}
                 className={`border p-4 rounded-xl cursor-pointer transition-all space-y-2.5 ${
                   isSelected
-                    ? 'bg-blue-600/5 border-blue-500/60 shadow-md'
+                    ? 'bg-brand-neon/5 border-brand-neon/60 shadow-md'
                     : 'bg-zinc-900/40 border-zinc-800/40 hover:bg-zinc-800/20 hover:border-zinc-700/50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-blue-400 font-bold bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10">
+                  <span className="font-mono text-xs text-brand-neon font-bold bg-brand-neon/5 px-2 py-0.5 rounded border border-brand-neon/10">
                     {entry.id}
                   </span>
                   <span className={`px-2 py-0.2 rounded text-[8px] uppercase tracking-wider font-extrabold border ${getCategoryBadgeColor(entry.category)}`}>
@@ -286,7 +286,7 @@ export default function KnowledgeBase({ onNavigateToTool }: KnowledgeBaseProps) 
               <div className="flex items-start justify-between pb-4 border-b border-zinc-800/40">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm text-blue-400 font-bold bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded">
+                    <span className="font-mono text-sm text-brand-neon font-bold bg-brand-neon/10 border border-brand-neon/20 px-2 py-0.5 rounded">
                       {selectedEntry.id}
                     </span>
                     <span className={`px-2 py-0.2 rounded text-[10px] font-extrabold uppercase tracking-wider border ${getCategoryBadgeColor(selectedEntry.category)}`}>
@@ -346,13 +346,13 @@ export default function KnowledgeBase({ onNavigateToTool }: KnowledgeBaseProps) 
                           key={idx}
                           id={`btn-kb-tool-${idx}`}
                           onClick={() => onNavigateToTool(getToolRouteName(tool))}
-                          className="w-full flex items-center justify-between text-left p-3 bg-zinc-950/60 hover:bg-blue-600/10 border border-zinc-850 hover:border-blue-500/30 rounded-xl transition-colors group"
+                          className="w-full flex items-center justify-between text-left p-3 bg-zinc-950/60 hover:bg-brand-neon/10 border border-zinc-850 hover:border-brand-neon/30 rounded-xl transition-colors group"
                         >
                           <div className="flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-blue-400" />
+                            <Activity className="w-4 h-4 text-brand-neon" />
                             <span className="font-semibold text-zinc-300">{tool} Analyzer</span>
                           </div>
-                          <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all" />
+                          <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-brand-neon group-hover:translate-x-0.5 transition-all" />
                         </button>
                       ))}
                     </div>
@@ -365,7 +365,7 @@ export default function KnowledgeBase({ onNavigateToTool }: KnowledgeBaseProps) 
                       {selectedEntry.relatedMitreId && (
                         <div className="p-3 bg-zinc-950/40 border border-zinc-850 rounded-xl flex items-center justify-between">
                           <span className="text-zinc-500">MITRE Technique:</span>
-                          <span className="text-blue-400 font-bold">{selectedEntry.relatedMitreId}</span>
+                          <span className="text-brand-neon font-bold">{selectedEntry.relatedMitreId}</span>
                         </div>
                       )}
                       {selectedEntry.relatedCwes && selectedEntry.relatedCwes.length > 0 && (

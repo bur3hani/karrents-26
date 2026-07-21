@@ -375,7 +375,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
   if (loading) {
     return (
       <div className="py-20 flex flex-col items-center justify-center space-y-3">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-brand-neon border-t-transparent rounded-full animate-spin" />
         <span className="text-xs font-mono text-zinc-500">Connecting workspace registry...</span>
       </div>
     );
@@ -387,7 +387,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-blue-400" />
+            <Briefcase className="w-4 h-4 text-brand-neon" />
             Workspace Assessment Builder & Registry
           </h2>
           <p className="text-xs text-zinc-400">
@@ -399,7 +399,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
             <button
               id="new-project-btn"
               onClick={() => setShowProjModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+              className="bg-brand-neon hover:bg-brand-neon/80 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Create Project</span>
@@ -409,7 +409,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
             <button
               id="new-asset-btn"
               onClick={() => setShowAssetModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+              className="bg-brand-neon hover:bg-brand-neon/80 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Register Asset</span>
@@ -419,7 +419,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
             <button
               id="new-finding-btn"
               onClick={() => setShowFindingModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+              className="bg-brand-neon hover:bg-brand-neon/80 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Log Finding</span>
@@ -429,7 +429,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
             <button
               id="new-report-btn"
               onClick={() => setShowReportModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+              className="bg-brand-neon hover:bg-brand-neon/80 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Compile Report</span>
@@ -442,25 +442,25 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
       <div className="flex border-b border-zinc-800/60 text-xs font-semibold">
         <button
           onClick={() => setActiveTab('projects')}
-          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'projects' ? 'border-blue-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'projects' ? 'border-brand-neon text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
         >
           Client Projects ({projects.length})
         </button>
         <button
           onClick={() => setActiveTab('assets')}
-          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'assets' ? 'border-blue-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'assets' ? 'border-brand-neon text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
         >
           Project Assets ({assets.length})
         </button>
         <button
           onClick={() => setActiveTab('findings')}
-          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'findings' ? 'border-blue-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'findings' ? 'border-brand-neon text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
         >
           Vulnerability Findings ({findings.length})
         </button>
         <button
           onClick={() => setActiveTab('reports')}
-          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'reports' ? 'border-blue-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+          className={`px-4 py-2 border-b-2 transition-all ${activeTab === 'reports' ? 'border-brand-neon text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
         >
           Reports & Exports ({reports.length})
         </button>
@@ -474,7 +474,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
             id="workspace-picker-selector"
             value={selectedProjectId || ""}
             onChange={(e) => setSelectedProjectId(e.target.value ? e.target.value : null)}
-            className="bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-zinc-200 font-semibold focus:outline-none focus:border-blue-500"
+            className="bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-zinc-200 font-semibold focus:outline-none focus:border-brand-neon"
           >
             <option value="">-- No Project Selected --</option>
             {(projects || []).filter(p => p && p.id).map(p => (
@@ -503,7 +503,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
               </div>
               <button
                 onClick={() => setShowProjModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg"
+                className="bg-brand-neon hover:bg-brand-neon/80 text-white font-bold text-xs px-4 py-2 rounded-lg"
               >
                 Create Project Workspace
               </button>
@@ -513,7 +513,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
               {(projects || []).filter(p => p && p.id).map(p => (
                 <div
                   key={p.id}
-                  className={`bg-zinc-900/40 border p-5 rounded-xl space-y-4 relative group hover:border-zinc-700 transition-colors cursor-pointer ${selectedProjectId === p.id ? 'border-blue-500/60 bg-blue-600/5 shadow' : 'border-zinc-800/50'}`}
+                  className={`bg-zinc-900/40 border p-5 rounded-xl space-y-4 relative group hover:border-zinc-700 transition-colors cursor-pointer ${selectedProjectId === p.id ? 'border-brand-neon/60 bg-brand-neon/5 shadow' : 'border-zinc-800/50'}`}
                   onClick={() => setSelectedProjectId(p.id)}
                 >
                   <div className="flex justify-between items-start">
@@ -535,7 +535,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                   <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-3 border-t border-zinc-800/40">
                     <span>Created: {p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</span>
                     {selectedProjectId === p.id ? (
-                      <span className="text-blue-400 font-bold flex items-center gap-1">
+                      <span className="text-brand-neon font-bold flex items-center gap-1">
                         Active Context <CheckCircle className="w-3.5 h-3.5" />
                       </span>
                     ) : (
@@ -647,7 +647,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                             f.severity === 'Critical' ? 'bg-red-500/15 text-red-500 border border-red-500/35' :
                             f.severity === 'High' ? 'bg-orange-500/15 text-orange-400 border border-orange-500/35' :
                             f.severity === 'Medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/35' :
-                            'bg-blue-500/15 text-blue-400 border border-blue-500/35'
+                            'bg-brand-neon/15 text-brand-neon border border-brand-neon/35'
                           }`}>
                             {f.severity} Severity
                           </span>
@@ -665,7 +665,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                           onClick={() => { setEvidenceFindingId(f.id); setShowEvidenceModal(true); }}
                           className="text-[10px] font-bold text-zinc-300 hover:text-white bg-zinc-950 hover:bg-zinc-850 px-2.5 py-1.5 border border-zinc-850 rounded-lg transition-colors flex items-center gap-1"
                         >
-                          <PlusCircle className="w-3.5 h-3.5 text-blue-400" />
+                          <PlusCircle className="w-3.5 h-3.5 text-brand-neon" />
                           <span>Attach Evidence</span>
                         </button>
                         <button
@@ -724,7 +724,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                 </p>
                 <button
                   onClick={() => setShowReportModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] px-3 py-1.5 rounded mt-2"
+                  className="bg-brand-neon hover:bg-brand-neon/80 text-white font-bold text-[10px] px-3 py-1.5 rounded mt-2"
                 >
                   Create New Report
                 </button>
@@ -734,7 +734,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                 <div
                   key={r.id}
                   onClick={() => setActiveReportDetails(r)}
-                  className={`border p-4 rounded-xl cursor-pointer transition-all space-y-2.5 ${activeReportDetails?.id === r.id ? 'bg-blue-600/5 border-blue-500/60' : 'bg-zinc-900/40 border-zinc-850 hover:border-zinc-700'}`}
+                  className={`border p-4 rounded-xl cursor-pointer transition-all space-y-2.5 ${activeReportDetails?.id === r.id ? 'bg-brand-neon/5 border-brand-neon/60' : 'bg-zinc-900/40 border-zinc-850 hover:border-zinc-700'}`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-mono text-zinc-500 font-bold">REPORT MODULE</span>
@@ -747,7 +747,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                     <span className="text-[9.5px] text-zinc-500">Drafted: {new Date(r.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-800/40 text-[9.5px]">
-                    <span className="text-blue-400 font-bold hover:underline">Inspect details</span>
+                    <span className="text-brand-neon font-bold hover:underline">Inspect details</span>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDeleteReport(r.id); }}
                       className="text-zinc-500 hover:text-red-400 p-1"
@@ -777,7 +777,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                       className="bg-zinc-950 hover:bg-zinc-850 text-zinc-300 hover:text-white px-3 py-1.5 rounded border border-zinc-800 text-xs flex items-center gap-1 transition-colors"
                       title="Download JSON Payload"
                     >
-                      <FileCode className="w-3.5 h-3.5 text-blue-400" />
+                      <FileCode className="w-3.5 h-3.5 text-brand-neon" />
                       <span>Export JSON</span>
                     </a>
                     <a
@@ -875,7 +875,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                  className="px-4 py-2 rounded-lg bg-brand-neon hover:bg-brand-neon/80 text-white font-bold"
                 >
                   Create Namespace
                 </button>
@@ -964,7 +964,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                  className="px-4 py-2 rounded-lg bg-brand-neon hover:bg-brand-neon/80 text-white font-bold"
                 >
                   Register Asset
                 </button>
@@ -1078,7 +1078,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                             if (e.target.checked) setSelectedAssetIds(prev => [...prev, a.id]);
                             else setSelectedAssetIds(prev => prev.filter(id => id !== a.id));
                           }}
-                          className="rounded border-zinc-800 bg-zinc-900 text-blue-500 focus:ring-0"
+                          className="rounded border-zinc-800 bg-zinc-900 text-brand-neon accent-brand-neon focus:ring-0"
                         />
                         <span className="truncate">{a.name}</span>
                       </label>
@@ -1097,7 +1097,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                  className="px-4 py-2 rounded-lg bg-brand-neon hover:bg-brand-neon/80 text-white font-bold"
                 >
                   Save Finding
                 </button>
@@ -1139,7 +1139,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                   placeholder="Paste raw terminal stdout, TLS handshake outputs, or headers..."
                   value={newEvidenceValue}
                   onChange={(e) => setNewEvidenceValue(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 font-mono text-xs text-blue-300"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 font-mono text-xs text-brand-neon"
                 />
               </div>
               <div className="space-y-1">
@@ -1162,7 +1162,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                  className="px-4 py-2 rounded-lg bg-brand-neon hover:bg-brand-neon/80 text-white font-bold"
                 >
                   Save Evidence
                 </button>
@@ -1244,7 +1244,7 @@ export default function SavedReports({ onNavigateToTool, selectedProjectId, setS
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                  className="px-4 py-2 rounded-lg bg-brand-neon hover:bg-brand-neon/80 text-white font-bold"
                 >
                   Compile Deliverable
                 </button>

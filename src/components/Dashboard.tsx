@@ -144,7 +144,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
   if (loading) {
     return (
       <div id="dashboard-loading" className="py-20 flex flex-col items-center justify-center space-y-3">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-brand-neon border-t-transparent rounded-full animate-spin" />
         <span className="text-xs font-mono text-zinc-500">Retrieving operational intelligence...</span>
       </div>
     );
@@ -156,7 +156,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
         <AlertTriangle className="w-8 h-8 text-red-500 mx-auto" />
         <h3 className="font-bold text-zinc-200">Workspace Hydration Failure</h3>
         <p className="text-xs text-zinc-400">{error}</p>
-        <button onClick={() => window.location.reload()} className="mt-2 text-xs font-mono text-blue-400 hover:underline">
+        <button onClick={() => window.location.reload()} className="mt-2 text-xs font-mono text-brand-neon hover:underline">
           Retry Sync Request
         </button>
       </div>
@@ -177,7 +177,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
             id="scope-project-selector"
             value={selectedProjectId || ""}
             onChange={(e) => setSelectedProjectId(e.target.value ? e.target.value : null)}
-            className="bg-zinc-900 border border-zinc-800 text-xs font-semibold rounded-lg text-zinc-300 py-1.5 px-2.5 focus:outline-none focus:border-blue-500 transition-colors"
+            className="bg-zinc-900 border border-zinc-800 text-xs font-semibold rounded-lg text-zinc-300 py-1.5 px-2.5 focus:outline-none focus:border-brand-neon transition-colors"
           >
             <option value="">All Projects Combined</option>
             {(projects || []).filter(p => p && p.id).map(p => (
@@ -195,8 +195,8 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
             <div className="text-2xl font-black text-white font-mono">{projects.length}</div>
             <span className="text-[10px] text-zinc-500">Assigned client namespaces</span>
           </div>
-          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <FolderKanban className="w-5 h-5 text-blue-400" />
+          <div className="p-3 bg-brand-neon/10 border border-brand-neon/20 rounded-lg">
+            <FolderKanban className="w-5 h-5 text-brand-neon" />
           </div>
         </div>
 
@@ -251,7 +251,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
               </h3>
               <button
                 onClick={() => onNavigateToSection('saved-reports')}
-                className="text-[10px] text-blue-400 hover:underline flex items-center gap-0.5 font-mono"
+                className="text-[10px] text-brand-neon hover:underline flex items-center gap-0.5 font-mono"
               >
                 Manage Workspaces <ChevronRight className="w-3 h-3" />
               </button>
@@ -278,10 +278,10 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
                     <div
                       key={p.id}
                       onClick={() => { setSelectedProjectId(p.id); onNavigateToSection('saved-reports'); }}
-                      className="bg-zinc-950/40 hover:bg-zinc-850 border border-zinc-800/60 hover:border-blue-500/40 p-4 rounded-xl cursor-pointer transition-all space-y-2 group"
+                      className="bg-zinc-950/40 hover:bg-zinc-850 border border-zinc-800/60 hover:border-brand-neon/40 p-4 rounded-xl cursor-pointer transition-all space-y-2 group"
                     >
                       <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-xs text-zinc-100 group-hover:text-blue-400 transition-colors">{p.name || "Unnamed Workspace"}</h4>
+                        <h4 className="font-bold text-xs text-zinc-100 group-hover:text-brand-neon transition-colors">{p.name || "Unnamed Workspace"}</h4>
                         <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${(p.status || 'active') === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>
                           {p.status || 'active'}
                         </span>
@@ -340,7 +340,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
                               severity === 'Critical' ? 'bg-red-500/15 text-red-500 border border-red-500/25' :
                               severity === 'High' ? 'bg-orange-500/15 text-orange-400 border border-orange-500/25' :
                               severity === 'Medium' ? 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25' :
-                              'bg-blue-500/15 text-blue-400 border border-blue-500/25'
+                              'bg-brand-neon/15 text-brand-neon border border-brand-neon/25'
                             }`}>
                               {severity}
                             </span>
@@ -380,7 +380,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
                       contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '8px' }}
                       itemStyle={{ fontSize: '10px' }}
                     />
-                    <Bar dataKey="Count" fill="#3b82f6" radius={[0, 3, 3, 0]}>
+                    <Bar dataKey="Count" fill="#EE05F2" radius={[0, 3, 3, 0]}>
                       {severityDistribution.map((entry, index) => (
                         <rect key={`rect-${index}`} fill={entry.fill} />
                       ))}
@@ -492,7 +492,7 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
                 {auditLogs.slice(0, 5).map(log => (
                   <div key={log.id} className="space-y-1">
                     <div className="flex items-center justify-between text-[9px] text-zinc-500 font-semibold font-mono">
-                      <span className="text-blue-400">{log.action}</span>
+                      <span className="text-brand-neon">{log.action}</span>
                       <span>{new Date(log.created_at).toLocaleTimeString()}</span>
                     </div>
                     <p className="text-zinc-300 text-[10.5px] leading-snug">

@@ -113,7 +113,7 @@ export default function ApiDoc() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <Code className="w-4 h-4 text-blue-400" />
+            <Code className="w-4 h-4 text-brand-neon" />
             Developer REST API Center
           </h2>
           <p className="text-xs text-zinc-400">
@@ -140,12 +140,12 @@ export default function ApiDoc() {
                   onClick={() => setActiveEndpointIdx(idx)}
                   className={`w-full text-left p-3 rounded-lg border transition-all space-y-1.5 ${
                     isActive
-                      ? 'bg-blue-600/5 border-blue-500/60 text-white font-semibold'
+                      ? 'bg-brand-neon/5 border-brand-neon/60 text-white font-semibold'
                       : 'bg-zinc-950/20 border-zinc-900/40 hover:border-zinc-800/60 text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[9px] font-bold px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <span className="font-mono text-[9px] font-bold px-1.5 py-0.2 rounded bg-brand-neon/10 text-brand-neon border border-brand-neon/20">
                       {ep.method}
                     </span>
                     <span className="font-mono text-xs text-zinc-200 truncate">{ep.path}</span>
@@ -164,7 +164,7 @@ export default function ApiDoc() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-800/40">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-brand-neon/15 text-brand-neon border border-brand-neon/30">
                     {activeEndpoint.method}
                   </span>
                   <span className="font-mono text-base font-bold text-white select-all">{activeEndpoint.path}</span>
@@ -190,7 +190,7 @@ export default function ApiDoc() {
                     <span>{copiedId === 'curl' ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
-                <pre className="font-mono text-[11px] p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-blue-300 overflow-x-auto select-all leading-relaxed">
+                <pre className="font-mono text-[11px] p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-brand-neon/90 overflow-x-auto select-all leading-relaxed">
                   {activeEndpoint.curlExample}
                 </pre>
               </div>
@@ -210,7 +210,7 @@ export default function ApiDoc() {
                         <span>Copy</span>
                       </button>
                     </div>
-                    <pre className="font-mono text-[11px] p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-blue-300 overflow-x-auto max-h-60 select-all leading-relaxed">
+                    <pre className="font-mono text-[11px] p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-brand-neon/90 overflow-x-auto max-h-60 select-all leading-relaxed">
                       {activeEndpoint.requestBody}
                     </pre>
                   </div>

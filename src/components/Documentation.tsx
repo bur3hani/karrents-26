@@ -48,13 +48,13 @@ export default function Documentation() {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
             <div className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl space-y-2">
-              <span className="font-bold text-xs text-blue-400">Deterministic Diagnostics</span>
+              <span className="font-bold text-xs text-brand-neon">Deterministic Diagnostics</span>
               <p className="text-[11px] text-zinc-400 leading-relaxed">
                 Active SSL certificate handshakes, DNS records checks, and HTTP headers resolutions are compiled strictly in-memory on our sandboxed backend server, assuring zero trace and true telemetry data privacy.
               </p>
             </div>
             <div className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl space-y-2">
-              <span className="font-bold text-xs text-blue-400">Advanced AI Co-pilot</span>
+              <span className="font-bold text-xs text-brand-neon">Advanced AI Co-pilot</span>
               <p className="text-[11px] text-zinc-400 leading-relaxed">
                 Powered by server-side Gemini models, our workbench translates raw resolved JSON records into natural-language business risk vectors, CISA catalog correlations, and actionable Nginx/Apache configuration blocks.
               </p>
@@ -80,7 +80,7 @@ export default function Documentation() {
           <p className="text-zinc-300 leading-relaxed text-xs">
             Karrents is built using an ultra-performant full-stack model combining Vite, React 19, and Tailwind CSS on the client, with a secure Express.js server running Node.js.
           </p>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-blue-400 pt-2">Local Project Bootstrapping</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-brand-neon pt-2">Local Project Bootstrapping</h2>
           <div className="relative">
             <button 
               onClick={() => handleCopyCode('dev1', 'npm install\nnpm run dev')}
@@ -88,11 +88,11 @@ export default function Documentation() {
             >
               {copiedId === 'dev1' ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
-            <pre className="font-mono text-[11px] p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-blue-300 overflow-x-auto">
+            <pre className="font-mono text-[11px] p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-brand-neon overflow-x-auto">
               {`# Install dependencies from packages\nnpm install\n\n# Launch the local TSX development server on port 3000\nnpm run dev`}
             </pre>
           </div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-blue-400 pt-2">Build Pipeline and Bundling</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-brand-neon pt-2">Build Pipeline and Bundling</h2>
           <p className="text-zinc-400 text-xs leading-relaxed">
             For standalone container deployments, the Node server compiles TypeScript models via esbuild to a packed CommonJS file, bypasses relative ES Module resolving friction:
           </p>
@@ -103,7 +103,7 @@ export default function Documentation() {
             >
               {copiedId === 'dev2' ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
-            <pre className="font-mono text-[11px] p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-blue-300 overflow-x-auto">
+            <pre className="font-mono text-[11px] p-4 bg-zinc-950 rounded-lg border border-zinc-900 text-brand-neon overflow-x-auto">
               {`# Compiles front-end assets to static and compiles server.ts to dist/server.cjs\nnpm run build\n\n# Fire up the compiled production build\nnpm run start`}
             </pre>
           </div>
@@ -171,7 +171,7 @@ export default function Documentation() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-blue-400" />
+            <BookOpen className="w-4 h-4 text-brand-neon" />
             Platform Documentation Hub
           </h2>
           <p className="text-xs text-zinc-400">
@@ -186,7 +186,7 @@ export default function Documentation() {
             placeholder="Search documentation..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-brand-neon transition-colors"
           />
         </div>
       </div>
@@ -205,7 +205,7 @@ export default function Documentation() {
                   onClick={() => setActiveDocId(doc.id)}
                   className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2.5 ${
                     isSelected
-                      ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500 font-semibold'
+                      ? 'bg-brand-neon/10 text-brand-neon border-l-2 border-brand-neon font-semibold'
                       : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
                   }`}
                 >

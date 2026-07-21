@@ -57,12 +57,12 @@ export default function AisearchBar({ onNavigateToTool }: AisearchBarProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Ask AI Advisor (e.g. How to mitigate clickjacking?)..."
-          className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg pl-10 pr-24 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full bg-zinc-950/80 border border-zinc-800 rounded-lg pl-10 pr-24 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-brand-neon transition-colors"
         />
         <button
           id="global-advisor-submit"
           type="submit"
-          className="absolute right-1.5 top-1.5 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded text-[10px] font-bold tracking-tight transition-colors flex items-center gap-1 border border-blue-500/20"
+          className="absolute right-1.5 top-1.5 bg-brand-neon/20 text-brand-neon hover:bg-brand-berry hover:text-white px-2.5 py-1 rounded text-[10px] font-bold tracking-tight transition-colors flex items-center gap-1 border border-brand-neon/20"
         >
           <Sparkles className="w-3 h-3" />
           <span>Ask AI</span>
@@ -73,7 +73,7 @@ export default function AisearchBar({ onNavigateToTool }: AisearchBarProps) {
       {isOpen && (
         <div className="absolute right-0 top-11 w-full sm:w-[480px] bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-5 space-y-4 z-50 max-h-[80vh] overflow-y-auto custom-scrollbar">
           <div className="flex items-center justify-between pb-2 border-b border-zinc-900/60">
-            <div className="flex items-center gap-1.5 text-blue-400 font-semibold text-xs">
+            <div className="flex items-center gap-1.5 text-brand-neon font-semibold text-xs">
               <Sparkles className="w-4 h-4" />
               <span>AI Security Advisory Copilot</span>
             </div>
@@ -116,13 +116,13 @@ export default function AisearchBar({ onNavigateToTool }: AisearchBarProps) {
                           setIsOpen(false);
                           setResult(null);
                         }}
-                        className="flex items-center justify-between text-left p-2 bg-zinc-900/60 hover:bg-blue-600/10 border border-zinc-900/60 hover:border-blue-500/30 rounded-lg transition-colors group"
+                        className="flex items-center justify-between text-left p-2 bg-zinc-900/60 hover:bg-brand-neon/10 border border-zinc-900/60 hover:border-brand-neon/30 rounded-lg transition-colors group"
                       >
                         <div className="flex items-center gap-1.5">
-                          <Activity className="w-3.5 h-3.5 text-blue-400" />
+                          <Activity className="w-3.5 h-3.5 text-brand-neon" />
                           <span className="font-semibold text-zinc-300 truncate max-w-[120px]">{tool}</span>
                         </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all" />
+                        <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-brand-neon group-hover:translate-x-0.5 transition-all" />
                       </button>
                     ))}
                   </div>

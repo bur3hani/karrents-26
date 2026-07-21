@@ -42,7 +42,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="text-xs font-mono text-blue-400 hover:underline"
+            className="text-xs font-mono text-brand-neon hover:underline"
           >
             Reset Fallback State
           </button>

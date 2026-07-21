@@ -247,7 +247,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             id="tab-cve"
             onClick={() => { setActiveTab('cve'); setError(null); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between ${
-              activeTab === 'cve' ? 'bg-blue-600/10 border-l-2 border-blue-500 text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'cve' ? 'bg-brand-neon/10 border-l-2 border-brand-neon text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <span>CVE Explorer</span>
@@ -257,7 +257,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             id="tab-ioc"
             onClick={() => { setActiveTab('ioc'); setError(null); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between ${
-              activeTab === 'ioc' ? 'bg-blue-600/10 border-l-2 border-blue-500 text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'ioc' ? 'bg-brand-neon/10 border-l-2 border-brand-neon text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <span>IOC Lookup</span>
@@ -269,7 +269,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             id="tab-headers"
             onClick={() => { setActiveTab('headers'); setError(null); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between ${
-              activeTab === 'headers' ? 'bg-blue-600/10 border-l-2 border-blue-500 text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'headers' ? 'bg-brand-neon/10 border-l-2 border-brand-neon text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <span>Security Headers</span>
@@ -279,7 +279,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             id="tab-ssl"
             onClick={() => { setActiveTab('ssl'); setError(null); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between ${
-              activeTab === 'ssl' ? 'bg-blue-600/10 border-l-2 border-blue-500 text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'ssl' ? 'bg-brand-neon/10 border-l-2 border-brand-neon text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <span>TLS/SSL Checker</span>
@@ -291,7 +291,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             id="tab-email"
             onClick={() => { setActiveTab('email'); setError(null); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between ${
-              activeTab === 'email' ? 'bg-blue-600/10 border-l-2 border-blue-500 text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'email' ? 'bg-brand-neon/10 border-l-2 border-brand-neon text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <span>Email Security Audits</span>
@@ -301,7 +301,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             id="tab-dns"
             onClick={() => { setActiveTab('dns'); setError(null); }}
             className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors flex items-center justify-between ${
-              activeTab === 'dns' ? 'bg-blue-600/10 border-l-2 border-blue-500 text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+              activeTab === 'dns' ? 'bg-brand-neon/10 border-l-2 border-brand-neon text-white font-medium' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
             }`}
           >
             <span>DNS Lookup</span>
@@ -328,7 +328,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             <div className="bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl space-y-4">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-blue-400" />
+                  <ShieldAlert className="w-4 h-4 text-brand-neon" />
                   CVE Explorer
                 </h2>
                 <p className="text-xs text-zinc-400">
@@ -343,13 +343,13 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   value={cveId}
                   onChange={(e) => setCveId(e.target.value)}
                   placeholder="e.g. CVE-2021-44228"
-                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                 />
                 <button
                   id="cve-search-submit"
                   onClick={executeCveLookup}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
+                  className="bg-brand-berry hover:bg-brand-plum text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
                 >
                   <Search className="w-3.5 h-3.5" />
                   <span>{loading ? 'Analyzing...' : 'Search'}</span>
@@ -358,9 +358,9 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
 
               <div className="flex flex-wrap gap-1.5 text-[10px]">
                 <span className="text-zinc-500 self-center">Popular:</span>
-                <button id="quick-cve-log4j" onClick={() => { setCveId('CVE-2021-44228'); }} className="bg-zinc-950 hover:bg-zinc-800 text-blue-400 px-2 py-0.5 rounded border border-zinc-800/40">CVE-2021-44228 (Log4Shell)</button>
-                <button id="quick-cve-heartbleed" onClick={() => { setCveId('CVE-2014-0160'); }} className="bg-zinc-950 hover:bg-zinc-800 text-blue-400 px-2 py-0.5 rounded border border-zinc-800/40">CVE-2014-0160 (Heartbleed)</button>
-                <button id="quick-cve-shellshock" onClick={() => { setCveId('CVE-2014-6271'); }} className="bg-zinc-950 hover:bg-zinc-800 text-blue-400 px-2 py-0.5 rounded border border-zinc-800/40">CVE-2014-6271 (Shellshock)</button>
+                <button id="quick-cve-log4j" onClick={() => { setCveId('CVE-2021-44228'); }} className="bg-zinc-950 hover:bg-zinc-800 text-brand-neon px-2 py-0.5 rounded border border-zinc-800/40">CVE-2021-44228 (Log4Shell)</button>
+                <button id="quick-cve-heartbleed" onClick={() => { setCveId('CVE-2014-0160'); }} className="bg-zinc-950 hover:bg-zinc-800 text-brand-neon px-2 py-0.5 rounded border border-zinc-800/40">CVE-2014-0160 (Heartbleed)</button>
+                <button id="quick-cve-shellshock" onClick={() => { setCveId('CVE-2014-6271'); }} className="bg-zinc-950 hover:bg-zinc-800 text-brand-neon px-2 py-0.5 rounded border border-zinc-800/40">CVE-2014-6271 (Shellshock)</button>
               </div>
             </div>
 
@@ -384,7 +384,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <button
                         id="save-cve-report"
                         onClick={() => saveToWorkbench(cveResult.title, cveResult.id, 'CVE Explorer', cveResult.severity as any, Math.round(cveResult.cvssScore * 10), cveResult)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors self-start font-semibold"
+                        className="bg-brand-berry hover:bg-brand-plum text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors self-start font-semibold shadow-sm shadow-brand-neon/10"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>Save Report</span>
@@ -446,7 +446,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                     </div>
                     <div className="bg-zinc-950/40 p-3.5 rounded-lg border border-zinc-900/60 space-y-1 text-center">
                       <div className="text-zinc-500 font-semibold uppercase tracking-wider text-[9px]">OWASP Mapping</div>
-                      <div className="text-xs font-medium text-blue-400 mt-1 truncate">{cveResult.owaspMapping}</div>
+                      <div className="text-xs font-medium text-brand-neon mt-1 truncate">{cveResult.owaspMapping}</div>
                     </div>
                   </div>
 
@@ -490,7 +490,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   {cveResult.remediation.configurations && cveResult.remediation.configurations.length > 0 && (
                     <div className="space-y-2.5">
                       <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Terminal className="w-3.5 h-3.5 text-blue-400" />
+                        <Terminal className="w-3.5 h-3.5 text-brand-neon" />
                         Remediation Configuration Code / Commands
                       </span>
                       {cveResult.remediation.configurations.map((config, index) => (
@@ -498,7 +498,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                           <div className="bg-zinc-900/60 px-3 py-1.5 border-b border-zinc-950 text-[10px] font-mono font-medium text-zinc-400">
                             {config.platform}
                           </div>
-                          <pre className="p-3 text-[11px] font-mono text-blue-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                          <pre className="p-3 text-[11px] font-mono text-brand-neon/85 overflow-x-auto whitespace-pre-wrap leading-relaxed">
                             {config.config}
                           </pre>
                         </div>
@@ -513,7 +513,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <div className="flex flex-wrap gap-2 pt-1">
                         {cveResult.mitreAttackMappings.map((map, idx) => (
                           <div key={idx} className="bg-zinc-950 border border-zinc-900/60 rounded-lg p-2.5 flex items-center gap-3 text-xs">
-                            <span className="font-mono text-blue-400 font-semibold">{map.id}</span>
+                            <span className="font-mono text-brand-neon font-semibold">{map.id}</span>
                             <div className="text-[11px]">
                               <span className="text-zinc-500 mr-1.5">{map.tactic}:</span>
                               <span className="text-zinc-300 font-medium">{map.technique}</span>
@@ -542,7 +542,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                             href={ref.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-400 hover:underline flex items-center gap-1 text-[11px]"
+                            className="text-brand-neon hover:underline flex items-center gap-1 text-[11px]"
                           >
                             <ExternalLink className="w-3 h-3" />
                             <span>{ref.title}</span>
@@ -563,7 +563,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             <div className="bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl space-y-4">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-blue-400" />
+                  <ShieldAlert className="w-4 h-4 text-brand-neon" />
                   IOC Lookup (Threat Intelligence)
                 </h2>
                 <p className="text-xs text-zinc-400">
@@ -578,13 +578,13 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   value={iocInput}
                   onChange={(e) => setIocInput(e.target.value)}
                   placeholder="e.g. 185.112.146.10, file.exe hash, phishing domain..."
-                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                 />
                 <button
                   id="ioc-search-submit"
                   onClick={executeIocLookup}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
+                  className="bg-brand-berry hover:bg-brand-plum text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
                 >
                   <Search className="w-3.5 h-3.5" />
                   <span>{loading ? 'Querying...' : 'Lookup'}</span>
@@ -593,9 +593,9 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
 
               <div className="flex flex-wrap gap-1.5 text-[10px]">
                 <span className="text-zinc-500 self-center">Demo Indicators:</span>
-                <button id="quick-ioc-ip" onClick={() => { setIocInput('185.112.146.10'); }} className="bg-zinc-950 hover:bg-zinc-800 text-blue-400 px-2 py-0.5 rounded border border-zinc-800/40">IP: 185.112.146.10</button>
-                <button id="quick-ioc-domain" onClick={() => { setIocInput('cobalt-strike-beacon.malicious-cc.com'); }} className="bg-zinc-950 hover:bg-zinc-800 text-blue-400 px-2 py-0.5 rounded border border-zinc-800/40">Domain: cobalt-strike-beacon...</button>
-                <button id="quick-ioc-hash" onClick={() => { setIocInput('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'); }} className="bg-zinc-950 hover:bg-zinc-800 text-blue-400 px-2 py-0.5 rounded border border-zinc-800/40">Hash (SHA-256)</button>
+                <button id="quick-ioc-ip" onClick={() => { setIocInput('185.112.146.10'); }} className="bg-zinc-950 hover:bg-zinc-800 text-brand-neon px-2 py-0.5 rounded border border-zinc-800/40">IP: 185.112.146.10</button>
+                <button id="quick-ioc-domain" onClick={() => { setIocInput('cobalt-strike-beacon.malicious-cc.com'); }} className="bg-zinc-950 hover:bg-zinc-800 text-brand-neon px-2 py-0.5 rounded border border-zinc-800/40">Domain: cobalt-strike-beacon...</button>
+                <button id="quick-ioc-hash" onClick={() => { setIocInput('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'); }} className="bg-zinc-950 hover:bg-zinc-800 text-brand-neon px-2 py-0.5 rounded border border-zinc-800/40">Hash (SHA-256)</button>
               </div>
             </div>
 
@@ -618,7 +618,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <button
                         id="save-ioc-report"
                         onClick={() => saveToWorkbench(`Threat Intel Audit: ${iocResult.indicator}`, iocResult.indicator, 'IOC Lookup', iocResult.verdict === 'MALICIOUS' ? 'CRITICAL' : iocResult.verdict === 'SUSPICIOUS' ? 'HIGH' : 'LOW', iocResult.maliciousScore, iocResult)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors self-start font-semibold"
+                        className="bg-brand-berry hover:bg-brand-plum text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors self-start font-semibold shadow-sm shadow-brand-neon/10"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>Save Report</span>
@@ -654,7 +654,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                     </div>
                     <div className="bg-zinc-950/40 p-3.5 rounded-lg border border-zinc-900/60 space-y-1 text-center">
                       <div className="text-zinc-500 font-semibold uppercase tracking-wider text-[9px]">Associated Campaign</div>
-                      <div className="text-xs font-semibold text-blue-400 mt-1.5 truncate">{iocResult.campaignName}</div>
+                      <div className="text-xs font-semibold text-brand-neon mt-1.5 truncate">{iocResult.campaignName}</div>
                     </div>
                   </div>
 
@@ -708,7 +708,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                             href={ref.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-400 hover:underline text-[11px] flex items-center gap-1"
+                            className="text-brand-neon hover:underline text-[11px] flex items-center gap-1"
                           >
                             <ExternalLink className="w-3 h-3" />
                             {ref.title}
@@ -729,7 +729,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             <div className="bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl space-y-4">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-blue-400" />
+                  <Globe className="w-4 h-4 text-brand-neon" />
                   HTTP Security Headers Analyzer
                 </h2>
                 <p className="text-xs text-zinc-400">
@@ -744,13 +744,13 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   value={headersUrl}
                   onChange={(e) => setHeadersUrl(e.target.value)}
                   placeholder="e.g. github.com, my-agency-app.org"
-                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                 />
                 <button
                   id="headers-scan-submit"
                   onClick={executeHeadersScan}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
+                  className="bg-brand-berry hover:bg-brand-plum text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
                 >
                   <Activity className="w-3.5 h-3.5" />
                   <span>{loading ? 'Scanning...' : 'Analyze Headers'}</span>
@@ -774,7 +774,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                         <button
                           id="save-headers-report"
                           onClick={() => saveToWorkbench(`Security Headers: ${headersResult.url}`, headersResult.url, 'Security Headers', headersResult.score >= 80 ? 'LOW' : headersResult.score >= 50 ? 'MEDIUM' : 'HIGH', headersResult.score, headersResult)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-[11px] flex items-center gap-1 transition-colors font-semibold shadow-sm shadow-blue-500/10"
+                          className="bg-brand-berry hover:bg-brand-plum text-white px-3 py-1 rounded-lg text-[11px] flex items-center gap-1 transition-colors font-semibold shadow-sm shadow-brand-neon/10"
                         >
                           <CheckCircle className="w-3.5 h-3.5" />
                           <span>Save Report</span>
@@ -820,7 +820,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                         <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Security Score</div>
                         <div className="text-xl font-extrabold font-mono text-white">{headersResult.score} / 100</div>
                       </div>
-                      <div className="h-12 w-12 bg-blue-500/10 border border-blue-500/30 rounded-full flex items-center justify-center text-xl font-black text-blue-400">
+                      <div className="h-12 w-12 bg-brand-neon/10 border border-brand-neon/30 rounded-full flex items-center justify-center text-xl font-black text-brand-neon">
                         {headersResult.grade}
                       </div>
                     </div>
@@ -846,7 +846,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                           </div>
                           <p className="text-[11px] text-zinc-400 leading-relaxed">{header.description}</p>
                           {header.present && header.value && (
-                            <div className="bg-zinc-950 p-2 rounded border border-zinc-900/60 font-mono text-[10px] text-blue-400 break-all select-all leading-normal max-h-16 overflow-y-auto">
+                            <div className="bg-zinc-950 p-2 rounded border border-zinc-900/60 font-mono text-[10px] text-brand-neon break-all select-all leading-normal max-h-16 overflow-y-auto">
                               {header.value}
                             </div>
                           )}
@@ -884,7 +884,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                         id={`btn-config-${tech}`}
                         onClick={() => setConfigTab(tech)}
                         className={`px-3 py-1.5 text-xs font-semibold capitalize border-b-2 transition-colors ${
-                          configTab === tech ? 'border-blue-500 text-blue-400 font-bold bg-blue-500/5' : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                          configTab === tech ? 'border-brand-neon text-brand-neon font-bold bg-brand-neon/5' : 'border-transparent text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         {tech}
@@ -893,7 +893,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   </div>
 
                   <div className="bg-zinc-950 rounded-lg p-4 border border-zinc-900/60">
-                    <pre className="font-mono text-xs text-blue-300 whitespace-pre-wrap leading-relaxed overflow-x-auto">
+                    <pre className="font-mono text-xs text-brand-neon/80 whitespace-pre-wrap leading-relaxed overflow-x-auto">
                       {configTab === 'nginx' && headersResult.aiReport.remediationConfigs.nginx}
                       {configTab === 'apache' && headersResult.aiReport.remediationConfigs.apache}
                       {configTab === 'caddy' && headersResult.aiReport.remediationConfigs.caddy}
@@ -912,7 +912,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             <div className="bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl space-y-4">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-blue-400" />
+                  <Shield className="w-4 h-4 text-brand-neon" />
                   TLS/SSL Cryptographic Checker
                 </h2>
                 <p className="text-xs text-zinc-400">
@@ -927,13 +927,13 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   value={sslDomain}
                   onChange={(e) => setSslDomain(e.target.value)}
                   placeholder="e.g. github.com, secure-gateway.com"
-                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                 />
                 <button
                   id="ssl-check-submit"
                   onClick={executeSslCheck}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
+                  className="bg-brand-berry hover:bg-brand-plum text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
                 >
                   <Shield className="w-3.5 h-3.5" />
                   <span>{loading ? 'Evaluating...' : 'Check SSL'}</span>
@@ -962,7 +962,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <button
                         id="save-ssl-report"
                         onClick={() => saveToWorkbench(`TLS/SSL Security: ${sslResult.domain}`, sslResult.domain, 'TLS/SSL Checker', sslResult.cert.isValid ? 'LOW' : 'CRITICAL', sslResult.cert.daysRemaining < 30 ? 40 : 95, sslResult)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-blue-500/10"
+                        className="bg-brand-berry hover:bg-brand-plum text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-brand-neon/10"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>Save Report</span>
@@ -993,7 +993,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                     </div>
                     <div className="bg-zinc-950/40 p-4 rounded-lg border border-zinc-900/60 text-center space-y-1">
                       <div className="text-zinc-500 font-semibold uppercase tracking-wider text-[9px]">Certificate Issuer</div>
-                      <div className="text-xs font-bold text-blue-400 mt-2 truncate">{sslResult.cert.issuer}</div>
+                      <div className="text-xs font-bold text-brand-neon mt-2 truncate">{sslResult.cert.issuer}</div>
                       <div className="text-[10px] text-zinc-500 font-medium">Subject: {sslResult.cert.subject}</div>
                     </div>
                   </div>
@@ -1014,7 +1014,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   </div>
 
                   <div className="space-y-2 bg-zinc-950/40 p-4 rounded-lg border border-zinc-900/60">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1 text-blue-400">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1 text-brand-neon">
                       <Info className="w-3.5 h-3.5" />
                       AI Cryptographic Evaluation
                     </span>
@@ -1034,7 +1034,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             <div className="bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl space-y-4">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-blue-400" />
+                  <Mail className="w-4 h-4 text-brand-neon" />
                   Email Spoofing Security Auditor (SPF & DMARC)
                 </h2>
                 <p className="text-xs text-zinc-400">
@@ -1049,13 +1049,13 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   value={emailDomain}
                   onChange={(e) => setEmailDomain(e.target.value)}
                   placeholder="e.g. google.com, state.gov, school.edu"
-                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                 />
                 <button
                   id="email-audit-submit"
                   onClick={executeEmailSecurity}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
+                  className="bg-brand-berry hover:bg-brand-plum text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
                 >
                   <Mail className="w-3.5 h-3.5" />
                   <span>{loading ? 'Auditing...' : 'Audit Email Policies'}</span>
@@ -1086,7 +1086,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <button
                         id="save-email-report"
                         onClick={() => saveToWorkbench(`Email Security Audit: ${emailResult.domain}`, emailResult.domain, 'Email Security', emailResult.overallRisk === 'LOW' ? 'LOW' : emailResult.overallRisk === 'MEDIUM' ? 'MEDIUM' : 'HIGH', emailResult.overallRisk === 'LOW' ? 95 : emailResult.overallRisk === 'MEDIUM' ? 70 : 35, emailResult)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-blue-500/10"
+                        className="bg-brand-berry hover:bg-brand-plum text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-brand-neon/10"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>Save Report</span>
@@ -1123,7 +1123,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <div className="space-y-2 text-xs">
                         <div>
                           <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold block mb-0.5">Discovered Record</span>
-                          <pre className="font-mono text-[10.5px] p-2 bg-zinc-950 rounded border border-zinc-900/40 text-blue-400 break-all select-all leading-normal">
+                          <pre className="font-mono text-[10.5px] p-2 bg-zinc-950 rounded border border-zinc-900/40 text-brand-neon break-all select-all leading-normal">
                             {emailResult.spf.record}
                           </pre>
                         </div>
@@ -1140,7 +1140,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                         )}
                         <div className="pt-1.5">
                           <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold block mb-0.5">Remediation Best-Practice Record</span>
-                          <pre className="font-mono text-[10.5px] p-2 bg-zinc-950 rounded border border-blue-500/15 text-green-400 select-all">
+                          <pre className="font-mono text-[10.5px] p-2 bg-zinc-950 rounded border border-brand-neon/15 text-green-400 select-all">
                             {emailResult.spf.bestPracticeFix}
                           </pre>
                         </div>
@@ -1162,7 +1162,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <div className="space-y-2 text-xs">
                         <div>
                           <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold block mb-0.5">Discovered Record</span>
-                          <pre className="font-mono text-[10.5px] p-2 bg-zinc-950 rounded border border-zinc-900/40 text-blue-400 break-all select-all leading-normal">
+                          <pre className="font-mono text-[10.5px] p-2 bg-zinc-950 rounded border border-zinc-900/40 text-brand-neon break-all select-all leading-normal">
                             {emailResult.dmarc.record}
                           </pre>
                         </div>
@@ -1179,7 +1179,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                         )}
                         <div className="pt-1.5">
                           <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold block mb-0.5">Remediation Best-Practice Record</span>
-                          <pre className="font-mono text-[10.5px] p-2 bg-zinc-950 rounded border border-blue-500/15 text-green-400 select-all">
+                          <pre className="font-mono text-[10.5px] p-2 bg-zinc-950 rounded border border-brand-neon/15 text-green-400 select-all">
                             {emailResult.dmarc.bestPracticeFix}
                           </pre>
                         </div>
@@ -1194,7 +1194,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <p className="text-zinc-400 leading-relaxed text-[11px]">{emailResult.dkimGuide.explanation}</p>
                       <div>
                         <span className="text-[10px] text-zinc-500 font-semibold block mb-0.5">TXT Record: {emailResult.dkimGuide.selector}._domainkey</span>
-                        <pre className="font-mono text-[9.5px] p-2.5 bg-zinc-950 rounded border border-zinc-900/60 text-blue-300 overflow-x-auto whitespace-pre-wrap select-all leading-normal">
+                        <pre className="font-mono text-[9.5px] p-2.5 bg-zinc-950 rounded border border-zinc-900/60 text-brand-neon/80 overflow-x-auto whitespace-pre-wrap select-all leading-normal">
                           {emailResult.dkimGuide.examplePublicKeyRecord}
                         </pre>
                       </div>
@@ -1202,14 +1202,14 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
 
                     {/* Overall Remediation steps */}
                     <div className="bg-zinc-950/40 p-4 border border-zinc-900/60 rounded-lg space-y-2">
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1 text-blue-400">
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1 text-brand-neon">
                         <CheckCircle className="w-3.5 h-3.5" />
                         Remediation Path
                       </span>
                       <ul className="space-y-1.5 text-zinc-400 text-[11px]">
                         {emailResult.remediationSteps.map((step, idx) => (
                           <li key={idx} className="flex items-start gap-1.5">
-                            <ChevronRight className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
+                            <ChevronRight className="w-3.5 h-3.5 text-brand-neon shrink-0 mt-0.5" />
                             <span>{step}</span>
                           </li>
                         ))}
@@ -1228,7 +1228,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             <div className="bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl space-y-4">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-blue-400" />
+                  <Globe className="w-4 h-4 text-brand-neon" />
                   DNS Lookup & Security Auditor
                 </h2>
                 <p className="text-xs text-zinc-400">
@@ -1243,13 +1243,13 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   value={dnsDomain}
                   onChange={(e) => setDnsDomain(e.target.value)}
                   placeholder="e.g. state.gov, school.edu"
-                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                  className="flex-1 bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                 />
                 <select
                   id="dns-record-type-select"
                   value={dnsType}
                   onChange={(e) => setDnsType(e.target.value)}
-                  className="bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-blue-500"
+                  className="bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-brand-neon"
                 >
                   <option value="A">A Record</option>
                   <option value="AAAA">AAAA Record</option>
@@ -1262,7 +1262,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                   id="dns-query-submit"
                   onClick={executeDnsLookup}
                   disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
+                  className="bg-brand-berry hover:bg-brand-plum text-white font-medium px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 disabled:opacity-55"
                 >
                   <Search className="w-3.5 h-3.5" />
                   <span>{loading ? 'Resolving...' : 'Query DNS'}</span>
@@ -1279,7 +1279,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-base font-bold text-white">{dnsResult.domain}</span>
-                        <span className="text-[10px] font-mono bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">
+                        <span className="text-[10px] font-mono bg-brand-neon/10 text-brand-neon px-1.5 py-0.5 rounded border border-brand-neon/20">
                           {dnsResult.recordType} Lookup
                         </span>
                       </div>
@@ -1289,7 +1289,7 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
                       <button
                         id="save-dns-report"
                         onClick={() => saveToWorkbench(`DNS Lookup: ${dnsResult.domain}`, dnsResult.domain, 'DNS Lookup', 'LOW', 90, dnsResult)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-blue-500/10"
+                        className="bg-brand-berry hover:bg-brand-plum text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors font-semibold shadow-sm shadow-brand-neon/10"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>Save Report</span>
@@ -1307,13 +1307,13 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
 
                   <div className="space-y-2">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Raw Resolved DNS Records</span>
-                    <pre className="font-mono text-xs p-4 bg-zinc-950 rounded-lg border border-zinc-900/60 text-blue-300 overflow-x-auto whitespace-pre-wrap select-all leading-relaxed">
+                    <pre className="font-mono text-xs p-4 bg-zinc-950 rounded-lg border border-zinc-900/60 text-brand-neon/80 overflow-x-auto whitespace-pre-wrap select-all leading-relaxed">
                       {JSON.stringify(dnsResult.records, null, 2)}
                     </pre>
                   </div>
 
                   <div className="space-y-2 bg-zinc-950/40 p-4 rounded-lg border border-zinc-900/60 text-xs">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1 text-blue-400">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1 text-brand-neon">
                       <Info className="w-3.5 h-3.5" />
                       Security Context Analysis
                     </span>

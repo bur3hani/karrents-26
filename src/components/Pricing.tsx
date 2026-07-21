@@ -62,7 +62,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
       price: '$49',
       period: 'analyst / month',
       description: 'Designed for individual blue teamers, security engineers, and DevOps auditors requiring automation.',
-      icon: <Zap className="w-5 h-5 text-blue-400" />,
+      icon: <Zap className="w-5 h-5 text-brand-neon" />,
       features: [
         'Uncapped DNS & SSL handshakes',
         'Bulk security headers auditing',
@@ -167,7 +167,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-400" />
+            <Sparkles className="w-4 h-4 text-brand-neon" />
             Transparent Pricing Plans
           </h2>
           <p className="text-xs text-zinc-400">
@@ -175,7 +175,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
           </p>
         </div>
         <div className="text-[10px] font-mono text-zinc-500 bg-zinc-950 px-3.5 py-1.5 rounded-lg border border-zinc-800 flex items-center gap-1.5">
-          <Shield className="w-3.5 h-3.5 text-blue-500" />
+          <Shield className="w-3.5 h-3.5 text-brand-neon" />
           <span>Compliant with standard SOC2 Type II</span>
         </div>
       </div>
@@ -190,14 +190,14 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
               id={`pricing-tier-${idx}`}
               className={`border rounded-xl p-6 space-y-6 flex flex-col justify-between relative transition-all ${
                 isActive
-                  ? 'bg-blue-600/10 border-blue-500 shadow-xl shadow-blue-600/5'
+                  ? 'bg-brand-neon/10 border-brand-neon shadow-xl shadow-brand-neon/5'
                   : tier.isPopular
                   ? 'bg-zinc-900/30 border-zinc-700/80 hover:border-zinc-600'
                   : 'bg-zinc-900/40 border-zinc-800/40 hover:border-zinc-800'
               }`}
             >
               {tier.badge && (
-                <span className="absolute -top-3 right-4 bg-blue-500 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-blue-400 shadow">
+                <span className="absolute -top-3 right-4 bg-brand-berry text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-brand-neon shadow">
                   {tier.badge}
                 </span>
               )}
@@ -237,7 +237,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
                 <ul className="space-y-2.5 text-xs">
                   {tier.features.map((feat, fIdx) => (
                     <li key={fIdx} className="flex gap-2 items-start text-zinc-300">
-                      <CheckCircle className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                      <CheckCircle className="w-4 h-4 text-brand-neon shrink-0 mt-0.5" />
                       <span>{feat}</span>
                     </li>
                   ))}
@@ -252,7 +252,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
                   isActive
                     ? 'bg-zinc-900 text-zinc-500 border border-zinc-850/80 cursor-default'
                     : tier.isPopular
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/15'
+                    ? 'bg-brand-berry hover:bg-brand-plum text-white shadow-lg shadow-brand-neon/15'
                     : 'bg-zinc-950 hover:bg-zinc-900 text-zinc-300 border border-zinc-800 hover:border-zinc-700'
                 }`}
               >
@@ -308,7 +308,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
                         value={nameOnCard}
                         onChange={(e) => setNameOnCard(e.target.value)}
                         placeholder="John Doe"
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-blue-500"
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-brand-neon"
                         required
                       />
                     </div>
@@ -323,7 +323,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
                           value={cardNumber}
                           onChange={handleCardNumberChange}
                           placeholder="4111 2222 3333 4444"
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-zinc-200 focus:outline-none focus:border-blue-500 font-mono"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-2 text-zinc-200 focus:outline-none focus:border-brand-neon font-mono"
                           required
                         />
                         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-zinc-500">
@@ -342,7 +342,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
                           value={expiry}
                           onChange={handleExpiryChange}
                           placeholder="MM/YY"
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-blue-500 font-mono text-center"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-brand-neon font-mono text-center"
                           required
                         />
                       </div>
@@ -355,7 +355,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
                           value={cvc}
                           onChange={handleCvcChange}
                           placeholder="•••"
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-blue-500 font-mono text-center"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-brand-neon font-mono text-center"
                           required
                         />
                       </div>
@@ -387,9 +387,9 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
               {checkoutStep === 'processing' && (
                 <div className="py-8 flex flex-col items-center justify-center text-center space-y-4">
                   <div className="relative">
-                    <div className="h-12 w-12 rounded-full border-2 border-zinc-800 border-t-blue-500 animate-spin" />
+                    <div className="h-12 w-12 rounded-full border-2 border-zinc-800 border-t-brand-neon animate-spin" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Shield className="w-4 h-4 text-blue-400 animate-pulse" />
+                      <Shield className="w-4 h-4 text-brand-neon animate-pulse" />
                     </div>
                   </div>
                   <div className="space-y-1.5 font-mono">
@@ -407,13 +407,13 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
                   <div className="space-y-1.5">
                     <h4 className="text-sm font-bold text-white">Payment Authorized Successfully!</h4>
                     <p className="text-xs text-zinc-400 max-w-xs leading-relaxed mx-auto">
-                      Your workspace credentials have been upgraded to <strong className="text-blue-400">{selectedTier.name}</strong>. Enjoy full programmatic API and automated lookups.
+                      Your workspace credentials have been upgraded to <strong className="text-brand-neon">{selectedTier.name}</strong>. Enjoy full programmatic API and automated lookups.
                     </p>
                   </div>
 
                   <button
                     onClick={() => setSelectedTier(null)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg text-xs transition-colors cursor-pointer mt-2"
+                    className="bg-brand-berry hover:bg-brand-plum text-white font-semibold px-6 py-2 rounded-lg text-xs transition-colors cursor-pointer mt-2"
                   >
                     Activate Plan Features
                   </button>

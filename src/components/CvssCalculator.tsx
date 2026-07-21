@@ -191,7 +191,7 @@ export default function CvssCalculator() {
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-zinc-200 text-sm tracking-tight">{group.name}</h3>
               <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                <Info className="w-3.5 h-3.5 text-blue-400/80" />
+                <Info className="w-3.5 h-3.5 text-brand-neon/80" />
                 <span>{group.title}</span>
               </div>
             </div>
@@ -205,7 +205,7 @@ export default function CvssCalculator() {
                     onClick={() => handleMetricChange(group.key, opt.value)}
                     className={`flex flex-col text-left p-3 rounded-lg border text-xs transition-all relative ${
                       isSelected
-                        ? 'bg-blue-600/10 border-blue-500 text-blue-200 ring-2 ring-blue-500/10'
+                        ? 'bg-brand-neon/10 border-brand-neon text-brand-neon ring-2 ring-brand-neon/10'
                         : 'bg-zinc-950/40 border-zinc-800/50 hover:border-zinc-700/50 text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
@@ -269,14 +269,14 @@ export default function CvssCalculator() {
                 <span>{copied ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
-            <p className="font-mono text-xs break-all text-blue-400 leading-normal p-2 bg-zinc-950 rounded border border-zinc-900/60 select-all">
+            <p className="font-mono text-xs break-all text-brand-neon leading-normal p-2 bg-zinc-950 rounded border border-zinc-900/60 select-all">
               {vector}
             </p>
           </div>
 
           <div className="space-y-3.5 text-xs text-zinc-400 leading-relaxed pt-2 border-t border-zinc-800/40">
             <div className="flex gap-2.5">
-              <Shield className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              <Shield className="w-4 h-4 text-brand-neon shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-medium text-zinc-300">CVSS v3.1 Standards</h4>
                 <p>Calculated base score reflects the vulnerability severity irrespective of active mitigation techniques or temporal exploitation feeds.</p>

@@ -75,7 +75,7 @@ export default function Notifications() {
       case 'ALERT': return <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />;
       case 'WARNING': return <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />;
       case 'SUCCESS': return <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />;
-      default: return <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />;
+      default: return <Info className="w-4 h-4 text-brand-neon shrink-0 mt-0.5" />;
     }
   };
 
@@ -85,7 +85,7 @@ export default function Notifications() {
       case 'ALERT': return 'border-red-500/30 bg-red-500/5';
       case 'WARNING': return 'border-amber-500/30 bg-amber-500/5';
       case 'SUCCESS': return 'border-green-500/30 bg-green-500/5';
-      default: return 'border-blue-500/30 bg-blue-500/5';
+      default: return 'border-brand-neon/30 bg-brand-neon/5';
     }
   };
 
@@ -95,7 +95,7 @@ export default function Notifications() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <Bell className="w-4 h-4 text-blue-400" />
+            <Bell className="w-4 h-4 text-brand-neon" />
             Security Notification Center
           </h2>
           <p className="text-xs text-zinc-400">
@@ -135,7 +135,7 @@ export default function Notifications() {
               
               {n.linkText && (
                 <div className="pt-2">
-                  <span className="text-blue-400 font-bold inline-flex items-center gap-0.5 hover:underline text-[10px]">
+                  <span className="text-brand-neon font-bold inline-flex items-center gap-0.5 hover:underline text-[10px]">
                     <span>{n.linkText}</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </span>
@@ -153,7 +153,7 @@ export default function Notifications() {
             </button>
 
             {!n.isRead && (
-              <span className="absolute top-4 left-1.5 w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping" />
+              <span className="absolute top-4 left-1.5 w-1.5 h-1.5 bg-brand-neon rounded-full animate-ping" />
             )}
           </div>
         ))}
