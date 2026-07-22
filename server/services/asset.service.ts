@@ -4,9 +4,15 @@ import { organizationRepository } from '../repositories/organization.repository.
 import { Asset, User } from '../db.js';
 
 export class AssetService {
-  async getProjectAssets(projectId: string, orgId: string): Promise<Asset[]> {
-    await projectService.getProjectById(projectId, orgId); // Auth check
-    return assetRepository.findMany(projectId);
+  async getProjectAssets(projectId: string | undefined | null, orgId: string): Promise<Asset[]> {
+    if (projectId && projectId !== 'all') {
+      await projectService.getProjectById(projectId, orgId); // Auth check
+      return assetRepository.findMany(projectId);
+    }
+    const projects = await projectService.getProjects(orgId);
+    const projIds = new Set(projects.map(p => p.id));
+    const allAssets = await assetRepository.findMany();
+    return allAssets.filter(a => projIds.has(a.project_id));
   }
 
   async createAsset(projectId: string, orgId: string, data: Omit<Asset, 'id' | 'project_id' | 'created_at' | 'updated_at' | 'deleted_at'>, user: User, ip?: string): Promise<Asset> {

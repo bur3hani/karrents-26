@@ -20,7 +20,7 @@ import { apiFetch } from '../lib/api';
 
 interface DashboardProps {
   onLaunchTool: (toolName: string) => void;
-  onNavigateToSection: (section: 'dashboard' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports') => void;
+  onNavigateToSection: (section: 'dashboard' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports' | 'assets') => void;
   selectedProjectId: string | null;
   setSelectedProjectId: (id: string | null) => void;
 }
@@ -395,8 +395,15 @@ export default function Dashboard({ onLaunchTool, onNavigateToSection, selectedP
           <div className="bg-zinc-900/60 border border-zinc-800/50 p-5 rounded-xl space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/40">
               <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                Registered Client Assets ({filteredAssets.length})
+                Registered Assets ({filteredAssets.length})
               </h3>
+              <button
+                onClick={() => onNavigateToSection('assets')}
+                className="text-[10px] font-bold text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1 transition-colors"
+              >
+                <span>Manage Inventory</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
             </div>
 
             {filteredAssets.length === 0 ? (

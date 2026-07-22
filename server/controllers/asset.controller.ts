@@ -8,11 +8,8 @@ export class AssetController {
       const { projectId } = req.query;
       if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
-      if (!projectId || typeof projectId !== 'string') {
-        return res.status(400).json({ error: "Query parameter 'projectId' is required." });
-      }
-
-      const assets = await assetService.getProjectAssets(projectId, req.user.organization_id);
+      const pId = typeof projectId === 'string' ? projectId : undefined;
+      const assets = await assetService.getProjectAssets(pId, req.user.organization_id);
       return res.json(assets);
     } catch (err: any) {
       return res.status(400).json({ error: err.message });

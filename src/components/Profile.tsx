@@ -622,7 +622,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                     <div className="text-right">
                       <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">Rate / Cost</span>
                       <span className="text-sm font-bold text-zinc-300 font-mono">
-                        {userPlan === 'Guest / Sandbox' ? '$0 / forever' : userPlan === 'SOC Professional' ? '$49 / month' : '$249 / month'}
+                        {userPlan === 'Guest / Sandbox' ? '$0 / forever' : userPlan === 'SOC Professional' ? '$49 / month' : userPlan === 'Enterprise / Teams' ? '$249 / month' : '$499 / month'}
                       </span>
                     </div>
                   </div>
@@ -666,7 +666,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                             <span>JSON/CSV/Markdown exports</span>
                           </li>
                         </>
-                      ) : (
+                      ) : userPlan === 'Enterprise / Teams' ? (
                         <>
                           <li className="flex gap-1.5 items-center">
                             <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
@@ -683,6 +683,25 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                           <li className="flex gap-1.5 items-center">
                             <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
                             <span>SLA 99.99% Guaranteed uptime</span>
+                          </li>
+                        </>
+                      ) : (
+                        <>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                            <span>Unlimited parallel automated scans</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                            <span>Dedicated account security engineer</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                            <span>Zero-rate-limit enterprise API key</span>
+                          </li>
+                          <li className="flex gap-1.5 items-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                            <span>Dedicated isolated DB & SOC2 audit support</span>
                           </li>
                         </>
                       )}
@@ -747,7 +766,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                       <div className="grid grid-cols-4 px-4 py-3 items-center hover:bg-zinc-950/20 text-zinc-300">
                         <span className="font-semibold text-zinc-200">INV-2026-0042</span>
                         <span className="text-zinc-400">{new Date().toLocaleDateString()}</span>
-                        <span className="font-bold text-emerald-400">{userPlan === 'SOC Professional' ? '$49.00' : '$249.00'}</span>
+                        <span className="font-bold text-emerald-400">{userPlan === 'SOC Professional' ? '$49.00' : userPlan === 'Enterprise / Teams' ? '$249.00' : '$499.00'}</span>
                         <button
                           type="button"
                           onClick={() => alert("Downloading encrypted invoice receipt... Done!")}

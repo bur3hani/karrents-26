@@ -143,19 +143,7 @@ export interface Project {
   updated_at: string;
 }
 
-export interface Asset {
-  id: string;
-  project_id: string;
-  name: string;
-  type: 'Domain' | 'IP Address' | 'Subnet' | 'Server' | 'Cloud Container' | 'Web Application' | 'API Endpoint' | 'Database';
-  tags: string[];
-  notes: string;
-  risk_score: number;
-  status: 'active' | 'archived' | 'decommissioned';
-  owner: string;
-  created_at: string;
-  updated_at: string;
-}
+export * from './types/asset';
 
 export interface Finding {
   id: string;

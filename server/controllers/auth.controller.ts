@@ -404,6 +404,66 @@ export class AuthController {
       `);
     }
   }
+
+  // --- Session Management ---
+  async listSessions(req: AuthenticatedRequest, res: Response) {
+    try {
+      const userId = req.user?.id || 'usr-1';
+      const sessions = await userRepository.findActiveSessionsByUserId(userId);
+      return res.json(sessions);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Failed to retrieve active sessions.' });
+    }
+  }
+
+  async revokeSession(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!id) return res.status(400).json({ error: 'Session ID is required.' });
+      await userRepository.deleteSessionById(id);
+      return res.json({ message: 'Session revoked successfully.' });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Failed to revoke session.' });
+    }
+  }
+
+  // --- API Keys Management ---
+  async listApiKeys(req: AuthenticatedRequest, res: Response) {
+    try {
+      const userId = req.user?.id || 'usr-1';
+      const keys = await userRepository.findApiTokens(userId);
+      return res.json(keys);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Failed to retrieve API keys.' });
+    }
+  }
+
+  async createApiKey(req: AuthenticatedRequest, res: Response) {
+    try {
+      const userId = req.user?.id || 'usr-1';
+      const { name } = req.body;
+      const keyName = name && typeof name === 'string' ? name.trim() : 'CLI Automation Key';
+      const result = await userRepository.createApiToken(userId, keyName);
+      return res.status(201).json({
+        message: 'API Key generated successfully.',
+        key: result.record,
+        token: result.token
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Failed to create API key.' });
+    }
+  }
+
+  async revokeApiKey(req: AuthenticatedRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!id) return res.status(400).json({ error: 'API Key ID is required.' });
+      await userRepository.deleteApiToken(id);
+      return res.json({ message: 'API Key revoked successfully.' });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Failed to revoke API key.' });
+    }
+  }
 }
 
 export const authController = new AuthController();

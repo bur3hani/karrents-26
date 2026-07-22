@@ -52,7 +52,7 @@ export interface Project {
 export interface Asset {
   id: string;
   project_id: string;
-  type: 'Domain' | 'Subdomain' | 'Website' | 'Public IP' | 'Internal IP' | 'Host' | 'Server' | 'Application' | 'Repository' | 'Cloud Resource' | 'Email Domain';
+  type: 'Domain' | 'Subdomain' | 'Website' | 'API' | 'Public IP' | 'Internal IP' | 'Host' | 'Server' | 'Container' | 'Virtual Machine' | 'Application' | 'Repository' | 'Cloud Resource' | 'Email Domain';
   name: string;
   tags: string[];
   notes: string;
@@ -285,11 +285,39 @@ function loadDatabase(): DatabaseSchema {
         project_id: 'proj_demo_external',
         type: 'Domain',
         name: 'karrents.com',
-        tags: ['Production', 'Public-Facing'],
-        notes: 'Primary landing and corporate asset domain.',
-        risk_score: 12,
+        tags: ['Production', 'Public-Facing', 'DNS-Protected'],
+        notes: 'Primary corporate domain and apex DNS record.',
+        risk_score: 15,
         status: 'active',
-        owner: 'engr.buru@gmail.com',
+        owner: 'SecOps Team',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      },
+      {
+        id: 'asset_subdomain_1',
+        project_id: 'proj_demo_external',
+        type: 'Subdomain',
+        name: 'api.karrents.com',
+        tags: ['Production', 'External-API', 'TLS-Enforced'],
+        notes: 'Public Gateway REST API endpoint.',
+        risk_score: 78,
+        status: 'active',
+        owner: 'Platform API Lead',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      },
+      {
+        id: 'asset_app_1',
+        project_id: 'proj_demo_external',
+        type: 'Application',
+        name: 'Customer Billing Console',
+        tags: ['PCI-DSS', 'High-Value', 'Internal-Auth'],
+        notes: 'Stripe integration payment web application.',
+        risk_score: 85,
+        status: 'active',
+        owner: 'DevOps Lead',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         deleted_at: null
@@ -299,11 +327,81 @@ function loadDatabase(): DatabaseSchema {
         project_id: 'proj_demo_external',
         type: 'Public IP',
         name: '185.112.144.50',
-        tags: ['Hostinger', 'Web Server'],
+        tags: ['Hostinger', 'Web Server', 'Border-Router'],
         notes: 'Production reverse proxy gateway host.',
         risk_score: 45,
         status: 'active',
-        owner: 'engr.buru@gmail.com',
+        owner: 'Network Admin',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      },
+      {
+        id: 'asset_ip_2',
+        project_id: 'proj_demo_external',
+        type: 'Internal IP',
+        name: '10.0.4.15',
+        tags: ['Private-VPC', 'DB-Cluster'],
+        notes: 'Internal primary PostgreSQL node behind Bastion.',
+        risk_score: 22,
+        status: 'active',
+        owner: 'Database Reliability Team',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      },
+      {
+        id: 'asset_repo_1',
+        project_id: 'proj_demo_external',
+        type: 'Repository',
+        name: 'github.com/karrents/secops-core',
+        tags: ['Source-Code', 'CI-CD-Pipeline', 'Private'],
+        notes: 'Core security assessment workspace repository.',
+        risk_score: 30,
+        status: 'active',
+        owner: 'Engineering Lead',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      },
+      {
+        id: 'asset_container_1',
+        project_id: 'proj_demo_external',
+        type: 'Container',
+        name: 'karrents-scanner-agent:v2.4',
+        tags: ['Docker', 'Microservice', 'Kubernetes'],
+        notes: 'Scan worker container pod running in EKS cluster.',
+        risk_score: 64,
+        status: 'active',
+        owner: 'Cloud Security Architect',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      },
+      {
+        id: 'asset_cloud_1',
+        project_id: 'proj_demo_external',
+        type: 'Cloud Resource',
+        name: 'aws-s3://karrents-client-evidence-vault',
+        tags: ['AWS-S3', 'Encrypted-KMS', 'SOC2-Scope'],
+        notes: 'Client scan artifact and evidence store.',
+        risk_score: 10,
+        status: 'active',
+        owner: 'SecOps Team',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      },
+      {
+        id: 'asset_email_1',
+        project_id: 'proj_demo_external',
+        type: 'Email Domain',
+        name: 'mail.karrents.com',
+        tags: ['Google-Workspace', 'SPF-DKIM-Enforced'],
+        notes: 'Corporate email domain for client communications.',
+        risk_score: 28,
+        status: 'active',
+        owner: 'IT Systems Admin',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         deleted_at: null
@@ -648,8 +746,8 @@ export const db = {
 
   // ASSETS
   assets: {
-    findMany(projectId: string) {
-      return loadDatabase().assets.filter(a => a.project_id === projectId && a.deleted_at === null);
+    findMany(projectId?: string) {
+      return loadDatabase().assets.filter(a => (!projectId || a.project_id === projectId) && a.deleted_at === null);
     },
     findById(id: string) {
       const asset = loadDatabase().assets.find(a => a.id === id);
@@ -713,8 +811,8 @@ export const db = {
 
   // FINDINGS
   findings: {
-    findMany(projectId: string) {
-      return loadDatabase().findings.filter(f => f.project_id === projectId && f.deleted_at === null);
+    findMany(projectId?: string) {
+      return loadDatabase().findings.filter(f => (!projectId || f.project_id === projectId) && f.deleted_at === null);
     },
     findById(id: string) {
       const finding = loadDatabase().findings.find(f => f.id === id);
@@ -879,8 +977,8 @@ export const db = {
 
   // REPORTS
   reports: {
-    findMany(projectId: string) {
-      return loadDatabase().reports.filter(r => r.project_id === projectId);
+    findMany(projectId?: string) {
+      return loadDatabase().reports.filter(r => (!projectId || r.project_id === projectId));
     },
     findById(id: string) {
       return loadDatabase().reports.find(r => r.id === id);

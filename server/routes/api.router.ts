@@ -4,6 +4,8 @@ import { organizationController } from '../controllers/organization.controller.j
 import { projectController } from '../controllers/project.controller.ts';
 import { assetController } from '../controllers/asset.controller.js';
 import { findingController } from '../controllers/finding.controller.js';
+import { billingController } from '../controllers/billing.controller.js';
+import { searchController } from '../controllers/search.controller.js';
 import { hydrateAuth, requireAuth, requirePermission } from '../middleware/auth.js';
 import { rateLimiter, csrfProtection, validateInput } from '../middleware/security.js';
 
@@ -80,6 +82,15 @@ router.put(
   }),
   authController.updatePassword
 );
+
+// Sessions Management
+router.get('/auth/sessions', hydrateAuth, requireAuth, authController.listSessions);
+router.delete('/auth/sessions/:id', hydrateAuth, requireAuth, csrfProtection, authController.revokeSession);
+
+// API Keys Management
+router.get('/auth/api-keys', hydrateAuth, requireAuth, authController.listApiKeys);
+router.post('/auth/api-keys', hydrateAuth, requireAuth, csrfProtection, authController.createApiKey);
+router.delete('/auth/api-keys/:id', hydrateAuth, requireAuth, csrfProtection, authController.revokeApiKey);
 
 // ============================================================================
 // 2. ORGANIZATION & ADMINISTRATIVE ENDPOINTS
@@ -363,5 +374,18 @@ router.get('/reports/:id/export', hydrateAuth, requireAuth, findingController.ex
 router.get('/notifications', hydrateAuth, requireAuth, projectController.listNotifications);
 router.post('/notifications/read-all', hydrateAuth, requireAuth, projectController.readAllNotifications);
 router.post('/notifications/:id/read', hydrateAuth, requireAuth, projectController.readNotification);
+
+// ============================================================================
+// 8. BILLING, STRIPE PAYMENTS & INSTANT PLAN SWITCHING
+// ============================================================================
+router.post('/billing/switch-plan', hydrateAuth, billingController.switchPlan);
+router.post('/billing/checkout', hydrateAuth, billingController.createCheckoutSession);
+router.post('/billing/portal', hydrateAuth, billingController.createPortalSession);
+router.get('/billing/status', hydrateAuth, billingController.getStatus);
+
+// ============================================================================
+// 9. UNIFIED PRODUCTION SEARCH
+// ============================================================================
+router.get('/search', hydrateAuth, searchController.search);
 
 export default router;

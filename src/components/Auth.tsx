@@ -23,9 +23,10 @@ interface AuthProps {
   onLoginSuccess: (email: string, sessionToken?: string) => void;
   userEmail: string;
   onClose?: () => void;
+  onOpenLegal?: (tab?: string) => void;
 }
 
-export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) {
+export default function Auth({ onLoginSuccess, userEmail, onClose, onOpenLegal }: AuthProps) {
   const [authStep, setAuthStep] = useState<'gateway' | 'google-chooser' | 'google-loading' | 'mfa-challenge' | 'hw-key-touch'>('gateway');
   const [selectedEmail, setSelectedEmail] = useState<string>(userEmail);
   const [mfaCode, setMfaCode] = useState<string>('');
@@ -974,10 +975,23 @@ export default function Auth({ onLoginSuccess, userEmail, onClose }: AuthProps) 
       </main>
 
       {/* Footer credits and disclosures */}
-      <footer className="relative z-10 border-t border-zinc-900/60 bg-zinc-950/40 p-4 text-center">
+      <footer className="relative z-10 border-t border-zinc-900/60 bg-zinc-950/40 p-4 text-center space-y-2">
         <p className="text-[10px] text-zinc-500 leading-relaxed max-w-xl mx-auto">
-          © 2026 Karrents Security Intelligence. All rights reserved. This platform is a secure, sandbox-isolated intelligence hub operated under zero-logs retention regimes.
+          © 2026 Karrents Security Intelligence. All rights reserved. Operating under zero-logs data privacy principles.
         </p>
+        {onOpenLegal && (
+          <div className="flex flex-wrap items-center justify-center gap-3 text-[10px] text-zinc-400 font-mono">
+            <button type="button" onClick={() => onOpenLegal('terms')} className="hover:text-brand-neon transition-colors cursor-pointer">Terms & Conditions</button>
+            <span>•</span>
+            <button type="button" onClick={() => onOpenLegal('privacy')} className="hover:text-brand-neon transition-colors cursor-pointer">Privacy Policy</button>
+            <span>•</span>
+            <button type="button" onClick={() => onOpenLegal('gdpr')} className="hover:text-brand-neon transition-colors cursor-pointer">GDPR Notice</button>
+            <span>•</span>
+            <button type="button" onClick={() => onOpenLegal('modern-slavery')} className="hover:text-brand-neon transition-colors cursor-pointer">Modern Slavery</button>
+            <span>•</span>
+            <button type="button" onClick={() => onOpenLegal('aup')} className="hover:text-brand-neon transition-colors cursor-pointer">Acceptable Use</button>
+          </div>
+        )}
       </footer>
     </div>
   );

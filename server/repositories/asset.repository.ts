@@ -5,7 +5,7 @@ export class AssetRepository {
     return db.assets.findById(id);
   }
 
-  async findMany(projectId: string): Promise<Asset[]> {
+  async findMany(projectId?: string): Promise<Asset[]> {
     return db.assets.findMany(projectId);
   }
 

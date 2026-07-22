@@ -32,12 +32,13 @@ import {
   Bell,
   CreditCard,
   Sun,
-  Moon
+  Moon,
+  Scale
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import ToolsContainer from './components/ToolsContainer';
 import MitreExplorer from './components/MitreExplorer';
-import AisearchBar from './components/AisearchBar';
+import ProductionSearchBar from './components/ProductionSearchBar';
 import SavedReports from './components/SavedReports';
 import KnowledgeBase from './components/KnowledgeBase';
 import Documentation from './components/Documentation';
@@ -45,9 +46,12 @@ import ApiDoc from './components/ApiDoc';
 import Pricing from './components/Pricing';
 import Profile from './components/Profile';
 import Notifications from './components/Notifications';
+import AssetsManager from './components/AssetsManager';
+import { Project } from './types';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Auth from './components/Auth';
 import KarrentsLogo from './components/KarrentsLogo';
+import LegalHub, { LegalTab } from './components/LegalHub';
 import { apiFetch } from './lib/api';
 
 export default function App() {
@@ -80,11 +84,23 @@ export default function App() {
     return localStorage.getItem('karrents_plan') || 'Guest / Sandbox';
   });
 
-  const [appSection, setAppSection] = useState<'dashboard' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports'>('dashboard');
+  const [appSection, setAppSection] = useState<'dashboard' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports' | 'assets' | 'legal'>('dashboard');
   const [selectedTool, setSelectedTool] = useState<string>('cve');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [newsletterSubscribed, setNewsletterSubscribed] = useState<boolean>(false);
+  const [legalModalOpen, setLegalModalOpen] = useState<boolean>(false);
+  const [selectedLegalTab, setSelectedLegalTab] = useState<LegalTab>('terms');
+
+  const handleOpenLegal = (tab: LegalTab = 'terms') => {
+    setSelectedLegalTab(tab);
+    if (viewMode === 'app') {
+      setAppSection('legal');
+    } else {
+      setLegalModalOpen(true);
+    }
+  };
   const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({
     0: true,
     1: false,
@@ -123,6 +139,27 @@ export default function App() {
     }
     verifyAndSyncSession();
   }, [isAuthenticated, userEmail]);
+
+  useEffect(() => {
+    async function fetchProjects() {
+      if (isAuthenticated) {
+        try {
+          const res = await apiFetch('/api/projects');
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : (data.projects || []);
+            setProjects(list);
+            if (list.length > 0 && !selectedProjectId) {
+              setSelectedProjectId(list[0].id);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load projects in App:", err);
+        }
+      }
+    }
+    fetchProjects();
+  }, [isAuthenticated]);
 
   const handleLaunchTool = (toolName: string) => {
     setSelectedTool(toolName);
@@ -560,69 +597,114 @@ export default function App() {
          ========================================== */}
       {viewMode === 'landing' && (
         <footer className="bg-zinc-950 border-t border-zinc-800/50 py-12 text-xs text-zinc-500">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <KarrentsLogo className="w-5 h-5 text-white" glow={true} />
-                <div className="flex flex-col">
-                  <span className="font-extrabold tracking-tight text-white text-sm leading-none">Karrents</span>
-                  <span className="text-[9px] font-bold text-zinc-500 tracking-wider uppercase mt-0.5">Security Intelligence</span>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+              {/* Col 1: Brand */}
+              <div className="space-y-4 lg:col-span-1">
+                <div className="flex items-center gap-2">
+                  <KarrentsLogo className="w-5 h-5 text-white" glow={true} />
+                  <div className="flex flex-col">
+                    <span className="font-extrabold tracking-tight text-white text-sm leading-none">Karrents</span>
+                    <span className="text-[9px] font-bold text-zinc-500 tracking-wider uppercase mt-0.5">Security Intelligence</span>
+                  </div>
+                </div>
+                <p className="leading-relaxed text-zinc-400">
+                  Practical security tools, threat intelligence, and server-side auditing utilities designed for defenders.
+                </p>
+                <div className="text-[10px] text-zinc-600 font-mono">
+                  © 2026 Karrents Security Intelligence. All rights reserved.
                 </div>
               </div>
-              <p className="leading-relaxed">Practical security tools, threat intelligence, and server-side auditing utilities designed for defenders.</p>
-              <div className="text-[10px] text-zinc-600">© 2026 Karrents Security Intelligence. All rights reserved.</div>
-            </div>
 
-            <div className="space-y-3">
-              <h4 className="font-bold text-zinc-200 text-xs">Security Utilities</h4>
-              <ul className="space-y-1.5 text-zinc-400">
-                <li><button onClick={() => handleLaunchTool('cve')} className="hover:text-white transition-colors">CVE Explorer</button></li>
-                <li><button onClick={() => handleLaunchTool('headers')} className="hover:text-white transition-colors">HTTP Headers Scan</button></li>
-                <li><button onClick={() => handleLaunchTool('ssl')} className="hover:text-white transition-colors">TLS/SSL Check</button></li>
-                <li><button onClick={() => handleLaunchTool('email')} className="hover:text-white transition-colors">Email Spoofing Audit</button></li>
-              </ul>
-            </div>
+              {/* Col 2: Security Utilities */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-zinc-200 text-xs uppercase tracking-wider font-mono">Security Utilities</h4>
+                <ul className="space-y-1.5 text-zinc-400">
+                  <li><button onClick={() => handleLaunchTool('cve')} className="hover:text-brand-neon transition-colors cursor-pointer">CVE Explorer</button></li>
+                  <li><button onClick={() => handleLaunchTool('headers')} className="hover:text-brand-neon transition-colors cursor-pointer">HTTP Headers Scan</button></li>
+                  <li><button onClick={() => handleLaunchTool('ssl')} className="hover:text-brand-neon transition-colors cursor-pointer">TLS/SSL Check</button></li>
+                  <li><button onClick={() => handleLaunchTool('email')} className="hover:text-brand-neon transition-colors cursor-pointer">Email Spoofing Audit</button></li>
+                </ul>
+              </div>
 
-            <div className="space-y-3">
-              <h4 className="font-bold text-zinc-200 text-xs">Advisory Resources</h4>
-              <ul className="space-y-1.5 text-zinc-400">
-                <li><a href="#faq" className="hover:text-white transition-colors">Frequently Answered Queries</a></li>
-                <li><button onClick={() => { setAppSection('mitre'); setViewMode(isAuthenticated ? 'app' : 'auth'); }} className="hover:text-white transition-colors">MITRE ATT&CK Matrix</button></li>
-                <li><a href="#trusted-features" className="hover:text-white transition-colors">Zero Logs Policy Details</a></li>
-              </ul>
-            </div>
+              {/* Col 3: Legal & Compliance */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-brand-neon text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
+                  <Scale className="w-3.5 h-3.5" />
+                  Legal & Governance
+                </h4>
+                <ul className="space-y-1.5 text-zinc-300 font-medium">
+                  <li><button onClick={() => handleOpenLegal('terms')} className="hover:text-brand-neon transition-colors cursor-pointer flex items-center gap-1"><span>•</span> Terms & Conditions</button></li>
+                  <li><button onClick={() => handleOpenLegal('privacy')} className="hover:text-brand-neon transition-colors cursor-pointer flex items-center gap-1"><span>•</span> Privacy Policy</button></li>
+                  <li><button onClick={() => handleOpenLegal('gdpr')} className="hover:text-brand-neon transition-colors cursor-pointer flex items-center gap-1"><span>•</span> GDPR Compliance</button></li>
+                  <li><button onClick={() => handleOpenLegal('modern-slavery')} className="hover:text-brand-neon transition-colors cursor-pointer flex items-center gap-1"><span>•</span> Modern Slavery Statement</button></li>
+                  <li><button onClick={() => handleOpenLegal('aup')} className="hover:text-brand-neon transition-colors cursor-pointer flex items-center gap-1"><span>•</span> Acceptable Use Policy</button></li>
+                  <li><button onClick={() => handleOpenLegal('vulnerability')} className="hover:text-brand-neon transition-colors cursor-pointer flex items-center gap-1"><span>•</span> Vulnerability Disclosure</button></li>
+                  <li><button onClick={() => handleOpenLegal('cookies-subprocessors')} className="hover:text-brand-neon transition-colors cursor-pointer flex items-center gap-1"><span>•</span> Cookies & Sub-processors</button></li>
+                </ul>
+              </div>
 
-            <div className="space-y-4">
-              <h4 className="font-bold text-zinc-200 text-xs">Threat Intelligence Feed</h4>
-              <p className="leading-relaxed">Sign up to receive weekly security briefs mapping newly discovered CVEs directly to MITRE matrices.</p>
-              {newsletterSubscribed ? (
-                <div className="p-3 bg-brand-neon/10 border border-brand-neon/30 rounded-lg text-[11px] text-brand-neon font-mono text-center">
-                  ✓ Successfully subscribed to Threat briefs!
-                </div>
-              ) : (
-                <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setNewsletterSubscribed(true);
-                  }}
-                  className="flex gap-1.5"
-                >
-                  <input
-                    id="newsletter-email"
-                    type="email"
-                    placeholder="name@agency.com"
-                    required
-                    className="bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-300 w-full focus:outline-none focus:border-brand-neon"
-                  />
-                  <button
-                    id="newsletter-submit"
-                    type="submit"
-                    className="bg-brand-berry hover:bg-brand-plum text-white font-bold px-3 py-1.5 rounded transition-colors text-[11px] cursor-pointer"
+              {/* Col 4: Advisory Resources */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-zinc-200 text-xs uppercase tracking-wider font-mono">Advisory Resources</h4>
+                <ul className="space-y-1.5 text-zinc-400">
+                  <li><a href="#faq" className="hover:text-white transition-colors">Frequently Answered Queries</a></li>
+                  <li><button onClick={() => { setAppSection('mitre'); setViewMode(isAuthenticated ? 'app' : 'auth'); }} className="hover:text-white transition-colors cursor-pointer">MITRE ATT&CK Matrix</button></li>
+                  <li><button onClick={() => handleOpenLegal('privacy')} className="hover:text-white transition-colors cursor-pointer">Zero Logs Policy Details</button></li>
+                </ul>
+              </div>
+
+              {/* Col 5: Threat Briefs */}
+              <div className="space-y-4">
+                <h4 className="font-bold text-zinc-200 text-xs uppercase tracking-wider font-mono">Threat Intelligence Feed</h4>
+                <p className="leading-relaxed text-zinc-400">Sign up to receive weekly security briefs mapping newly discovered CVEs directly to MITRE matrices.</p>
+                {newsletterSubscribed ? (
+                  <div className="p-3 bg-brand-neon/10 border border-brand-neon/30 rounded-lg text-[11px] text-brand-neon font-mono text-center">
+                    ✓ Successfully subscribed to Threat briefs!
+                  </div>
+                ) : (
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setNewsletterSubscribed(true);
+                    }}
+                    className="flex gap-1.5"
                   >
-                    Join
-                  </button>
-                </form>
-              )}
+                    <input
+                      id="newsletter-email"
+                      type="email"
+                      placeholder="name@agency.com"
+                      required
+                      className="bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-300 w-full focus:outline-none focus:border-brand-neon"
+                    />
+                    <button
+                      id="newsletter-submit"
+                      type="submit"
+                      className="bg-brand-berry hover:bg-brand-plum text-white font-bold px-3 py-1.5 rounded transition-colors text-[11px] cursor-pointer shrink-0"
+                    >
+                      Join
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Bar Inline Quick Links */}
+            <div className="pt-6 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between text-[11px] text-zinc-500 gap-3">
+              <div>
+                Operating under UK & European Union Data Protection Frameworks.
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <button onClick={() => handleOpenLegal('terms')} className="hover:text-zinc-300 transition-colors cursor-pointer">Terms & Conditions</button>
+                <span>•</span>
+                <button onClick={() => handleOpenLegal('privacy')} className="hover:text-zinc-300 transition-colors cursor-pointer">Privacy Policy</button>
+                <span>•</span>
+                <button onClick={() => handleOpenLegal('gdpr')} className="hover:text-zinc-300 transition-colors cursor-pointer">GDPR Notice</button>
+                <span>•</span>
+                <button onClick={() => handleOpenLegal('modern-slavery')} className="hover:text-zinc-300 transition-colors cursor-pointer">Modern Slavery Statement</button>
+                <span>•</span>
+                <button onClick={() => handleOpenLegal('aup')} className="hover:text-zinc-300 transition-colors cursor-pointer">AUP</button>
+              </div>
             </div>
           </div>
         </footer>
@@ -636,6 +718,7 @@ export default function App() {
           onLoginSuccess={handleLoginSuccess} 
           userEmail={userEmail} 
           onClose={() => setViewMode('landing')}
+          onOpenLegal={handleOpenLegal}
         />
       )}
 
@@ -690,6 +773,17 @@ export default function App() {
                     >
                       <Terminal className="w-4 h-4 text-brand-neon/80" />
                       <span>Security Tools</span>
+                    </button>
+
+                    <button
+                      id="aside-nav-assets"
+                      onClick={() => setAppSection('assets')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'assets' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Layers className="w-4 h-4 text-brand-neon/80" />
+                      <span>Asset Inventory</span>
                     </button>
 
                     <button
@@ -805,6 +899,17 @@ export default function App() {
                       <Settings className="w-4 h-4 text-brand-neon/80" />
                       <span>System Settings</span>
                     </button>
+
+                    <button
+                      id="aside-nav-legal"
+                      onClick={() => handleOpenLegal('terms')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'legal' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <HelpCircle className="w-4 h-4 text-brand-neon/80" />
+                      <span>Legal & Compliance</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -859,11 +964,14 @@ export default function App() {
                   {appSection === 'pricing' && 'Workspace Plans'}
                   {appSection === 'profile' && 'User Settings & Credentials'}
                   {appSection === 'settings' && 'Workbench Configuration'}
+                  {appSection === 'legal' && 'Legal, Compliance & Governance'}
                 </h1>
               </div>
 
-              {/* Global search co-pilot */}
-              <AisearchBar onNavigateToTool={handleLaunchTool} />
+              {/* Global Production Search */}
+              <ProductionSearchBar onNavigateToSection={(section, params) => {
+                if (section) setAppSection(section as any);
+              }} />
 
               {/* System metrics */}
               <div className="hidden sm:flex items-center gap-3.5 font-mono text-[10px]">
@@ -900,6 +1008,19 @@ export default function App() {
 
               {appSection === 'tools' && (
                 <ToolsContainer initialActiveTool={selectedTool} />
+              )}
+
+              {appSection === 'assets' && (
+                <ErrorBoundary>
+                  <AssetsManager
+                    projects={projects}
+                    selectedProjectId={selectedProjectId}
+                    onLaunchToolWithTarget={(tool, target) => {
+                      setSelectedTool(tool);
+                      setAppSection('tools');
+                    }}
+                  />
+                </ErrorBoundary>
               )}
 
               {appSection === 'mitre' && (
@@ -1007,9 +1128,25 @@ export default function App() {
                   </div>
                 </div>
               )}
+
+              {appSection === 'legal' && (
+                <LegalHub 
+                  initialTab={selectedLegalTab} 
+                  isModal={false} 
+                />
+              )}
             </main>
           </div>
         </div>
+      )}
+
+      {/* Global Legal Hub Modal Overlay */}
+      {legalModalOpen && (
+        <LegalHub 
+          initialTab={selectedLegalTab} 
+          isModal={true} 
+          onClose={() => setLegalModalOpen(false)} 
+        />
       )}
     </div>
   );
