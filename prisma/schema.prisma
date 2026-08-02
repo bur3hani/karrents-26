@@ -1,0 +1,248 @@
+// Karrents Security Assessment Workspace - Prisma Schema
+// PostgreSQL Relational Hierarchy: Organization > Client > Project > Asset > Finding
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ORGANIZATION_ADMIN
+  SECURITY_ANALYST
+  RESEARCHER
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum AssetType {
+  DOMAIN
+  SUBDOMAIN
+  WEBSITE
+  PUBLIC_IP
+  INTERNAL_IP
+  HOST
+  SERVER
+  CONTAINER
+  VIRTUAL_MACHINE
+  APPLICATION
+  REPOSITORY
+  CLOUD_RESOURCE
+  EMAIL_DOMAIN
+}
+
+enum AssetStatus {
+  ACTIVE
+  UNDER_REVIEW
+  DECOMMISSIONED
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+}
+
+enum FindingStatus {
+  DRAFT
+  OPEN
+  REMEDIATED
+  RISK_ACCEPTED
+  FALSE_POSITIVE
+}
+
+enum EvidenceType {
+  SCREENSHOT
+  FILE
+  URL
+  NOTE
+  COMMAND_OUTPUT
+  LOG
+  HASH
+  METADATA
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users     User[]
+  clients   Client[]
+  projects  Project[]
+  auditLogs AuditLog[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  passwordHash   String       @map("password_hash")
+  salt           String
+  name           String
+  role           UserRole     @default(VIEWER)
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  status         UserStatus   @default(ACTIVE)
+  mfaEnabled     Boolean      @default(false) @map("mfa_enabled")
+  mfaSecret      String?      @map("mfa_secret")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  sessions  Session[]
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  ipAddress String   @map("ip_address")
+  userAgent String   @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("sessions")
+}
+
+model Client {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  industry       String?
+  contactEmail   String?      @map("contact_email")
+  contactPhone   String?      @map("contact_phone")
+  notes          String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  deletedAt      DateTime?    @map("deleted_at")
+
+  projects Project[]
+
+  @@map("clients")
+}
+
+model Project {
+  id             String        @id @default(uuid())
+  clientId       String        @map("client_id")
+  client         Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  organizationId String        @map("organization_id")
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  description    String
+  status         ProjectStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+
+  assets   Asset[]
+  findings Finding[]
+
+  @@map("projects")
+}
+
+model Asset {
+  id        String      @id @default(uuid())
+  projectId String      @map("project_id")
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type      AssetType
+  name      String
+  tags      String[]    @default([])
+  notes     String?
+  riskScore Float       @default(0.0) @map("risk_score")
+  status    AssetStatus @default(ACTIVE)
+  owner     String
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  deletedAt DateTime?   @map("deleted_at")
+
+  findingAssets FindingAsset[]
+
+  @@map("assets")
+}
+
+model Finding {
+  id              String        @id @default(uuid())
+  projectId       String        @map("project_id")
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  severity        Severity
+  cvssScore       Float         @map("cvss_score")
+  epssScore       Float?        @default(0.0) @map("epss_score")
+  riskWeight      Float?        @default(0.0) @map("risk_weight")
+  status          FindingStatus @default(DRAFT)
+  recommendations String
+  references      String[]      @default([])
+  owner           String
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  deletedAt       DateTime?     @map("deleted_at")
+
+  findingAssets FindingAsset[]
+  evidence      Evidence[]
+
+  @@map("findings")
+}
+
+model FindingAsset {
+  findingId String  @map("finding_id")
+  finding   Finding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  assetId   String  @map("asset_id")
+  asset     Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@id([findingId, assetId])
+  @@map("finding_assets")
+}
+
+model Evidence {
+  id        String       @id @default(uuid())
+  findingId String       @map("finding_id")
+  finding   Finding      @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  type      EvidenceType
+  value     String
+  notes     String
+  metadata  Json         @default("{}")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@map("evidence")
+}
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String       @map("user_id")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userEmail      String       @map("user_email")
+  action         String
+  details        String
+  ipAddress      String       @map("ip_address")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
