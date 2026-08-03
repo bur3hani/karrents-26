@@ -3439,6 +3439,124 @@ function requirePermission(permission) {
   };
 }
 
+// server/controllers/admin.controller.ts
+var AdminController = class {
+  // Fetch all users across all organizations with organization name
+  async listAllUsers(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      if (req.user.email !== "engr.buru@gmail.com" && req.user.role !== "Super Admin") {
+        return res.status(403).json({ error: "Forbidden: Master Super Admin access required." });
+      }
+      const allUsers = await userRepository.findMany();
+      const allOrgs = await organizationRepository.findMany();
+      const orgMap = new Map(allOrgs.map((o) => [o.id, o.name]));
+      const enrichedUsers = allUsers.map((u) => {
+        const { password_hash, salt, ...safeUser } = u;
+        return {
+          ...safeUser,
+          organization_name: orgMap.get(u.organization_id) || "Master Organization",
+          isMasterAccount: u.email.toLowerCase() === "engr.buru@gmail.com"
+        };
+      });
+      return res.json(enrichedUsers);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+  // Update a user's security role
+  async updateUserRole(req, res) {
+    try {
+      const { id } = req.params;
+      const { role } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      if (req.user.email !== "engr.buru@gmail.com" && req.user.role !== "Super Admin") {
+        return res.status(403).json({ error: "Forbidden: Master Super Admin access required." });
+      }
+      const targetUser = await userRepository.findById(id);
+      if (!targetUser) {
+        return res.status(404).json({ error: "User not found." });
+      }
+      if (targetUser.email.toLowerCase() === "engr.buru@gmail.com" && role !== "Super Admin") {
+        return res.status(400).json({ error: "Cannot demote Master Super Admin account engr.buru@gmail.com." });
+      }
+      const updated = await userRepository.update(id, { role });
+      if (!updated) {
+        return res.status(400).json({ error: "Failed to update user role." });
+      }
+      await organizationRepository.createAuditLog(
+        req.user.organization_id,
+        req.user.id,
+        req.user.email,
+        "ROLE_CHANGE",
+        `Updated role for user ${targetUser.email} from '${targetUser.role}' to '${role}'`,
+        req.ip || "127.0.0.1"
+      );
+      const { password_hash, salt, ...safeUser } = updated;
+      return res.json({ message: "User role updated successfully", user: safeUser });
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+  }
+  // Update a user's status (active / suspended)
+  async updateUserStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      if (req.user.email !== "engr.buru@gmail.com" && req.user.role !== "Super Admin") {
+        return res.status(403).json({ error: "Forbidden: Master Super Admin access required." });
+      }
+      const targetUser = await userRepository.findById(id);
+      if (!targetUser) {
+        return res.status(404).json({ error: "User not found." });
+      }
+      if (targetUser.email.toLowerCase() === "engr.buru@gmail.com" && status !== "active") {
+        return res.status(400).json({ error: "Cannot suspend Master Super Admin account engr.buru@gmail.com." });
+      }
+      const updated = await userRepository.update(id, { status });
+      if (!updated) {
+        return res.status(400).json({ error: "Failed to update user status." });
+      }
+      await organizationRepository.createAuditLog(
+        req.user.organization_id,
+        req.user.id,
+        req.user.email,
+        "USER_STATUS_CHANGE",
+        `Changed status for user ${targetUser.email} to '${status}'`,
+        req.ip || "127.0.0.1"
+      );
+      const { password_hash, salt, ...safeUser } = updated;
+      return res.json({ message: "User status updated successfully", user: safeUser });
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+  }
+  // Fetch all system security audit logs across all organizations
+  async listAllAuditLogs(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      if (req.user.email !== "engr.buru@gmail.com" && req.user.role !== "Super Admin") {
+        return res.status(403).json({ error: "Forbidden: Master Super Admin access required." });
+      }
+      const allLogs = db.transaction((store) => store.audit_logs || []);
+      const sortedLogs = [...allLogs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      return res.json(sortedLogs);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+};
+var adminController = new AdminController();
+
 // server/routes/api.router.ts
 var router2 = (0, import_express2.Router)();
 router2.use("/clients", hydrateAuth, client_router_default);
@@ -3565,6 +3683,30 @@ router2.get(
   requireAuth,
   requirePermission("audit.view"),
   organizationController.listAuditLogs
+);
+router2.get(
+  "/admin/users",
+  hydrateAuth,
+  requireAuth,
+  adminController.listAllUsers
+);
+router2.put(
+  "/admin/users/:id/role",
+  hydrateAuth,
+  requireAuth,
+  adminController.updateUserRole
+);
+router2.put(
+  "/admin/users/:id/status",
+  hydrateAuth,
+  requireAuth,
+  adminController.updateUserStatus
+);
+router2.get(
+  "/admin/audit-logs",
+  hydrateAuth,
+  requireAuth,
+  adminController.listAllAuditLogs
 );
 router2.put(
   "/org/settings",

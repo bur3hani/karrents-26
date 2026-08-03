@@ -35,7 +35,8 @@ import {
   Moon,
   Scale,
   Building2,
-  FolderGit2
+  FolderGit2,
+  Users
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import ClientsManager from './components/ClientsManager';
@@ -56,6 +57,7 @@ import { Project, EditionMode } from './types';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Auth from './components/Auth';
 import KarrentsLogo from './components/KarrentsLogo';
+import UserManagement from './components/UserManagement';
 import LegalHub, { LegalTab } from './components/LegalHub';
 import UpgradeModal from './components/UpgradeModal';
 import { apiFetch } from './lib/api';
@@ -104,7 +106,15 @@ export default function App() {
     return localStorage.getItem('karrents_plan') || 'Community Edition (Free)';
   });
 
-  const [appSection, setAppSection] = useState<'dashboard' | 'clients' | 'projects' | 'assets' | 'findings' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports' | 'legal'>('dashboard');
+  const [appSection, setAppSection] = useState<'dashboard' | 'clients' | 'projects' | 'assets' | 'findings' | 'tools' | 'mitre' | 'settings' | 'kb' | 'docs' | 'api' | 'pricing' | 'profile' | 'notifications' | 'saved-reports' | 'legal' | 'users'>('dashboard');
+
+  useEffect(() => {
+    if (userEmail.toLowerCase() === 'engr.buru@gmail.com') {
+      setEditionMode('pro');
+      localStorage.setItem('karrents_edition', 'pro');
+      setUserPlan('Master Super Admin (Unlimited Pro)');
+    }
+  }, [userEmail]);
   const [selectedTool, setSelectedTool] = useState<string>('cve');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -892,6 +902,17 @@ export default function App() {
                       <Settings className="w-4 h-4 text-brand-neon/80" />
                       <span>System Settings</span>
                     </button>
+
+                    <button
+                      id="aside-nav-users"
+                      onClick={() => setAppSection('users')}
+                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
+                        appSection === 'users' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                      }`}
+                    >
+                      <Users className="w-4 h-4 text-brand-neon/80" />
+                      <span>Users & Audit Console</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -947,6 +968,7 @@ export default function App() {
                   {appSection === 'profile' && 'User Settings & Credentials'}
                   {appSection === 'settings' && 'Workbench Configuration'}
                   {appSection === 'legal' && 'Legal, Compliance & Governance'}
+                  {appSection === 'users' && 'Master User Directory & Security Audit Trail'}
                 </h1>
               </div>
 
@@ -1156,6 +1178,13 @@ export default function App() {
                 <LegalHub 
                   initialTab={selectedLegalTab} 
                   isModal={false} 
+                />
+              )}
+
+              {appSection === 'users' && (
+                <UserManagement 
+                  currentUserEmail={userEmail}
+                  onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
                 />
               )}
             </main>

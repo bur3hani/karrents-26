@@ -158,12 +158,45 @@ router.delete(
   organizationController.deleteUser
 );
 
+import { adminController } from '../controllers/admin.controller.js';
+
 router.get(
   '/org/audit',
   hydrateAuth,
   requireAuth,
   requirePermission('audit.view'),
   organizationController.listAuditLogs
+);
+
+// ============================================================================
+// MASTER SUPER ADMIN & USER / AUDIT MANAGEMENT ENDPOINTS
+// ============================================================================
+router.get(
+  '/admin/users',
+  hydrateAuth,
+  requireAuth,
+  adminController.listAllUsers
+);
+
+router.put(
+  '/admin/users/:id/role',
+  hydrateAuth,
+  requireAuth,
+  adminController.updateUserRole
+);
+
+router.put(
+  '/admin/users/:id/status',
+  hydrateAuth,
+  requireAuth,
+  adminController.updateUserStatus
+);
+
+router.get(
+  '/admin/audit-logs',
+  hydrateAuth,
+  requireAuth,
+  adminController.listAllAuditLogs
 );
 
 router.put(
