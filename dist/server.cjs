@@ -26,7 +26,6 @@ var import_express4 = __toESM(require("express"), 1);
 var import_path2 = __toESM(require("path"), 1);
 var import_cookie_parser = __toESM(require("cookie-parser"), 1);
 var import_dotenv = __toESM(require("dotenv"), 1);
-var import_vite = require("vite");
 
 // server/routes/api.router.ts
 var import_express2 = require("express");
@@ -4524,7 +4523,8 @@ app.use("/api", api_router_default);
 app.use("/api", scan_router_default);
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
-    const vite = await (0, import_vite.createServer)({
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa"
     });
