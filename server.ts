@@ -67,13 +67,14 @@ async function startServer() {
     });
   }
 
-  if (isSocket) {
-    app.listen(PORT, () => {
-      console.log(`[Karrents Secure Node] Running on socket ${PORT}`);
+  const envPort = process.env.PORT;
+  if (envPort) {
+    app.listen(envPort as any, () => {
+      console.log(`[Karrents Secure Node] Running on Hostinger port/socket: ${envPort}`);
     });
   } else {
-    app.listen(PORT as number, '0.0.0.0', () => {
-      console.log(`[Karrents Secure Node] Running on http://0.0.0.0:${PORT}`);
+    app.listen(3000, '0.0.0.0', () => {
+      console.log(`[Karrents Secure Node] Running locally on http://0.0.0.0:3000`);
     });
   }
 }
