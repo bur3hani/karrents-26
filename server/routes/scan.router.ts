@@ -319,7 +319,7 @@ router.post('/cve', hydrateAuth, requireAuth, async (req, res) => {
   try {
     if (ai) {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: `Analyze the cybersecurity vulnerability ${queryId}. Provide detailed threat intelligence. You MUST return a JSON object conforming exactly to this structure:
         {
           "id": "CVE-YYYY-NNNNNN",
@@ -377,7 +377,7 @@ router.post('/ioc', hydrateAuth, requireAuth, async (req, res) => {
   try {
     if (ai) {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: `Perform threat intelligence lookup for Indicator of Compromise (IOC): "${cleanIoc}". Identify if this looks like a malicious IP, domain, hash (MD5, SHA-1, SHA-256), email, or path. Determine real threat context. You MUST return a JSON object conforming exactly to this structure:
         {
           "indicator": "${cleanIoc}",
@@ -447,7 +447,7 @@ router.post('/dns', hydrateAuth, requireAuth, async (req, res) => {
     let analysis = "";
     if (ai) {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: `Explain the security relevance of these DNS records for domain "${cleanDomain}": ${JSON.stringify(records)}. What should defenders check? Give best practice suggestions. Keep it brief, professional, and technical.`
       });
       analysis = response.text || "";
@@ -479,7 +479,7 @@ router.post('/whois', hydrateAuth, requireAuth, async (req, res) => {
   try {
     if (ai) {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: `Retrieve whois information for domain "${cleanDomain}". Make sure to find Registrar, Creation Date, Expiry Date, Registrant Organization, and Name Servers.
         Return a structured JSON output conforming exactly to:
         {
@@ -493,8 +493,7 @@ router.post('/whois', hydrateAuth, requireAuth, async (req, res) => {
           "securityAnalysis": "An evaluation of this domain's age, safety implications, and warning signs."
         }`,
         config: {
-          responseMimeType: "application/json",
-          tools: [{ googleSearch: {} }]
+          responseMimeType: "application/json"
         }
       });
 
@@ -538,7 +537,7 @@ router.post('/email-security', hydrateAuth, requireAuth, async (req, res) => {
 
     if (ai) {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: `Analyze the email security settings for domain: "${cleanDomain}".
         We successfully retrieved these DNS records:
         - Raw SPF Record: "${spfRecord}"
@@ -657,7 +656,7 @@ router.post('/security-headers', hydrateAuth, requireAuth, async (req, res) => {
     let aiReport = null;
     if (ai) {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: `Evaluate these HTTP security headers parsed from target "${formattedUrl}": ${JSON.stringify(scannedHeaders)}`,
         config: { responseMimeType: "application/json" }
       });
@@ -770,7 +769,7 @@ router.post('/ssl-checker', hydrateAuth, requireAuth, async (req, res) => {
     let aiEvaluation = "";
     if (ai) {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: `Evaluate the SSL certificate safety ratings for: "${cleanDomain}" based on: ${JSON.stringify(certDetails)}`
       });
       aiEvaluation = response.text || "";

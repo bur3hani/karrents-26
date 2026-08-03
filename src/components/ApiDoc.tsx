@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Terminal, 
   Layers, 
@@ -11,8 +11,16 @@ import {
   BookOpen,
   ArrowRight,
   ExternalLink,
-  Lock
+  Lock,
+  Key,
+  Plus,
+  Trash2,
+  ShieldCheck,
+  AlertCircle,
+  Eye,
+  EyeOff
 } from 'lucide-react';
+import { apiFetch, apiFetchJson } from '../lib/api';
 
 interface Endpoint {
   method: 'GET' | 'POST';
@@ -24,15 +32,89 @@ interface Endpoint {
   curlExample: string;
 }
 
+interface ApiKeyItem {
+  id: string;
+  name: string;
+  prefix: string;
+  tier: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  status: 'active' | 'revoked';
+  rawKey?: string;
+}
+
 export default function ApiDoc() {
   const [activeEndpointIdx, setActiveEndpointIdx] = useState<number>(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Pro API Keys Management State
+  const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>([]);
+  const [loadingKeys, setLoadingKeys] = useState<boolean>(false);
+  const [newKeyName, setNewKeyName] = useState<string>('');
+  const [generatingKey, setGeneratingKey] = useState<boolean>(false);
+  const [createdSecret, setCreatedSecret] = useState<string | null>(null);
+  const [showGeneratorModal, setShowGeneratorModal] = useState<boolean>(false);
+  const [keyError, setKeyError] = useState<string>('');
+
+  useEffect(() => {
+    fetchApiKeys();
+  }, []);
+
+  const fetchApiKeys = async () => {
+    setLoadingKeys(true);
+    try {
+      const res = await apiFetchJson<{ success: boolean; keys: ApiKeyItem[] }>('/api/keys');
+      if (res.keys) {
+        setApiKeys(res.keys);
+      }
+    } catch (err) {
+      console.warn('Could not fetch API keys:', err);
+    } finally {
+      setLoadingKeys(false);
+    }
+  };
+
+  const handleGenerateKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeyName.trim()) return;
+    setGeneratingKey(true);
+    setKeyError('');
+    try {
+      const res = await apiFetchJson<{ success: boolean; apiKey: any }>('/api/keys', {
+        method: 'POST',
+        body: JSON.stringify({ name: newKeyName.trim(), tier: 'SOC Professional' })
+      });
+      if (res.apiKey) {
+        setCreatedSecret(res.apiKey.rawKey);
+        setNewKeyName('');
+        fetchApiKeys();
+      }
+    } catch (err: any) {
+      setKeyError(err.message || 'Failed to generate API Key.');
+    } finally {
+      setGeneratingKey(false);
+    }
+  };
+
+  const handleRevokeKey = async (id: string) => {
+    if (!confirm('Are you sure you want to revoke this API Key? Any automated integration using this key will be disconnected.')) {
+      return;
+    }
+    try {
+      await apiFetch(`/api/keys/${id}`, { method: 'DELETE' });
+      fetchApiKeys();
+    } catch (err: any) {
+      alert('Failed to revoke API Key: ' + err.message);
+    }
+  };
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
+
+  const activeApiKeySecret = apiKeys.find(k => k.status === 'active')?.prefix || 'krt_live_your_api_key_here';
 
   const endpoints: Endpoint[] = [
     {
@@ -57,7 +139,7 @@ export default function ApiDoc() {
           clickjacking_risk: "LOW"
         }
       }, null, 2),
-      curlExample: `curl -X POST \\\n  https://karrents-workbench.app/api/security-headers \\\n  -H 'Content-Type: application/json' \\\n  -d '{"url": "github.com"}'`
+      curlExample: `curl -X POST \\\n  https://karrents-workbench.app/api/security-headers \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: ${createdSecret || activeApiKeySecret}' \\\n  -d '{"url": "github.com"}'`
     },
     {
       method: 'POST',
@@ -81,7 +163,7 @@ export default function ApiDoc() {
           mitigationFlags: "-Dlog4j2.formatMsgNoLookups=true"
         }
       }, null, 2),
-      curlExample: `curl -X POST \\\n  https://karrents-workbench.app/api/cve \\\n  -H 'Content-Type: application/json' \\\n  -d '{"cveId": "CVE-2021-44228"}'`
+      curlExample: `curl -X POST \\\n  https://karrents-workbench.app/api/cve \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: ${createdSecret || activeApiKeySecret}' \\\n  -d '{"cveId": "CVE-2021-44228"}'`
     },
     {
       method: 'POST',
@@ -101,7 +183,7 @@ export default function ApiDoc() {
         isTrusted: true,
         cipherSuite: "TLS_AES_256_GCM_SHA384"
       }, null, 2),
-      curlExample: `curl -X POST \\\n  https://karrents-workbench.app/api/ssl-checker \\\n  -H 'Content-Type: application/json' \\\n  -d '{"domain": "github.com"}'`
+      curlExample: `curl -X POST \\\n  https://karrents-workbench.app/api/ssl-checker \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: ${createdSecret || activeApiKeySecret}' \\\n  -d '{"domain": "github.com"}'`
     }
   ];
 
@@ -114,18 +196,181 @@ export default function ApiDoc() {
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
             <Code className="w-4 h-4 text-brand-neon" />
-            Developer REST API Center
+            Developer REST API & Pro Key Manager
           </h2>
           <p className="text-xs text-zinc-400">
-            Build integrations, automate scans, and query threat intelligence feeds dynamically using our robust REST API endpoints.
+            Build integrations, automate scans, and query threat intelligence feeds dynamically using robust REST API keys.
           </p>
         </div>
-        <div className="flex items-center gap-2.5 text-zinc-500 font-mono text-[10px] bg-zinc-950 px-3.5 py-1.5 rounded-lg border border-zinc-800">
-          <Lock className="w-3.5 h-3.5 text-amber-500" />
-          <span>API Gate: Active SSL/HMAC</span>
+        <div className="flex items-center gap-2 text-xs">
+          <button
+            onClick={() => setShowGeneratorModal(true)}
+            className="px-3 py-1.5 bg-brand-neon hover:bg-brand-neon/90 text-black font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-brand-neon/10"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Generate Pro API Key</span>
+          </button>
         </div>
       </div>
 
+      {/* Pro API Keys Management Box */}
+      <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+          <div className="flex items-center gap-2">
+            <Key className="w-4 h-4 text-brand-neon" />
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Your Active Pro API Keys</h3>
+          </div>
+          <span className="text-[10px] text-zinc-400 font-mono">Header format: <code className="text-brand-neon bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">X-API-Key: krt_live_...</code></span>
+        </div>
+
+        {/* Created Key Banner (Shown ONCE right after generation) */}
+        {createdSecret && (
+          <div className="bg-emerald-950/40 border border-emerald-500/50 p-4 rounded-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4" />
+                New API Key Secret Generated! Save it securely now:
+              </span>
+              <button
+                onClick={() => setCreatedSecret(null)}
+                className="text-xs text-zinc-400 hover:text-white"
+              >
+                Dismiss
+              </button>
+            </div>
+            <div className="flex items-center gap-2 bg-zinc-950 p-2.5 rounded-lg border border-emerald-900 font-mono text-xs text-emerald-300 select-all">
+              <span className="truncate flex-1">{createdSecret}</span>
+              <button
+                onClick={() => handleCopy('new_key', createdSecret)}
+                className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold rounded flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                {copiedId === 'new_key' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedId === 'new_key' ? 'Copied!' : 'Copy Secret'}</span>
+              </button>
+            </div>
+            <p className="text-[10px] text-zinc-400 italic">
+              Note: For security reasons, full raw API key secrets are never stored in plain text or displayed again.
+            </p>
+          </div>
+        )}
+
+        {/* API Keys Table */}
+        {loadingKeys ? (
+          <div className="text-xs text-zinc-500 animate-pulse py-2 font-mono">Loading active API keys...</div>
+        ) : apiKeys.length === 0 ? (
+          <div className="text-xs text-zinc-500 font-mono py-2 flex items-center justify-between">
+            <span>No custom API keys generated yet. Click "Generate Pro API Key" to build automated pipelines.</span>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead className="bg-zinc-950 text-zinc-500 border-b border-zinc-800">
+                <tr>
+                  <th className="p-2.5">Key Name</th>
+                  <th className="p-2.5">Key Identifier</th>
+                  <th className="p-2.5">Access Tier</th>
+                  <th className="p-2.5">Created</th>
+                  <th className="p-2.5">Status</th>
+                  <th className="p-2.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/50 text-zinc-300">
+                {apiKeys.map((key) => (
+                  <tr key={key.id} className="hover:bg-zinc-800/30 transition-colors">
+                    <td className="p-2.5 font-bold text-white font-sans">{key.name}</td>
+                    <td className="p-2.5 text-brand-neon">{key.prefix}</td>
+                    <td className="p-2.5">
+                      <span className="px-2 py-0.5 rounded bg-brand-neon/10 text-brand-neon border border-brand-neon/20 text-[10px]">
+                        {key.tier}
+                      </span>
+                    </td>
+                    <td className="p-2.5 text-zinc-400 text-[11px]">{new Date(key.createdAt).toLocaleDateString()}</td>
+                    <td className="p-2.5">
+                      {key.status === 'active' ? (
+                        <span className="text-emerald-400 font-bold text-[10px]">● Active</span>
+                      ) : (
+                        <span className="text-zinc-500 text-[10px]">● Revoked</span>
+                      )}
+                    </td>
+                    <td className="p-2.5 text-right">
+                      {key.status === 'active' && (
+                        <button
+                          onClick={() => handleRevokeKey(key.id)}
+                          className="p-1 hover:bg-rose-950/60 text-zinc-400 hover:text-rose-400 rounded transition-colors cursor-pointer"
+                          title="Revoke API Key"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Generator Modal */}
+      {showGeneratorModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Key className="w-4 h-4 text-brand-neon" />
+                Generate Pro Developer API Key
+              </h3>
+              <button onClick={() => setShowGeneratorModal(false)} className="text-zinc-500 hover:text-white">✕</button>
+            </div>
+
+            <form onSubmit={handleGenerateKey} className="space-y-4 text-xs">
+              {keyError && (
+                <div className="p-3 bg-rose-950/50 border border-rose-800 text-rose-300 rounded-lg">
+                  {keyError}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-zinc-300">Key Identifier / Name</label>
+                <input
+                  type="text"
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                  placeholder="e.g. CI/CD Security Pipeline Key"
+                  required
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-brand-neon"
+                />
+              </div>
+
+              <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400 space-y-1">
+                <span className="font-bold text-white block">Key Permissions & Quota</span>
+                <p className="text-[11px] leading-relaxed">
+                  Grants full access to Karrents REST APIs (security headers, CVE lookup, SSL checker, DNS analysis) with up to 120 requests/minute.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowGeneratorModal(false)}
+                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-lg font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={generatingKey || !newKeyName.trim()}
+                  className="px-4 py-2 bg-brand-neon hover:bg-brand-neon/90 text-black font-bold rounded-lg shadow-lg shadow-brand-neon/10 disabled:opacity-50"
+                >
+                  {generatingKey ? 'Generating...' : 'Generate Key'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Endpoints Documentation Reference Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Endpoints Sidebar List */}
         <div className="lg:col-span-1 space-y-4 bg-zinc-900/40 border border-zinc-800/50 p-4 rounded-xl h-fit">

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { db, User } from '../db.js';
 import { ROLE_PERMISSIONS } from '../db.js';
 import { Permission } from '../types.js';
+import { ApiKeyController } from '../controllers/apikey.controller.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: User;
@@ -10,26 +11,50 @@ export interface AuthenticatedRequest extends Request {
 
 // Extracted session/user context lookup
 export async function getAuthContext(req: Request): Promise<{ user: User | null; session_id: string | null }> {
-  // Try cookie first
-  let token = req.cookies?.karrents_session;
-
-  // Try Bearer token fallback
-  if (!token && req.headers.authorization) {
+  // Try X-API-Key or Bearer krt_ header first
+  let apiKey = req.headers['x-api-key'] as string;
+  if (!apiKey && req.headers.authorization) {
     const parts = req.headers.authorization.split(' ');
-    if (parts[0] === 'Bearer') {
-      token = parts[1];
+    if (parts[0] === 'Bearer' && parts[1]?.startsWith('krt_')) {
+      apiKey = parts[1];
     }
   }
 
-  // Try X-API-Key fallback
-  const apiKey = req.headers['x-api-key'] as string;
   if (apiKey) {
+    // 1. Check in-memory/ApiKeyController store
+    const keyRecord = ApiKeyController.validateRawKey(apiKey);
+    if (keyRecord) {
+      const existingUser = db.users.findById(keyRecord.userId) || {
+        id: keyRecord.userId,
+        email: keyRecord.userEmail,
+        name: keyRecord.name,
+        role: 'Admin',
+        organization_id: 'org_default',
+        status: 'active',
+        created_at: keyRecord.createdAt,
+        updated_at: new Date().toISOString()
+      };
+      return { user: existingUser as User, session_id: `api_key_${keyRecord.id}` };
+    }
+
+    // 2. Check DB tokens fallback
     const apiTokenRecord = db.apiTokens.verify(apiKey);
     if (apiTokenRecord) {
       const user = db.users.findById(apiTokenRecord.user_id);
       if (user && user.status === 'active') {
         return { user, session_id: 'api_token' };
       }
+    }
+  }
+
+  // Try cookie first
+  let token = req.cookies?.karrents_session;
+
+  // Try Bearer token fallback
+  if (!token && req.headers.authorization) {
+    const parts = req.headers.authorization.split(' ');
+    if (parts[0] === 'Bearer' && !parts[1]?.startsWith('krt_')) {
+      token = parts[1];
     }
   }
 

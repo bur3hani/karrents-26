@@ -224,14 +224,39 @@ export default function LegalHub({ initialTab = 'terms', onClose, isModal = fals
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">5. Disclaimer of Warranties & Limitation of Liability</h3>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">5. "AS IS" Provision, Scanner Availability & Rising Load Disclaimer</h3>
                 <p>
-                  Karrents is provided on an "AS IS" and "AS AVAILABLE" basis. While our threat intelligence maps directly to NIST, NVD, and CISA KEV feeds, security audit reports do not guarantee immunity from zero-day exploits. To the maximum extent permitted by law, Karrents shall not be liable for indirect, incidental, or consequential damages resulting from operational security decisions.
+                  Karrents Security Intelligence services, threat intelligence algorithms, automated vulnerability scanners, and report generators are provided strictly on an <strong className="text-white">"AS IS"</strong> and <strong className="text-white">"AS AVAILABLE"</strong> basis without warranties of any kind, whether express, implied, or statutory.
+                </p>
+                <div className="bg-zinc-900 border border-zinc-800 p-3.5 rounded-lg text-zinc-300 text-xs space-y-2">
+                  <span className="font-bold text-amber-400 block">Server Load & Unavailability Policy:</span>
+                  <p className="leading-relaxed">
+                    Due to rising server traffic, scheduled maintenance, or sudden spikes in global threat intelligence queries, scanning services or API endpoints may experience temporary latency, queuing, rate adjustments, or transient unavailability. Karrents assumes no liability for scan delays or temporary service disruptions arising from high system load.
+                  </p>
+                </div>
+              </section>
+
+              <section className="space-y-3">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">6. Pro Developer API Keys & Fair Use Terms</h3>
+                <p>
+                  Pro users are granted secret API keys (<code className="text-brand-neon font-mono">krt_live_...</code>) for programmatic threat auditing and CI/CD integration. You are solely responsible for keeping your API key credentials confidential.
+                </p>
+                <ul className="list-disc pl-5 space-y-1.5 text-zinc-300">
+                  <li>API keys must never be committed to public code repositories or client-side bundles.</li>
+                  <li>Automated requests are governed by tier rate limits (60–300 req/min). Bypassing rate limits via key pooling or unauthorized proxy rotation is strictly prohibited.</li>
+                  <li>Karrents reserves the right to revoke or suspend API keys without prior notice if abnormal or abusive traffic patterns are detected.</li>
+                </ul>
+              </section>
+
+              <section className="space-y-3">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">7. Limitation of Liability & Financial Cap</h3>
+                <p>
+                  To the maximum extent permitted by applicable law, Karrents, its developers, operators, and licensors shall not be liable for any indirect, incidental, punitive, special, or consequential damages (including loss of profits, business interruption, or data loss) resulting from operational security decisions, missed zero-day vulnerabilities, or service downtime. In all cases, Karrents' aggregate legal liability shall be capped at the total amount paid by the Customer in the thirty (30) days preceding the claim, or $100 USD, whichever is lower.
                 </p>
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">6. Governing Law & Dispute Resolution</h3>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">8. Governing Law & Dispute Resolution</h3>
                 <p>
                   This Agreement shall be governed by and construed in accordance with the laws of England and Wales, without regard to conflict of law principles. Any legal proceedings shall be submitted exclusively to the London Court of International Arbitration (LCIA).
                 </p>

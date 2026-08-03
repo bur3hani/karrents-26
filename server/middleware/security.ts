@@ -43,7 +43,7 @@ export function setCsrfToken(req: Request, res: Response) {
   // Set in non-HTTP-only cookie so client-side JavaScript can read and send in header
   res.cookie('xsrf-token', csrfToken, {
     secure: true,
-    sameSite: 'strict',
+    sameSite: 'none',
     path: '/',
     maxAge: 24 * 60 * 60 * 1000 // 24 Hours
   });

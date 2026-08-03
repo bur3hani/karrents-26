@@ -126,11 +126,22 @@ export default function Auth({ onLoginSuccess, userEmail, onClose, onOpenLegal }
         const height = 700;
         const left = window.screenX + (window.outerWidth - width) / 2;
         const top = window.screenY + (window.outerHeight - height) / 2;
-        window.open(
-          data.url,
-          'GitHub OAuth Login',
-          `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes`
-        );
+        
+        let popup: Window | null = null;
+        try {
+          popup = window.open(
+            data.url,
+            'github_oauth_login',
+            `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes`
+          );
+        } catch (openErr: any) {
+          console.error('window.open error:', openErr);
+          throw new Error('Popup window could not be opened. Please check your browser popup settings.');
+        }
+
+        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+          setPasswordError('Popup window was blocked by browser settings. Please allow popups or use Username/Password authentication.');
+        }
       }
     } catch (err: any) {
       console.error('GitHub OAuth error:', err);

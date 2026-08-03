@@ -6,6 +6,7 @@ import { projectController } from '../controllers/project.controller.ts';
 import { assetController } from '../controllers/asset.controller.js';
 import { findingController } from '../controllers/finding.controller.js';
 import { billingController } from '../controllers/billing.controller.js';
+import { apiKeyController } from '../controllers/apikey.controller.js';
 import { searchController } from '../controllers/search.controller.js';
 import { hydrateAuth, requireAuth, requirePermission } from '../middleware/auth.js';
 import { rateLimiter, csrfProtection, validateInput } from '../middleware/security.js';
@@ -197,6 +198,43 @@ router.get(
   hydrateAuth,
   requireAuth,
   adminController.listAllAuditLogs
+);
+
+// Database Management Routes for Master Super Admin (engr.buru@gmail.com)
+router.get(
+  '/admin/db/overview',
+  hydrateAuth,
+  requireAuth,
+  adminController.getDatabaseOverview
+);
+
+router.get(
+  '/admin/db/tables/:tableName',
+  hydrateAuth,
+  requireAuth,
+  adminController.getTableRows
+);
+
+router.post(
+  '/admin/db/query',
+  hydrateAuth,
+  requireAuth,
+  csrfProtection,
+  adminController.executeQuery
+);
+
+router.get(
+  '/admin/db/export',
+  hydrateAuth,
+  requireAuth,
+  adminController.exportDatabaseDump
+);
+
+router.get(
+  '/admin/metrics',
+  hydrateAuth,
+  requireAuth,
+  adminController.getSuperAdminMetrics
 );
 
 router.put(
@@ -444,9 +482,17 @@ router.post('/billing/switch-plan', hydrateAuth, billingController.switchPlan);
 router.post('/billing/checkout', hydrateAuth, billingController.createCheckoutSession);
 router.post('/billing/portal', hydrateAuth, billingController.createPortalSession);
 router.get('/billing/status', hydrateAuth, billingController.getStatus);
+router.post('/billing/webhook', billingController.handleWebhook);
 
 // ============================================================================
-// 9. UNIFIED PRODUCTION SEARCH
+// 9. PRO API KEY MANAGEMENT
+// ============================================================================
+router.get('/keys', hydrateAuth, requireAuth, apiKeyController.listKeys);
+router.post('/keys', hydrateAuth, requireAuth, csrfProtection, apiKeyController.createKey);
+router.delete('/keys/:id', hydrateAuth, requireAuth, csrfProtection, apiKeyController.revokeKey);
+
+// ============================================================================
+// 10. UNIFIED PRODUCTION SEARCH
 // ============================================================================
 router.get('/search', hydrateAuth, searchController.search);
 

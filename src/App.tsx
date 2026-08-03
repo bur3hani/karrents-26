@@ -1021,6 +1021,7 @@ export default function App() {
                   <Dashboard 
                     onNavigateToSection={(section) => setAppSection(section as any)}
                     onSelectProject={(id) => setSelectedProjectId(id)}
+                    currentUserEmail={userEmail}
                   />
                 </ErrorBoundary>
               )}

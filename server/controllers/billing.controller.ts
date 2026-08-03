@@ -123,17 +123,67 @@ export class BillingController {
    */
   async getStatus(req: AuthenticatedRequest, res: Response) {
     const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
+    const webhookConfigured = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
     const plan = (req.user as any)?.plan || 'SOC Professional';
 
     return res.json({
       plan,
       stripeConfigured,
+      webhookConfigured,
       currency: 'USD',
       billingCycle: 'monthly',
       status: 'active',
       clientFacingStatus: 'Production Ready',
       environment: process.env.NODE_ENV || 'production'
     });
+  }
+
+  /**
+   * Handle Stripe Webhooks
+   */
+  async handleWebhook(req: AuthenticatedRequest, res: Response) {
+    const stripe = getStripe();
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const sig = req.headers['stripe-signature'];
+
+    let event: any = req.body;
+
+    if (stripe && webhookSecret && sig) {
+      try {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      } catch (err: any) {
+        console.error('Stripe webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+    }
+
+    console.log(`[Stripe Webhook Event Received]: ${event.type || 'unknown_type'}`);
+
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object;
+          console.log(`Checkout completed for customer: ${session.customer_email || session.customer}`);
+          break;
+        }
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object;
+          console.log(`Subscription updated: ${subscription.id} -> Status: ${subscription.status}`);
+          break;
+        }
+        case 'customer.subscription.deleted': {
+          const subscription = event.data.object;
+          console.log(`Subscription canceled: ${subscription.id}`);
+          break;
+        }
+        default:
+          break;
+      }
+      return res.json({ received: true });
+    } catch (err: any) {
+      console.error('Error handling webhook event:', err);
+      return res.status(500).json({ error: 'Webhook handler processing error' });
+    }
   }
 }
 

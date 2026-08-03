@@ -70,7 +70,7 @@ export class AuthController {
       res.cookie('karrents_session', session.token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'strict',
+        sameSite: 'none',
         path: '/',
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 Days
       });
@@ -168,7 +168,7 @@ export class AuthController {
       res.cookie('karrents_session', session.token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'strict',
+        sameSite: 'none',
         path: '/',
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 Days
       });
@@ -257,7 +257,7 @@ export class AuthController {
       res.cookie('karrents_session', session.token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'strict',
+        sameSite: 'none',
         path: '/',
         maxAge: 30 * 24 * 60 * 60 * 1000
       });

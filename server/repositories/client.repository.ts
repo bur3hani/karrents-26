@@ -16,6 +16,22 @@ export interface ClientRecord {
   projects_count?: number;
 }
 
+// In-memory persistent clients store for environment fallbacks
+const inMemClientsStore: ClientRecord[] = [
+  {
+    id: 'client-default-01',
+    organization_id: 'org_default',
+    name: 'Primary Enterprise Client',
+    industry: 'Financial Technology',
+    contact_email: 'security-ops@enterprise.com',
+    contact_phone: '+1 (555) 019-2831',
+    notes: 'Scope: Tier 1 AWS Cloud Infrastructure & Web Portal',
+    created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+    updated_at: new Date().toISOString(),
+    projects_count: 1
+  }
+];
+
 export class ClientRepository {
   async findAllByOrg(orgId: string): Promise<ClientRecord[]> {
     try {
@@ -46,24 +62,8 @@ export class ClientRepository {
         projects_count: c._count.projects
       }));
     } catch {
-      // Fallback in-memory database query from db.ts
-      const inMemOrg = db.organizations.findById(orgId);
-      if (!inMemOrg) return [];
-      const projects = db.projects.findMany(orgId);
-      return [
-        {
-          id: 'client-default-01',
-          organization_id: orgId,
-          name: 'Primary Enterprise Client',
-          industry: 'Financial Technology',
-          contact_email: 'security-ops@enterprise.com',
-          contact_phone: '+1 (555) 019-2831',
-          notes: 'Scope: Tier 1 AWS Cloud Infrastructure & Web Portal',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          projects_count: projects.length
-        }
-      ];
+      // Fallback in-memory database query
+      return inMemClientsStore.filter(c => c.organization_id === orgId || c.organization_id === 'org_default');
     }
   }
 
@@ -89,7 +89,7 @@ export class ClientRepository {
         projects_count: c._count.projects
       };
     } catch {
-      return null;
+      return inMemClientsStore.find(c => c.id === id) || null;
     }
   }
 
@@ -112,7 +112,7 @@ export class ClientRepository {
           notes: data.notes
         }
       });
-      return {
+      const rec: ClientRecord = {
         id: created.id,
         organization_id: created.organizationId,
         name: created.name,
@@ -124,12 +124,14 @@ export class ClientRepository {
         updated_at: created.updatedAt.toISOString(),
         projects_count: 0
       };
+      inMemClientsStore.unshift(rec);
+      return rec;
     } catch {
       // In-memory fallback
-      const newId = crypto.randomUUID();
+      const newId = `client_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`;
       const record: ClientRecord = {
         id: newId,
-        organization_id: data.organization_id,
+        organization_id: data.organization_id || 'org_default',
         name: data.name,
         industry: data.industry,
         contact_email: data.contact_email,
@@ -139,6 +141,7 @@ export class ClientRepository {
         updated_at: new Date().toISOString(),
         projects_count: 0
       };
+      inMemClientsStore.unshift(record);
       return record;
     }
   }

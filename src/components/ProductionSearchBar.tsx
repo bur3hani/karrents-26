@@ -29,13 +29,17 @@ export default function ProductionSearchBar({ onNavigateToSection }: ProductionS
   const [totalCount, setTotalCount] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  // Saved and Recent Searches
+  // Saved and Recent Searches (persisted max 5 terms)
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('karrents_recent_searches');
-      return saved ? JSON.parse(saved) : ['Log4j', 'CVE-2021-44228', 'TLS 1.3', 'Acme Corp'];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed.slice(0, 5);
+      }
+      return ['Log4j', 'CVE-2021-44228', 'TLS 1.3', 'Acme Corp', 'SQL Injection'];
     } catch {
-      return ['Log4j', 'CVE-2021-44228'];
+      return ['Log4j', 'CVE-2021-44228', 'TLS 1.3'];
     }
   });
 
@@ -108,14 +112,29 @@ export default function ProductionSearchBar({ onNavigateToSection }: ProductionS
   }, [query, category, sortBy]);
 
   const saveRecentSearch = (searchTerm: string) => {
-    if (!searchTerm.trim()) return;
-    const updated = [searchTerm, ...recentSearches.filter(s => s.toLowerCase() !== searchTerm.toLowerCase())].slice(0, 8);
-    setRecentSearches(updated);
-    try {
-      localStorage.setItem('karrents_recent_searches', JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    const trimmed = searchTerm.trim();
+    if (!trimmed) return;
+    setRecentSearches(prev => {
+      const updated = [trimmed, ...prev.filter(s => s.toLowerCase() !== trimmed.toLowerCase())].slice(0, 5);
+      try {
+        localStorage.setItem('karrents_recent_searches', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save recent searches to localStorage:', e);
+      }
+      return updated;
+    });
+  };
+
+  const removeRecentSearch = (searchTerm: string) => {
+    setRecentSearches(prev => {
+      const updated = prev.filter(s => s.toLowerCase() !== searchTerm.toLowerCase());
+      try {
+        localStorage.setItem('karrents_recent_searches', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to update recent searches in localStorage:', e);
+      }
+      return updated;
+    });
   };
 
   const handleSaveSearch = () => {
@@ -131,7 +150,7 @@ export default function ProductionSearchBar({ onNavigateToSection }: ProductionS
   };
 
   const handleSelectResult = (item: SearchResultItem) => {
-    saveRecentSearch(item.title);
+    saveRecentSearch(query.trim() || item.title);
     setIsOpen(false);
 
     if (!onNavigateToSection) return;
@@ -207,6 +226,11 @@ export default function ProductionSearchBar({ onNavigateToSection }: ProductionS
           onChange={(e) => {
             setQuery(e.target.value);
             setIsOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && query.trim()) {
+              saveRecentSearch(query.trim());
+            }
           }}
           placeholder="Search projects, assets, findings, users, reports, CVEs, MITRE..."
           className="w-full bg-zinc-950/90 border border-zinc-800/80 rounded-lg pl-10 pr-24 py-2 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-brand-neon transition-colors shadow-inner"
@@ -288,14 +312,31 @@ export default function ProductionSearchBar({ onNavigateToSection }: ProductionS
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {recentSearches.map((s, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => { setQuery(s); }}
-                        className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800/80 rounded px-2.5 py-1 text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                      <div
+                        key={`${s}-${idx}`}
+                        className="inline-flex items-center bg-zinc-900/90 hover:bg-zinc-800/90 border border-zinc-800/80 hover:border-zinc-700/80 rounded-lg overflow-hidden transition-all group/pill"
                       >
-                        <Clock className="w-3 h-3 text-zinc-500" />
-                        <span>{s}</span>
-                      </button>
+                        <button
+                          onClick={() => {
+                            setQuery(s);
+                            saveRecentSearch(s);
+                          }}
+                          className="px-2.5 py-1 text-xs text-zinc-300 hover:text-white flex items-center gap-1.5 cursor-pointer font-sans"
+                        >
+                          <Clock className="w-3 h-3 text-zinc-500 group-hover/pill:text-brand-neon transition-colors" />
+                          <span>{s}</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeRecentSearch(s);
+                          }}
+                          className="pr-2 pl-0.5 py-1 text-zinc-500 hover:text-red-400 transition-colors cursor-pointer"
+                          title="Remove search"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
