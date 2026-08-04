@@ -8,11 +8,8 @@ export class FindingController {
       const { projectId } = req.query;
       if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
-      if (!projectId || typeof projectId !== 'string') {
-        return res.status(400).json({ error: "Query parameter 'projectId' is required." });
-      }
-
-      const findings = await findingService.getProjectFindings(projectId, req.user.organization_id);
+      const pId = typeof projectId === 'string' ? projectId : undefined;
+      const findings = await findingService.getProjectFindings(pId, req.user.organization_id);
       return res.json(findings);
     } catch (err: any) {
       return res.status(400).json({ error: err.message });

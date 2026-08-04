@@ -73,7 +73,7 @@ export default function Pricing({ userPlan = 'Guest / Sandbox', onUpgradePlan }:
       features: [
         'Uncapped DNS & SSL handshakes',
         'Bulk security headers auditing',
-        'Unlimited Gemini-Advisor prompts',
+        'Unlimited AI Security Advisor prompts',
         'Personal API Key (60 req/min)',
         'JSON, CSV, and Markdown exports',
         'CISA KEV wild-exploit alarms'

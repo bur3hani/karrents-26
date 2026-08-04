@@ -16,7 +16,7 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  // Inject user's custom Gemini API key if present
+  // Inject user's custom API key if present
   const customGeminiKey = localStorage.getItem('karrents_custom_gemini_key');
   if (customGeminiKey) {
     headers.set('X-Gemini-API-Key', customGeminiKey);

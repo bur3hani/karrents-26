@@ -7,7 +7,7 @@ import { hydrateAuth, requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
-// Safely initialize Gemini client
+// Safely initialize AI client
 const apiKey = process.env.GEMINI_API_KEY;
 let ai: GoogleGenAI | null = null;
 if (apiKey && apiKey !== "MY_GEMINI_API_KEY") {
@@ -26,7 +26,7 @@ if (apiKey && apiKey !== "MY_GEMINI_API_KEY") {
   }
 }
 
-// Middleware to bind client-provided Gemini API key if present
+// Middleware to bind client-provided custom API key if present
 router.use((req: any, res, next) => {
   const clientApiKey = req.headers['x-gemini-api-key'] as string;
   if (clientApiKey && clientApiKey.trim() !== "") {

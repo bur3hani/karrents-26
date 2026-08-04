@@ -22,6 +22,20 @@ export class ClientService {
     }
     return clientRepository.create(data);
   }
+
+  async updateClient(id: string, data: Partial<{
+    name: string;
+    industry?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    notes?: string;
+  }>): Promise<ClientRecord | null> {
+    return clientRepository.update(id, data);
+  }
+
+  async deleteClient(id: string): Promise<boolean> {
+    return clientRepository.delete(id);
+  }
 }
 
 export const clientService = new ClientService();

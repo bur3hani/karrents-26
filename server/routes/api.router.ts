@@ -483,6 +483,7 @@ router.post('/billing/checkout', hydrateAuth, billingController.createCheckoutSe
 router.post('/billing/portal', hydrateAuth, billingController.createPortalSession);
 router.get('/billing/status', hydrateAuth, billingController.getStatus);
 router.post('/billing/webhook', billingController.handleWebhook);
+router.post('/v1/billing/webhook', billingController.handleWebhook);
 
 // ============================================================================
 // 9. PRO API KEY MANAGEMENT

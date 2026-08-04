@@ -9,9 +9,18 @@ export interface DecoratedFinding extends Finding {
 }
 
 export class FindingService {
-  async getProjectFindings(projectId: string, orgId: string): Promise<DecoratedFinding[]> {
-    await projectService.getProjectById(projectId, orgId); // Auth check
-    const findings = await findingRepository.findMany(projectId);
+  async getProjectFindings(projectId: string | undefined, orgId: string): Promise<DecoratedFinding[]> {
+    let findings: Finding[] = [];
+    if (!projectId || projectId === 'all') {
+      const projects = await projectService.getProjects(orgId);
+      for (const p of projects) {
+        const pFindings = await findingRepository.findMany(p.id);
+        findings.push(...pFindings);
+      }
+    } else {
+      await projectService.getProjectById(projectId, orgId); // Auth check
+      findings = await findingRepository.findMany(projectId);
+    }
     
     const decorated: DecoratedFinding[] = [];
     for (const f of findings) {

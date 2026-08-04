@@ -145,6 +145,61 @@ export class ClientRepository {
       return record;
     }
   }
+
+  async update(id: string, data: Partial<{
+    name: string;
+    industry?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    notes?: string;
+  }>): Promise<ClientRecord | null> {
+    try {
+      const updated = await prisma.client.update({
+        where: { id },
+        data: {
+          ...(data.name !== undefined && { name: data.name }),
+          ...(data.industry !== undefined && { industry: data.industry }),
+          ...(data.contact_email !== undefined && { contactEmail: data.contact_email }),
+          ...(data.contact_phone !== undefined && { contactPhone: data.contact_phone }),
+          ...(data.notes !== undefined && { notes: data.notes })
+        }
+      });
+      return {
+        id: updated.id,
+        organization_id: updated.organizationId,
+        name: updated.name,
+        industry: updated.industry || undefined,
+        contact_email: updated.contactEmail || undefined,
+        contact_phone: updated.contactPhone || undefined,
+        notes: updated.notes || undefined,
+        created_at: updated.createdAt.toISOString(),
+        updated_at: updated.updatedAt.toISOString(),
+      };
+    } catch {
+      const idx = inMemClientsStore.findIndex(c => c.id === id);
+      if (idx !== -1) {
+        inMemClientsStore[idx] = {
+          ...inMemClientsStore[idx],
+          ...data,
+          updated_at: new Date().toISOString()
+        };
+        return inMemClientsStore[idx];
+      }
+      return null;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await prisma.client.delete({ where: { id } });
+    } catch {
+      const idx = inMemClientsStore.findIndex(c => c.id === id);
+      if (idx !== -1) {
+        inMemClientsStore.splice(idx, 1);
+      }
+    }
+    return true;
+  }
 }
 
 export const clientRepository = new ClientRepository();

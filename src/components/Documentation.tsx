@@ -56,7 +56,7 @@ export default function Documentation() {
             <div className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl space-y-2">
               <span className="font-bold text-xs text-brand-neon">Advanced AI Co-pilot</span>
               <p className="text-[11px] text-zinc-400 leading-relaxed">
-                Powered by server-side Gemini models, our workbench translates raw resolved JSON records into natural-language business risk vectors, CISA catalog correlations, and actionable Nginx/Apache configuration blocks.
+                Powered by server-side AI models, our workbench translates raw resolved JSON records into natural-language business risk vectors, CISA catalog correlations, and actionable Nginx/Apache configuration blocks.
               </p>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function Documentation() {
             <ol className="space-y-2 text-xs text-zinc-400 list-decimal pl-4 leading-relaxed">
               <li><strong className="text-zinc-200">Input validation:</strong> Express sanitize controllers strip URL protocol parameters, ensuring regex-safe strings.</li>
               <li><strong className="text-zinc-200">Ephemeral connection:</strong> The server establishes secure sockets on port 443 (for certificates) or spawns asynchronous DNS resolvers directly.</li>
-              <li><strong className="text-zinc-200">AI Augmentation:</strong> Clean metrics payloads are sent to Gemini models over SSL. Responses are parsed to JSON.</li>
+              <li><strong className="text-zinc-200">AI Augmentation:</strong> Clean metrics payloads are processed by advanced AI models over SSL. Responses are parsed to JSON.</li>
               <li><strong className="text-zinc-200">Egress Delivery:</strong> The server returns raw payloads directly to client memory frames. System sockets are explicitly ended and garbage-collected. No databases persist scanned results without user-instantiated "Save Report" triggers.</li>
             </ol>
           </div>

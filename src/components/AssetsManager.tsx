@@ -46,7 +46,9 @@ import {
   CheckSquare,
   Square,
   FileText,
-  Check
+  Check,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { Project } from '../types';
 import { Asset, AssetType } from '../types/asset';
@@ -103,6 +105,10 @@ export function AssetModal({
   const [formStatus, setFormStatus] = useState<'active' | 'under-review' | 'decommissioned' | 'archived'>(
     editingAsset?.status || 'active'
   );
+  const [formSeverity, setFormSeverity] = useState<'Critical' | 'High' | 'Medium' | 'Low' | 'Info'>(
+    editingAsset?.severity || 'Medium'
+  );
+  const [formLocked, setFormLocked] = useState<boolean>(Boolean(editingAsset?.locked));
   const [formNotes, setFormNotes] = useState<string>(editingAsset?.notes || '');
   const [formTags, setFormTags] = useState<string[]>(
     Array.isArray(editingAsset?.tags) ? editingAsset!.tags : ['Production', 'Public-Facing']
@@ -119,6 +125,8 @@ export function AssetModal({
       setFormOwner(editingAsset.owner || 'SecOps Team');
       setFormRiskScore(editingAsset.riskScore ?? editingAsset.risk_score ?? 25);
       setFormStatus(editingAsset.status || 'active');
+      setFormSeverity(editingAsset.severity || 'Medium');
+      setFormLocked(Boolean(editingAsset.locked));
       setFormNotes(editingAsset.notes || '');
       setFormTags(Array.isArray(editingAsset.tags) ? editingAsset.tags : []);
       setErrors({});
@@ -129,6 +137,8 @@ export function AssetModal({
       setFormOwner('SecOps Team');
       setFormRiskScore(25);
       setFormStatus('active');
+      setFormSeverity('Medium');
+      setFormLocked(false);
       setFormNotes('');
       setFormTags(['Production', 'Public-Facing']);
       setErrors({});
@@ -168,7 +178,9 @@ export function AssetModal({
         owner: formOwner.trim(),
         riskScore: formRiskScore,
         risk_score: formRiskScore,
+        severity: formSeverity,
         status: formStatus,
+        locked: formLocked,
         notes: formNotes.trim(),
         tags: formTags
       });
@@ -293,11 +305,45 @@ export function AssetModal({
                 onChange={(e) => setFormStatus(e.target.value as any)}
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-fuchsia-500"
               >
-                <option value="active">Active</option>
+                <option value="active">Active Scope</option>
                 <option value="under-review">Under Review</option>
                 <option value="decommissioned">Decommissioned</option>
                 <option value="archived">Archived</option>
               </select>
+            </div>
+          </div>
+
+          {/* Severity & Locking Controls */}
+          <div className="grid grid-cols-2 gap-3 bg-zinc-950/80 p-3 rounded-xl border border-zinc-800">
+            <div>
+              <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Severity Rating</label>
+              <select
+                value={formSeverity}
+                onChange={(e) => setFormSeverity(e.target.value as any)}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-fuchsia-500 font-mono text-xs"
+              >
+                <option value="Critical">Critical Severity</option>
+                <option value="High">High Severity</option>
+                <option value="Medium">Medium Severity</option>
+                <option value="Low">Low Severity</option>
+                <option value="Info">Info / Low Risk</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col justify-center">
+              <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Set Scope Lock</label>
+              <button
+                type="button"
+                onClick={() => setFormLocked(!formLocked)}
+                className={`w-full py-2 px-3 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  formLocked
+                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
+                }`}
+              >
+                {formLocked ? <Lock className="w-3.5 h-3.5 text-amber-400" /> : <Unlock className="w-3.5 h-3.5 text-zinc-500" />}
+                <span>{formLocked ? 'Locked (Immutable)' : 'Unlocked'}</span>
+              </button>
             </div>
           </div>
 
@@ -462,6 +508,19 @@ export default function AssetsManager({
     setSelectedAssetIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
+  };
+
+  const handleToggleLock = async (id: string, currentLocked: boolean) => {
+    try {
+      await apiFetch(`/api/assets/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locked: !currentLocked })
+      });
+      setAssets((prev) => prev.map((a) => (a.id === id ? { ...a, locked: !currentLocked } : a)));
+    } catch {
+      setAssets((prev) => prev.map((a) => (a.id === id ? { ...a, locked: !currentLocked } : a)));
+    }
   };
 
   const toggleSelectAll = (filteredList: Asset[]) => {
@@ -1166,6 +1225,7 @@ export default function AssetsManager({
               projectName={projects.find(p => p.id === asset.project_id)?.name || 'Default Scope'}
               selected={selectedAssetIds.includes(asset.id)}
               onToggleSelect={toggleSelectAsset}
+              onToggleLock={handleToggleLock}
               onEdit={openEditModal}
               onDelete={handleDeleteAsset}
               onLaunchToolWithTarget={onLaunchToolWithTarget}

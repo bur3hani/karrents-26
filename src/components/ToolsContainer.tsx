@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { CVEData, IOCData, DNSData, EmailSecurityData, HeaderData, SSLData } from '../types';
 import { apiFetch } from '../lib/api';
+import ZimaUpsellBanner from './ZimaUpsellBanner';
 
 interface ToolsContainerProps {
   initialActiveTool?: string;
@@ -1326,6 +1327,21 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
             )}
           </div>
         )}
+
+        {/* Persistent ZimaMDR Upsell Banner for Utility Tools */}
+        <ZimaUpsellBanner
+          toolType={activeTab as any}
+          targetDomain={
+            activeTab === 'ssl' ? sslDomain :
+            activeTab === 'headers' ? headersUrl :
+            activeTab === 'email' ? emailDomain :
+            activeTab === 'dns' ? dnsDomain :
+            undefined
+          }
+          onExportToZima={(domain) => {
+            alert(`Asset ${domain} exported to ZimaMDR onboarding queue.`);
+          }}
+        />
       </div>
     </div>
   );

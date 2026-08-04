@@ -44,6 +44,37 @@ export class ClientController {
       res.status(400).json({ error: err.message || 'Failed to create client' });
     }
   }
+
+  async updateClient(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { name, industry, contact_email, contact_phone, notes } = req.body;
+      const updated = await clientService.updateClient(id, {
+        name,
+        industry,
+        contact_email,
+        contact_phone,
+        notes
+      });
+      if (!updated) {
+        res.status(404).json({ error: 'Client organization not found' });
+        return;
+      }
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to update client' });
+    }
+  }
+
+  async deleteClient(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      await clientService.deleteClient(id);
+      res.json({ message: 'Client deleted successfully' });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to delete client' });
+    }
+  }
 }
 
 export const clientController = new ClientController();

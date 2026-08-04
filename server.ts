@@ -16,6 +16,9 @@ const PORT = isSocket ? rawPort : (rawPort ? parseInt(rawPort, 10) : 3000);
 // ============================================================================
 // GLOBAL SECURITY HEADERS & EXPOSURES (OWASP Top 10 Hardened Profile)
 // ============================================================================
+// Webhook endpoints require express.raw body parsing for Stripe signature verification
+app.use(['/api/v1/billing/webhook', '/api/billing/webhook'], express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 app.use(cookieParser());
 

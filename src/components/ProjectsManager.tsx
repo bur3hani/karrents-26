@@ -15,7 +15,11 @@ import {
   Clock,
   Archive,
   X,
-  Target
+  Target,
+  Pencil,
+  Trash2,
+  AlertTriangle,
+  MoreVertical
 } from 'lucide-react';
 import { Project, Client, Asset, EditionMode } from '../types';
 import { apiFetchJson } from '../lib/api';
@@ -40,8 +44,11 @@ export default function ProjectsManager({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedClientFilter, setSelectedClientFilter] = useState<string>('all');
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // New Project Form
+  // Form State
   const [formData, setFormData] = useState({
     client_id: '',
     name: '',
@@ -87,6 +94,54 @@ export default function ProjectsManager({
       setFormData({ client_id: '', name: '', description: '', status: 'active' });
     } catch (err) {
       console.error('Failed to create project:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleOpenEdit = (project: Project) => {
+    setSelectedProject(project);
+    setFormData({
+      client_id: project.client_id || '',
+      name: project.name || '',
+      description: project.description || '',
+      status: project.status || 'active'
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProject || !formData.name.trim()) return;
+    setSubmitting(true);
+    try {
+      const updated = await apiFetchJson<Project>(`/api/projects/${selectedProject.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      setProjects((prev) => prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)));
+      setShowEditModal(false);
+      setSelectedProject(null);
+    } catch (err) {
+      console.error('Failed to update project:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!selectedProject) return;
+    setSubmitting(true);
+    try {
+      await apiFetchJson(`/api/projects/${selectedProject.id}`, {
+        method: 'DELETE'
+      });
+      setProjects((prev) => prev.filter((p) => p.id !== selectedProject.id));
+      setShowDeleteModal(false);
+      setSelectedProject(null);
+    } catch (err) {
+      console.error('Failed to delete project:', err);
     } finally {
       setSubmitting(false);
     }
@@ -209,9 +264,25 @@ export default function ProjectsManager({
                     <span className="px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[11px] font-semibold uppercase rounded-md flex items-center gap-1">
                       <Target className="w-3 h-3" /> {project.status}
                     </span>
-                    <span className="text-[11px] text-slate-500">
-                      {new Date(project.created_at || Date.now()).toLocaleDateString()}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleOpenEdit(project)}
+                        className="p-1 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors cursor-pointer"
+                        title="Edit Project Scope"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedProject(project);
+                          setShowDeleteModal(true);
+                        }}
+                        className="p-1 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded transition-colors cursor-pointer"
+                        title="Delete Project Scope"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <div>
@@ -362,6 +433,152 @@ export default function ProjectsManager({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Project Modal */}
+      {showEditModal && selectedProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Pencil className="w-5 h-5 text-indigo-400" /> Edit Assessment Project Scope
+              </h3>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedProject(null);
+                }}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateProject} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Target Client *
+                </label>
+                <select
+                  required
+                  value={formData.client_id}
+                  onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="">Select client organization...</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.industry ? `(${c.industry})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Project Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Execution Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="planning">Planning & Rules of Engagement</option>
+                  <option value="active">Active Assessment</option>
+                  <option value="completed">Completed & Verified</option>
+                  <option value="archived">Archived Scope</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Scope & Rules of Engagement Summary
+                </label>
+                <textarea
+                  rows={4}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedProject(null);
+                  }}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-indigo-600/20 transition-all cursor-pointer"
+                >
+                  {submitting ? 'Updating...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Project Confirmation Modal */}
+      {showDeleteModal && selectedProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-center gap-3 text-red-400">
+              <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Delete Project Scope</h3>
+                <p className="text-xs text-slate-400">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Are you sure you want to permanently delete <strong className="text-white font-semibold">{selectedProject.name}</strong>? All associated assets, vulnerabilities, and findings in this scope will be deleted.
+            </p>
+
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedProject(null);
+                }}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteProject}
+                disabled={submitting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-red-600/20 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {submitting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}

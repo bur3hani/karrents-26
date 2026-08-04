@@ -50,7 +50,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
     localStorage.setItem('karrents_custom_gemini_key', tempGeminiKey.trim());
     setCustomGeminiKey(tempGeminiKey.trim());
     setTempGeminiKey('');
-    alert("Custom Gemini API Key saved successfully! All future AI requests will proxy through your custom credential.");
+    alert("Custom AI API Key saved successfully! All future AI requests will proxy through your custom credential.");
   };
 
   const handleClearCustomGeminiKey = () => {
@@ -655,7 +655,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                           </li>
                           <li className="flex gap-1.5 items-center">
                             <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
-                            <span>Unlimited Gemini AI prompts</span>
+                            <span>Unlimited AI Security prompts</span>
                           </li>
                           <li className="flex gap-1.5 items-center">
                             <span className="h-1.5 w-1.5 rounded-full bg-brand-neon animate-pulse" />
@@ -951,7 +951,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
               <div className="space-y-4">
                 <div className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl space-y-4">
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-zinc-300">Custom Google Gemini API Key</label>
+                    <label className="block text-xs font-bold text-zinc-300">Custom AI Engine API Key</label>
                     <p className="text-[10px] text-zinc-500">
                       Used for AI Advisory copilot, vulnerability analysis summaries, and automated compliance mappings.
                     </p>
@@ -960,7 +960,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                     <input
                       id="custom-gemini-key-input"
                       type="password"
-                      placeholder={customGeminiKey ? "••••••••••••••••••••" : "AI Studio / Vertex AI Gemini Key"}
+                      placeholder={customGeminiKey ? "••••••••••••••••••••" : "AI Studio / Custom API Key"}
                       value={tempGeminiKey}
                       onChange={(e) => setTempGeminiKey(e.target.value)}
                       className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 w-full focus:outline-none focus:border-emerald-500 font-mono"
@@ -977,7 +977,7 @@ export default function Profile({ userEmail, userPlan, onChangePlan, onLogout }:
                     <div className="flex items-center justify-between text-[11px] bg-emerald-950/20 border border-emerald-500/20 p-2.5 rounded-lg text-emerald-400">
                       <span className="flex items-center gap-1.5 font-medium">
                         <Check className="w-3.5 h-3.5" />
-                        Custom Gemini Key Active
+                        Custom AI Key Active
                       </span>
                       <button
                         id="btn-delete-custom-gemini-key"

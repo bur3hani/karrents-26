@@ -60,6 +60,7 @@ import KarrentsLogo from './components/KarrentsLogo';
 import UserManagement from './components/UserManagement';
 import LegalHub, { LegalTab } from './components/LegalHub';
 import UpgradeModal from './components/UpgradeModal';
+import Sidebar from './components/Sidebar';
 import { apiFetch } from './lib/api';
 
 export default function App() {
@@ -362,7 +363,7 @@ export default function App() {
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <h3 className="font-bold text-zinc-100 text-sm">AI Forensic Co-pilot</h3>
-                  <p className="text-xs text-zinc-400 leading-relaxed">Integrated server-side Gemini 3.5 engine automatically generates configurations, assesses technical risks, and structures remediation playbooks.</p>
+                  <p className="text-xs text-zinc-400 leading-relaxed">Integrated server-side AI engine automatically generates configurations, assesses technical risks, and structures remediation playbooks.</p>
                 </div>
 
                 <div className="bg-zinc-900/40 border border-zinc-800/50 p-6 rounded-xl space-y-4 hover:border-zinc-700 transition-colors">
@@ -537,7 +538,7 @@ export default function App() {
                   </h3>
                   <ul className="space-y-2 text-zinc-300 leading-relaxed animate-pulse">
                     <li>● Maps every finding to business and security risk models</li>
-                    <li>● Seamless integration with advanced Gemini AI advisory</li>
+                    <li>● Seamless integration with advanced AI security advisory</li>
                     <li>● Full mapping of CISA, OWASP, and NIST SP 800-53 rules</li>
                     <li>● Pre-built copyable configuration files for Nginx, Apache, Caddy</li>
                   </ul>
@@ -590,7 +591,7 @@ export default function App() {
                   },
                   {
                     q: "How does the AI Advisory feature generate remediations?",
-                    a: "Our backend integrates with server-side Gemini 3.5 models. When you scan configurations or search threat profiles, the model validates the parameters, correlates NIST and MITRE catalogs, and translates them into precise mitigation directives."
+                    a: "Our backend integrates with server-side AI security models. When you scan configurations or search threat profiles, the model validates the parameters, correlates NIST and MITRE catalogs, and translates them into precise mitigation directives."
                   },
                   {
                     q: "Can I integrate Karrents into our active SIEM or SOAR runs?",
@@ -758,185 +759,14 @@ export default function App() {
       {viewMode === 'app' && (
         <div className="flex-grow flex h-screen overflow-hidden">
           {/* Workbench Left Sidebar */}
-          <aside className="w-64 bg-zinc-950 border-r border-zinc-800/50 flex flex-col justify-between hidden md:flex shrink-0">
-            <div className="p-5 space-y-6">
-              {/* Logo / Brand */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => setViewMode('landing')}>
-                  <KarrentsLogo className="w-5 h-5 text-white shrink-0" glow={true} />
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-black text-[11px] text-white tracking-tight leading-none">Karrents</span>
-                    <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5">Intelligence</span>
-                  </div>
-                </div>
-                <button
-                  id="btn-secure-logout"
-                  onClick={handleLogout}
-                  className="text-[9px] bg-red-950/40 border border-red-900/30 text-red-400 hover:bg-red-900/10 hover:text-red-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider transition-all shrink-0 cursor-pointer"
-                >
-                  Logout
-                </button>
-              </div>
-
-              {/* Sidebar navigations */}
-              <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-220px)] pr-1 custom-scrollbar">
-                <div>
-                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider px-2.5 mb-1.5">Assessment Workflow</div>
-                  <div className="space-y-0.5">
-                    <button
-                      id="aside-nav-dashboard"
-                      onClick={() => setAppSection('dashboard')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'dashboard' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <Activity className="w-4 h-4 text-brand-neon/80" />
-                      <span>Dashboard</span>
-                    </button>
-
-                    <button
-                      id="aside-nav-clients"
-                      onClick={() => setAppSection('clients')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'clients' ? 'bg-zinc-800/50 text-blue-400 border-l-2 border-blue-400 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <Building2 className="w-4 h-4 text-blue-400/80" />
-                      <span>Clients</span>
-                    </button>
-
-                    <button
-                      id="aside-nav-projects"
-                      onClick={() => setAppSection('projects')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'projects' ? 'bg-zinc-800/50 text-indigo-400 border-l-2 border-indigo-400 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <FolderGit2 className="w-4 h-4 text-indigo-400/80" />
-                      <span>Projects</span>
-                    </button>
-
-                    <button
-                      id="aside-nav-assets"
-                      onClick={() => setAppSection('assets')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'assets' ? 'bg-zinc-800/50 text-emerald-400 border-l-2 border-emerald-400 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <Layers className="w-4 h-4 text-emerald-400/80" />
-                      <span>Assets</span>
-                    </button>
-
-                    <button
-                      id="aside-nav-findings"
-                      onClick={() => setAppSection('findings')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'findings' ? 'bg-zinc-800/50 text-red-400 border-l-2 border-red-400 font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <ShieldAlert className="w-4 h-4 text-red-400/80" />
-                      <span>Findings</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider px-2.5 mb-1.5">Intelligence & Reports</div>
-                  <div className="space-y-0.5">
-                    <button
-                      id="aside-nav-saved-reports"
-                      onClick={() => setAppSection('saved-reports')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'saved-reports' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <FileText className="w-4 h-4 text-brand-neon/80" />
-                      <span>Reports & Audits</span>
-                    </button>
-
-                    <button
-                      id="aside-nav-mitre"
-                      onClick={() => setAppSection('mitre')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'mitre' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <Layers className="w-4 h-4 text-brand-neon/80" />
-                      <span>MITRE ATT&CK Matrix</span>
-                    </button>
-
-                    <button
-                      id="aside-nav-kb"
-                      onClick={() => setAppSection('kb')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'kb' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <Database className="w-4 h-4 text-brand-neon/80" />
-                      <span>Knowledge Base</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider px-2.5 mb-1.5">Platform & System</div>
-                  <div className="space-y-0.5">
-                    <button
-                      id="aside-nav-profile"
-                      onClick={() => setAppSection('profile')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'profile' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <User className="w-4 h-4 text-brand-neon/80" />
-                      <span>Profile & Keys</span>
-                    </button>
-
-                    <button
-                      id="aside-nav-settings"
-                      onClick={() => setAppSection('settings')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'settings' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <Settings className="w-4 h-4 text-brand-neon/80" />
-                      <span>System Settings</span>
-                    </button>
-
-                    <button
-                      id="aside-nav-users"
-                      onClick={() => setAppSection('users')}
-                      className={`w-full text-left px-3 py-1.5 text-xs rounded-md transition-colors flex items-center gap-2.5 font-semibold ${
-                        appSection === 'users' ? 'bg-zinc-800/50 text-brand-neon border-l-2 border-brand-neon font-bold' : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
-                      }`}
-                    >
-                      <Users className="w-4 h-4 text-brand-neon/80" />
-                      <span>Users & Audit Console</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Profile badge (dynamic user management info) */}
-            <div className="p-4 border-t border-zinc-800/40 space-y-2">
-              <div 
-                id="sidebar-profile-card"
-                onClick={() => setAppSection('profile')}
-                className="flex items-center gap-2.5 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-850 hover:border-brand-neon/55 hover:bg-zinc-900/70 transition-all cursor-pointer group"
-              >
-                <div className="h-7 w-7 rounded-full bg-brand-berry flex items-center justify-center text-xs font-black text-white group-hover:bg-brand-neon transition-colors uppercase shrink-0">
-                  {userEmail ? userEmail.slice(0, 2).toUpperCase() : 'G'}
-                </div>
-                <div className="truncate space-y-0.5">
-                  <div className="font-bold text-[11px] text-zinc-200 group-hover:text-white transition-colors capitalize">
-                    {userEmail ? userEmail.split('@')[0] : 'Guest / Sandbox'}
-                  </div>
-                  <div className="text-[9.5px] text-zinc-500 truncate select-all font-mono">{userEmail || 'No Active Session'}</div>
-                </div>
-              </div>
-            </div>
-          </aside>
+          <Sidebar
+            appSection={appSection}
+            setAppSection={setAppSection}
+            userEmail={userEmail}
+            onLogout={handleLogout}
+            onOpenLanding={() => setViewMode('landing')}
+            onOpenUpgrade={() => setIsUpgradeModalOpen(true)}
+          />
 
           {/* Workbench Main Content Panel */}
           <div className="flex-1 flex flex-col min-w-0 bg-zinc-950 overflow-hidden">
@@ -1134,10 +964,10 @@ export default function App() {
                         Karrents Vault Core API Keys Synced
                       </div>
                       <p className="text-zinc-400">
-                        The integrated security engine is actively proxying queries through <span className="font-mono text-zinc-300">process.env.GEMINI_API_KEY</span>. To configure or renew secrets, navigate to your workspace **Settings &gt; Secrets** panel.
+                        The integrated security engine is actively proxying queries through process API credentials. To configure or renew secrets, navigate to your workspace **Settings &gt; Secrets** panel.
                       </p>
                       <div className="bg-zinc-900 border border-zinc-850 p-3 rounded font-mono text-[10.5px] text-zinc-500 flex items-center justify-between">
-                        <span>GEMINI_API_KEY</span>
+                        <span>API_ENGINE_KEY</span>
                         <span className="text-green-400">••••••••••••••••••••ACTIVE</span>
                       </div>
                     </div>
@@ -1164,7 +994,7 @@ export default function App() {
                       </div>
                       <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-1">
                         <span className="text-zinc-500">Model Engine</span>
-                        <div className="text-zinc-300">Gemini 3.5 Flash</div>
+                        <div className="text-zinc-300">AI Security Engine</div>
                       </div>
                       <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-850 space-y-1">
                         <span className="text-zinc-500">Logged User</span>

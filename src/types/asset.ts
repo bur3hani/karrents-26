@@ -21,10 +21,12 @@ export interface Asset {
   type: AssetType;
   riskScore?: number;
   risk_score?: number;
+  severity?: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
   owner: string;
   tags: string[];
   notes?: string;
   status?: 'active' | 'under-review' | 'decommissioned' | 'archived';
+  locked?: boolean;
   createdAt?: string;
   created_at?: string;
   updated_at?: string;

@@ -16,7 +16,13 @@ import {
   FileText,
   UserCheck,
   Briefcase,
-  X
+  X,
+  Pencil,
+  Trash2,
+  MoreVertical,
+  Download,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Client, Project } from '../types';
 import { apiFetchJson } from '../lib/api';
@@ -34,8 +40,12 @@ export default function ClientsManager({ onSelectClient, onSelectProject }: Clie
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [clientProjects, setClientProjects] = useState<Project[]>([]);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [showMoreMenu, setShowMoreMenu] = useState<boolean>(false);
+  const [copiedId, setCopiedId] = useState<boolean>(false);
 
-  // New Client Form State
+  // Form State
   const [formData, setFormData] = useState({
     name: '',
     industry: '',
@@ -55,9 +65,11 @@ export default function ClientsManager({ onSelectClient, onSelectProject }: Clie
     try {
       const data = await apiFetchJson<Client[]>('/api/clients');
       setClients(data || []);
+      if (data && data.length > 0 && !selectedClient) {
+        loadClientDetails(data[0]);
+      }
     } catch (err: any) {
       console.error('Failed to fetch clients:', err);
-      // Clean production state fallback if DB not connected yet
       setClients([]);
     } finally {
       setLoading(false);
@@ -77,12 +89,94 @@ export default function ClientsManager({ onSelectClient, onSelectProject }: Clie
       setClients((prev) => [created, ...prev]);
       setShowCreateModal(false);
       setFormData({ name: '', industry: '', contact_email: '', contact_phone: '', notes: '' });
+      setSelectedClient(created);
     } catch (err: any) {
       console.error('Create client failed:', err);
       setError(err.message || 'Failed to create client record.');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleOpenEdit = () => {
+    if (!selectedClient) return;
+    setFormData({
+      name: selectedClient.name || '',
+      industry: selectedClient.industry || '',
+      contact_email: selectedClient.contact_email || '',
+      contact_phone: selectedClient.contact_phone || '',
+      notes: selectedClient.notes || ''
+    });
+    setShowEditModal(true);
+    setShowMoreMenu(false);
+  };
+
+  const handleUpdateClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedClient || !formData.name.trim()) return;
+    setSubmitting(true);
+    try {
+      const updated = await apiFetchJson<Client>(`/api/clients/${selectedClient.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      setClients((prev) => prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)));
+      setSelectedClient((prev) => (prev ? { ...prev, ...updated } : null));
+      setShowEditModal(false);
+    } catch (err: any) {
+      console.error('Update client failed:', err);
+      setError(err.message || 'Failed to update client.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    if (!selectedClient) return;
+    setSubmitting(true);
+    try {
+      await apiFetchJson(`/api/clients/${selectedClient.id}`, {
+        method: 'DELETE'
+      });
+      const remaining = clients.filter((c) => c.id !== selectedClient.id);
+      setClients(remaining);
+      setSelectedClient(remaining.length > 0 ? remaining[0] : null);
+      if (remaining.length > 0) {
+        loadClientDetails(remaining[0]);
+      }
+      setShowDeleteModal(false);
+    } catch (err: any) {
+      console.error('Delete client failed:', err);
+      setError(err.message || 'Failed to delete client.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleExportClient = () => {
+    if (!selectedClient) return;
+    const payload = {
+      client: selectedClient,
+      projects: clientProjects,
+      exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `client-${selectedClient.name.toLowerCase().replace(/\s+/g, '-')}-profile.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setShowMoreMenu(false);
+  };
+
+  const handleCopyId = () => {
+    if (!selectedClient) return;
+    navigator.clipboard.writeText(selectedClient.id);
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 2000);
+    setShowMoreMenu(false);
   };
 
   const loadClientDetails = async (client: Client) => {
@@ -218,9 +312,58 @@ export default function ClientsManager({ onSelectClient, onSelectProject }: Clie
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg flex items-center gap-1.5">
+                  <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg flex items-center gap-1.5 hidden sm:flex">
                     <UserCheck className="w-3.5 h-3.5" /> Active Scope
                   </span>
+
+                  {/* Edit Client Button */}
+                  <button
+                    onClick={handleOpenEdit}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    title="Edit Client Information"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Edit</span>
+                  </button>
+
+                  {/* Delete Client Button */}
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="px-3 py-1.5 bg-red-950/40 hover:bg-red-900/60 text-red-400 text-xs font-medium rounded-lg border border-red-800/50 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    title="Delete Client Organization"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    <span>Delete</span>
+                  </button>
+
+                  {/* More Actions Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowMoreMenu(!showMoreMenu)}
+                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-colors cursor-pointer"
+                      title="More Client Actions"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+
+                    {showMoreMenu && (
+                      <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-xl z-20 py-1 font-sans text-xs">
+                        <button
+                          onClick={handleExportClient}
+                          className="w-full text-left px-3.5 py-2 text-slate-300 hover:bg-slate-800 hover:text-white flex items-center gap-2 cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-blue-400" /> Export Profile JSON
+                        </button>
+                        <button
+                          onClick={handleCopyId}
+                          className="w-full text-left px-3.5 py-2 text-slate-300 hover:bg-slate-800 hover:text-white flex items-center gap-2 cursor-pointer"
+                        >
+                          {copiedId ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-purple-400" />}
+                          {copiedId ? 'Copied ID!' : 'Copy Client ID'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -398,6 +541,146 @@ export default function ClientsManager({ onSelectClient, onSelectProject }: Clie
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Client Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Pencil className="w-5 h-5 text-blue-400" /> Edit Client Organization
+              </h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateClient} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Client / Entity Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Industry / Sector
+                </label>
+                <input
+                  type="text"
+                  value={formData.industry}
+                  onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Contact Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.contact_email}
+                    onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Contact Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.contact_phone}
+                    onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Assessment Scope Notes
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-blue-600/20 transition-all cursor-pointer"
+                >
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-center gap-3 text-red-400">
+              <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Delete Client Record</h3>
+                <p className="text-xs text-slate-400">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Are you sure you want to permanently remove <strong className="text-white font-semibold">{selectedClient.name}</strong> from the registry? Associated projects and assessments will be detached.
+            </p>
+
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteClient}
+                disabled={submitting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-lg shadow-red-600/20 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {submitting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}

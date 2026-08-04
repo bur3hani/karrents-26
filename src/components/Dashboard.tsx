@@ -29,7 +29,8 @@ import {
   ArrowUpRight,
   Cpu,
   Key,
-  CreditCard
+  CreditCard,
+  Lock
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -48,17 +49,19 @@ import { Client, Project, Finding, Asset, Report, AuditLog } from '../types';
 import { apiFetchJson } from '../lib/api';
 
 interface DashboardProps {
-  onNavigateToSection: (section: 'dashboard' | 'clients' | 'projects' | 'assets' | 'findings' | 'saved-reports' | 'profile' | 'users') => void;
+  onNavigateToSection: (section: 'dashboard' | 'clients' | 'projects' | 'assets' | 'findings' | 'saved-reports' | 'profile' | 'users' | 'tools') => void;
   onSelectProject?: (projectId: string) => void;
   onSelectClient?: (clientId: string) => void;
   currentUserEmail?: string;
+  onLaunchTool?: (toolKey: string, input?: string) => void;
 }
 
 export default function Dashboard({
   onNavigateToSection,
   onSelectProject,
   onSelectClient,
-  currentUserEmail
+  currentUserEmail,
+  onLaunchTool
 }: DashboardProps) {
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -66,6 +69,45 @@ export default function Dashboard({
   const [allAssets, setAllAssets] = useState<Asset[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Central PLG Input Bar State
+  const [scanQuery, setScanQuery] = useState<string>('');
+  const [detectedType, setDetectedType] = useState<'domain' | 'ip' | 'cve' | 'unknown'>('unknown');
+
+  useEffect(() => {
+    const q = scanQuery.trim();
+    if (!q) {
+      setDetectedType('unknown');
+    } else if (/^CVE-\d{4}-\d+/i.test(q)) {
+      setDetectedType('cve');
+    } else if (/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(q)) {
+      setDetectedType('ip');
+    } else if (q.includes('.') || q.startsWith('http')) {
+      setDetectedType('domain');
+    } else {
+      setDetectedType('unknown');
+    }
+  }, [scanQuery]);
+
+  const handleScanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = scanQuery.trim();
+    if (!q) return;
+
+    if (detectedType === 'cve') {
+      if (onLaunchTool) onLaunchTool('cve', q);
+      else onNavigateToSection('tools');
+    } else if (detectedType === 'ip') {
+      if (onLaunchTool) onLaunchTool('ioc', q);
+      else onNavigateToSection('tools');
+    } else if (detectedType === 'domain') {
+      if (onLaunchTool) onLaunchTool('ssl', q);
+      else onNavigateToSection('tools');
+    } else {
+      if (onLaunchTool) onLaunchTool('cve', q);
+      else onNavigateToSection('tools');
+    }
+  };
 
   // Super Admin Specialized State
   const isMasterUser = currentUserEmail?.toLowerCase() === 'engr.buru@gmail.com';
@@ -804,7 +846,118 @@ export default function Dashboard({
             </div>
           )}
 
-          {/* KPI Cards Grid */}
+          {/* Centralized PLG Utility Scanner Bar */}
+          <div className="bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 border border-brand-neon/30 p-6 rounded-2xl shadow-xl space-y-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-brand-neon animate-pulse" />
+                  Instant Security Utility Bar
+                </h2>
+                <p className="text-xs text-zinc-400">
+                  Enter any <span className="text-zinc-200 font-mono">Domain</span>, <span className="text-zinc-200 font-mono">IP Address</span>, or <span className="text-zinc-200 font-mono">CVE ID</span> for immediate automated validation.
+                </p>
+              </div>
+
+              {detectedType !== 'unknown' && (
+                <span className="self-start md:self-auto px-3 py-1 bg-brand-neon/10 border border-brand-neon/30 text-brand-neon text-[10px] font-mono font-bold uppercase rounded-full">
+                  Auto-Detected Target: {detectedType.toUpperCase()}
+                </span>
+              )}
+            </div>
+
+            <form onSubmit={handleScanSubmit} className="relative flex flex-col sm:flex-row items-center gap-3">
+              <div className="relative flex-1 w-full">
+                <input
+                  type="text"
+                  placeholder="e.g. example.com, 1.1.1.1, or CVE-2025-2130"
+                  value={scanQuery}
+                  onChange={(e) => setScanQuery(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-neon pl-4 pr-12 py-3.5 rounded-xl text-sm text-white placeholder-zinc-500 font-mono outline-none shadow-inner transition-colors"
+                />
+                {scanQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setScanQuery('')}
+                    className="absolute right-3 top-3.5 text-zinc-500 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full sm:w-auto px-6 py-3.5 bg-brand-berry hover:bg-brand-plum text-white font-extrabold text-xs rounded-xl shadow-lg shadow-brand-neon/15 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+              >
+                <span>Execute Audit</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </form>
+
+            {/* Quick Action Trigger Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => onLaunchTool ? onLaunchTool('ssl') : onNavigateToSection('tools')}
+                className="p-3 bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800 hover:border-green-500/50 rounded-xl text-left transition-all group"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Lock className="w-4 h-4 text-green-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold text-white">SSL / TLS</span>
+                </div>
+                <p className="text-[10px] text-zinc-400 line-clamp-1">Cert Chain & Expiry</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onLaunchTool ? onLaunchTool('headers') : onNavigateToSection('tools')}
+                className="p-3 bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800 hover:border-indigo-500/50 rounded-xl text-left transition-all group"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold text-white">HTTP Headers</span>
+                </div>
+                <p className="text-[10px] text-zinc-400 line-clamp-1">CSP, HSTS & Headers</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onLaunchTool ? onLaunchTool('dns') : onNavigateToSection('tools')}
+                className="p-3 bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800 hover:border-cyan-500/50 rounded-xl text-left transition-all group"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <BarChart3 className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold text-white">DNS & Email</span>
+                </div>
+                <p className="text-[10px] text-zinc-400 line-clamp-1">SPF, DKIM, DMARC</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onLaunchTool ? onLaunchTool('ioc') : onNavigateToSection('tools')}
+                className="p-3 bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800 hover:border-amber-500/50 rounded-xl text-left transition-all group"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold text-white">Threat IOC</span>
+                </div>
+                <p className="text-[10px] text-zinc-400 line-clamp-1">IP & Malware Index</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onLaunchTool ? onLaunchTool('cve') : onNavigateToSection('tools')}
+                className="p-3 bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800 hover:border-red-500/50 rounded-xl text-left transition-all group col-span-2 sm:col-span-1"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <ShieldAlert className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold text-white">CVE Explorer</span>
+                </div>
+                <p className="text-[10px] text-zinc-400 line-clamp-1">NVD CVE Database</p>
+              </button>
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Clients KPI */}
             <div

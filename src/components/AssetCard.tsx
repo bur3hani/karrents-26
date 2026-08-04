@@ -17,7 +17,10 @@ import {
   Trash2,
   Clock,
   CheckSquare,
-  Square
+  Square,
+  Lock,
+  Unlock,
+  ShieldAlert
 } from 'lucide-react';
 import { Asset, AssetType } from '../types/asset';
 
@@ -51,33 +54,74 @@ export function getAssetIcon(type: AssetType) {
   }
 }
 
-export function getRiskBadge(score: number) {
-  if (score >= 75) {
-    return (
-      <span className="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-        <AlertTriangle className="w-3 h-3" /> Critical ({score})
-      </span>
-    );
+export function getRiskBadge(score: number, severity?: string) {
+  const sev = severity || (score >= 75 ? 'Critical' : score >= 50 ? 'High' : score >= 25 ? 'Medium' : 'Low');
+
+  switch (sev) {
+    case 'Critical':
+      return (
+        <span className="bg-red-500/15 border border-red-500/30 text-red-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm shadow-red-900/20">
+          <AlertTriangle className="w-3 h-3 text-red-400" /> Critical ({score})
+        </span>
+      );
+    case 'High':
+      return (
+        <span className="bg-orange-500/15 border border-orange-500/30 text-orange-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+          <ShieldAlert className="w-3 h-3 text-orange-400" /> High ({score})
+        </span>
+      );
+    case 'Medium':
+      return (
+        <span className="bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+          Medium ({score})
+        </span>
+      );
+    case 'Low':
+      return (
+        <span className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+          Low ({score})
+        </span>
+      );
+    case 'Info':
+      return (
+        <span className="bg-blue-500/15 border border-blue-500/30 text-blue-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+          Info ({score})
+        </span>
+      );
+    default:
+      return (
+        <span className="bg-zinc-800 text-zinc-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+          {sev} ({score})
+        </span>
+      );
   }
-  if (score >= 50) {
-    return (
-      <span className="bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-        High ({score})
-      </span>
-    );
+}
+
+export function getSeverityCardStyles(score: number, severity?: string, isSelected?: boolean, isLocked?: boolean) {
+  if (isSelected) {
+    return 'border-fuchsia-500/80 bg-fuchsia-950/20 shadow-md shadow-fuchsia-950/30';
   }
-  if (score >= 25) {
-    return (
-      <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-        Medium ({score})
-      </span>
-    );
+
+  const sev = severity || (score >= 75 ? 'Critical' : score >= 50 ? 'High' : score >= 25 ? 'Medium' : 'Low');
+
+  if (isLocked) {
+    return 'border-amber-500/40 bg-amber-950/10 hover:border-amber-500/60';
   }
-  return (
-    <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-      Low ({score})
-    </span>
-  );
+
+  switch (sev) {
+    case 'Critical':
+      return 'border-red-500/40 bg-red-950/10 hover:border-red-500/70 hover:bg-red-950/20';
+    case 'High':
+      return 'border-orange-500/40 bg-orange-950/10 hover:border-orange-500/70 hover:bg-orange-950/20';
+    case 'Medium':
+      return 'border-amber-500/30 bg-amber-950/10 hover:border-amber-500/60';
+    case 'Low':
+      return 'border-emerald-500/30 bg-emerald-950/10 hover:border-emerald-500/60';
+    case 'Info':
+      return 'border-blue-500/30 bg-blue-950/10 hover:border-blue-500/60';
+    default:
+      return 'border-zinc-800/60 hover:border-zinc-700/80 bg-zinc-900/60 hover:bg-zinc-900';
+  }
 }
 
 export interface AssetCardProps {
@@ -85,6 +129,7 @@ export interface AssetCardProps {
   projectName?: string;
   selected?: boolean;
   onToggleSelect?: (id: string) => void;
+  onToggleLock?: (id: string, currentLocked: boolean) => void;
   onEdit: (asset: Asset) => void;
   onDelete: (id: string, name: string) => void;
   onLaunchToolWithTarget?: (toolName: string, target: string) => void;
@@ -95,6 +140,7 @@ export function AssetCard({
   projectName = 'Default Scope',
   selected = false,
   onToggleSelect,
+  onToggleLock,
   onEdit,
   onDelete,
   onLaunchToolWithTarget
@@ -110,8 +156,11 @@ export function AssetCard({
     ? new Date(modifiedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     : null;
 
+  const isLocked = Boolean(asset.locked);
+  const cardStyle = getSeverityCardStyles(score, asset.severity, selected, isLocked);
+
   return (
-    <div className={`bg-zinc-900/60 hover:bg-zinc-900 border ${selected ? 'border-fuchsia-500 bg-fuchsia-950/10' : 'border-zinc-800/60 hover:border-zinc-700/80'} p-4 rounded-xl space-y-3 transition-all group flex flex-col justify-between shadow-sm relative`}>
+    <div className={`border p-4 rounded-xl space-y-3 transition-all group flex flex-col justify-between shadow-sm relative ${cardStyle}`}>
       <div className="space-y-2.5">
         {/* Top Header */}
         <div className="flex items-start justify-between gap-2">
@@ -133,8 +182,13 @@ export function AssetCard({
               {getAssetIcon(asset.type)}
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-bold text-white group-hover:text-fuchsia-300 transition-colors truncate" title={asset.name}>
-                {asset.name}
+              <div className="text-xs font-bold text-white group-hover:text-fuchsia-300 transition-colors truncate flex items-center gap-1.5" title={asset.name}>
+                <span>{asset.name}</span>
+                {isLocked && (
+                  <span className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 text-amber-300 rounded text-[9px] font-bold flex items-center gap-0.5">
+                    <Lock className="w-2.5 h-2.5" /> Locked
+                  </span>
+                )}
               </div>
               <div className="text-[10px] text-zinc-500 font-mono flex items-center gap-1">
                 <span className="font-semibold text-zinc-400">{asset.type}</span>
@@ -144,7 +198,7 @@ export function AssetCard({
             </div>
           </div>
 
-          <div className="flex-shrink-0">{getRiskBadge(score)}</div>
+          <div className="flex-shrink-0">{getRiskBadge(score, asset.severity)}</div>
         </div>
 
         {/* Notes / Context */}
@@ -216,17 +270,30 @@ export function AssetCard({
         ) : <div />}
 
         <div className="flex items-center gap-1">
+          {/* Lock / Unlock Toggle Button */}
+          {onToggleLock && (
+            <button
+              onClick={() => onToggleLock(asset.id, isLocked)}
+              className={`p-1.5 rounded transition-colors ${isLocked ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'hover:bg-zinc-800 text-zinc-400 hover:text-white'}`}
+              title={isLocked ? "Unlock Asset Set" : "Lock Asset Set Scope"}
+            >
+              {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+            </button>
+          )}
+
           <button
             onClick={() => onEdit(asset)}
-            className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded transition-colors"
-            title="Edit Asset"
+            disabled={isLocked}
+            className={`p-1.5 rounded transition-colors ${isLocked ? 'opacity-40 cursor-not-allowed text-zinc-600' : 'hover:bg-zinc-800 text-zinc-400 hover:text-white'}`}
+            title={isLocked ? "Asset scope is locked" : "Edit Asset"}
           >
             <Edit3 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(asset.id, asset.name)}
-            className="p-1.5 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 rounded transition-colors"
-            title="Delete Asset"
+            disabled={isLocked}
+            className={`p-1.5 rounded transition-colors ${isLocked ? 'opacity-40 cursor-not-allowed text-zinc-600' : 'hover:bg-red-500/20 text-zinc-400 hover:text-red-400'}`}
+            title={isLocked ? "Asset scope is locked" : "Delete Asset"}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>

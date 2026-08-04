@@ -596,7 +596,7 @@ export default function LegalHub({ initialTab = 'terms', onClose, isModal = fals
                     <span className="text-[10px] font-mono text-zinc-500">Region: EU (London / Frankfurt)</span>
                   </div>
                   <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-1">
-                    <span className="font-bold text-white block">Google Gemini AI Engine</span>
+                    <span className="font-bold text-white block">AI Security Engine</span>
                     <span className="text-[11px] text-zinc-400 block">Server-side Threat Intelligence Summarization</span>
                     <span className="text-[10px] font-mono text-zinc-500">Zero data retention for training</span>
                   </div>
