@@ -9,9 +9,7 @@ import scanRouter from './server/routes/scan.router.js';
 dotenv.config();
 
 const app = express();
-const rawPort = process.env.PORT;
-const isSocket = rawPort && isNaN(Number(rawPort));
-const PORT = isSocket ? rawPort : (rawPort ? parseInt(rawPort, 10) : 3000);
+const PORT = 3000;
 
 // ============================================================================
 // GLOBAL SECURITY HEADERS & EXPOSURES (OWASP Top 10 Hardened Profile)
@@ -70,16 +68,9 @@ async function startServer() {
     });
   }
 
-  const envPort = process.env.PORT;
-  if (envPort) {
-    app.listen(envPort as any, () => {
-      console.log(`[Karrents Secure Node] Running on Hostinger port/socket: ${envPort}`);
-    });
-  } else {
-    app.listen(3000, '0.0.0.0', () => {
-      console.log(`[Karrents Secure Node] Running locally on http://0.0.0.0:3000`);
-    });
-  }
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[Karrents Secure Node] Server running on http://0.0.0.0:${PORT}`);
+  });
 }
 
 startServer().catch(err => {

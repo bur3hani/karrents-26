@@ -139,7 +139,7 @@ export default function App() {
   });
 
   const toggleFaq = (index: number) => {
-    setFaqOpen(prev => ({ ...prev, [index]: prev[index] }));
+    setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
   };
 
   useEffect(() => {
@@ -224,7 +224,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none antialiased">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans antialiased">
       {/* ==========================================
           HEADER / TOP BANNER
          ========================================== */}
@@ -762,10 +762,17 @@ export default function App() {
           <Sidebar
             appSection={appSection}
             setAppSection={setAppSection}
+            selectedTool={selectedTool}
+            onSelectTool={(toolKey) => setSelectedTool(toolKey)}
+            onNavigateToSection={(section) => setAppSection(section as any)}
             userEmail={userEmail}
+            userPlan={userPlan}
+            editionMode={editionMode}
             onLogout={handleLogout}
             onOpenLanding={() => setViewMode('landing')}
             onOpenUpgrade={() => setIsUpgradeModalOpen(true)}
+            onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
+            onOpenLegal={handleOpenLegal}
           />
 
           {/* Workbench Main Content Panel */}
@@ -852,7 +859,17 @@ export default function App() {
                     onNavigateToSection={(section) => setAppSection(section as any)}
                     onSelectProject={(id) => setSelectedProjectId(id)}
                     currentUserEmail={userEmail}
+                    onLaunchTool={(tool, input) => {
+                      setSelectedTool(tool);
+                      setAppSection('tools');
+                    }}
                   />
+                </ErrorBoundary>
+              )}
+
+              {appSection === 'tools' && (
+                <ErrorBoundary>
+                  <ToolsContainer initialActiveTool={selectedTool} />
                 </ErrorBoundary>
               )}
 

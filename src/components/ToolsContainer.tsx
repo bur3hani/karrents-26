@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert,
   Search,
@@ -51,6 +51,12 @@ export default function ToolsContainer({ initialActiveTool = 'cve' }: ToolsConta
 
   // Configuration block active tab (for Security Headers config block)
   const [configTab, setConfigTab] = useState<string>('nginx');
+
+  useEffect(() => {
+    if (initialActiveTool) {
+      setActiveTab(initialActiveTool);
+    }
+  }, [initialActiveTool]);
 
   // Generic fetch wrapper
   const handleFetch = async (endpoint: string, body: any, successCallback: (data: any) => void) => {
